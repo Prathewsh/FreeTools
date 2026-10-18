@@ -1,0 +1,240 @@
+.simple-tool-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Card Header */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .card-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-main);
+  }
+
+  .device-badge {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.78rem;
+    color: #a1a9b7;
+
+    .green-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-emerald);
+      box-shadow: 0 0 6px var(--accent-emerald);
+    }
+  }
+}
+
+/* Inner Container */
+.inner-dropzone-container {
+  background: var(--bg-card-inner);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  position: relative;
+}
+
+.active-palette-stage {
+  display: flex;
+  flex-direction: column;
+
+  .stage-sub-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: #12151b;
+    border-bottom: 1px solid var(--border-card);
+    flex-wrap: wrap;
+    gap: 8px;
+
+    .palette-tip {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+    }
+
+    .stage-sub-actions {
+      display: flex;
+      gap: 4px;
+    }
+  }
+
+  .canvas-viewport {
+    position: relative;
+    width: 100%;
+    min-height: 380px;
+    max-height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+
+    &.crosshair {
+      cursor: crosshair;
+    }
+
+    .fitted-canvas {
+      max-width: 100%;
+      max-height: 480px;
+      object-fit: contain;
+      display: block;
+      margin: auto;
+    }
+  }
+}
+
+/* Palette Swatches Card */
+.palette-swatches-card {
+  background: var(--bg-card-inner);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .swatches-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .config-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .copied-badge {
+      font-size: 0.75rem;
+      color: #34d399;
+      font-weight: 600;
+    }
+  }
+
+  .minimal-swatches-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+
+    .swatch-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #131720;
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-sm);
+      padding: 4px 8px 4px 4px;
+      cursor: pointer;
+      transition: var(--transition-fast);
+
+      &:hover {
+        border-color: var(--primary-blue);
+      }
+
+      .swatch-box {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+      }
+
+      .swatch-code {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-main);
+      }
+    }
+  }
+
+  .gradient-preview-line {
+    height: 8px;
+    border-radius: var(--radius-full);
+  }
+}
+
+.mt-2 { margin-top: 8px; }
+
+/* Card Footer */
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+  gap: 16px;
+  flex-wrap: wrap;
+
+  .footer-status-text {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+
+  .footer-actions-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+}
+
+.empty-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 44px 20px;
+  text-align: center;
+  cursor: pointer;
+
+  .box-arrow-icon {
+    width: 44px;
+    height: 44px;
+    background: #181d26;
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+
+  .dropzone-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-main);
+  }
+
+  .dropzone-sub {
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    margin-top: 4px;
+    max-width: 420px;
+  }
+
+  .dropzone-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .dropzone-fine {
+    font-size: 0.72rem;
+    color: #4b5565;
+    font-family: var(--font-mono);
+  }
+}

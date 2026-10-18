@@ -1,0 +1,197 @@
+<div class="simple-tool-card">
+  <!-- Card Header -->
+  <div class="card-header">
+    <span class="card-title">Batch convert & compress</span>
+    <div class="device-badge">
+      <span class="green-dot"></span>
+      <span>Files stay on your device</span>
+    </div>
+  </div>
+
+  <div class="editor-layout">
+    <aside class="editor-options" aria-label="Tool options">
+      <div class="options-heading">TOOL OPTIONS <span>Adjust & refine</span></div>
+
+      @if (items().length === 0) { <p class="options-hint">Choose your output settings, then add images to the queue.</p> }
+  <!-- Config Options Grid -->
+  <div class="config-grid">
+    <!-- Left: Target Format Radio Cards -->
+    <div class="config-col">
+      <label class="config-label">Convert for</label>
+      <div class="radio-cards-row">
+        <div
+          class="radio-card"
+          [class.selected]="targetFormat() === 'image/webp'"
+          (click)="targetFormat.set('image/webp')"
+        >
+          <div class="radio-circle">
+            <div class="radio-inner" *ngIf="targetFormat() === 'image/webp'"></div>
+          </div>
+          <span class="card-name">WEBP (Compact)</span>
+          <span class="card-badge">.webp</span>
+        </div>
+
+        <div
+          class="radio-card"
+          [class.selected]="targetFormat() === 'image/jpeg'"
+          (click)="targetFormat.set('image/jpeg')"
+        >
+          <div class="radio-circle">
+            <div class="radio-inner" *ngIf="targetFormat() === 'image/jpeg'"></div>
+          </div>
+          <span class="card-name">JPEG (Standard)</span>
+          <span class="card-badge">.jpg</span>
+        </div>
+
+        <div
+          class="radio-card"
+          [class.selected]="targetFormat() === 'image/png'"
+          (click)="targetFormat.set('image/png')"
+        >
+          <div class="radio-circle">
+            <div class="radio-inner" *ngIf="targetFormat() === 'image/png'"></div>
+          </div>
+          <span class="card-name">PNG (Lossless)</span>
+          <span class="card-badge">.png</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Quality Dropdown -->
+    <div class="config-col">
+      <label class="config-label">Compression quality</label>
+      <select
+        class="custom-select"
+        [ngModel]="targetQuality()"
+        (ngModelChange)="targetQuality.set($event)"
+      >
+        <option [value]="0.9">90% &bull; High Fidelity</option>
+        <option [value]="0.8">80% &bull; Balanced Optimal (Recommended)</option>
+        <option [value]="0.65">65% &bull; Maximum File Savings</option>
+      </select>
+      <span class="config-helper">Processes in-memory via OffscreenCanvas</span>
+    </div>
+  </div>
+
+  <!-- Checkbox Row -->
+  <div class="checkbox-options-row">
+    <label class="custom-checkbox-label">
+      <input type="checkbox" [ngModel]="applyResize()" (ngModelChange)="applyResize.set($event)" />
+      <span>Constrain maximum width (downscale large images to 1920px)</span>
+    </label>
+  </div>
+
+    </aside>
+    <section class="editor-stage" aria-label="Canvas workspace">
+  <!-- Inner Zone (Multi-file Dropzone & List) -->
+  <div class="inner-dropzone-container">
+    @if (items().length === 0) {
+      <div
+        class="empty-dropzone"
+        (drop)="onDropFiles($event)"
+        (dragover)="onDragOver($event)"
+        (click)="batchFileInput.click()"
+      >
+        <div class="box-arrow-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/><polyline points="16 16 12 12 8 16"/>
+          </svg>
+        </div>
+
+        <h3 class="dropzone-title">Choose multiple images or drop a batch</h3>
+        <p class="dropzone-sub">Bulk format conversion & compression with zero server upload.</p>
+
+        <div class="dropzone-actions" (click)="$event.stopPropagation()">
+          <button class="btn-primary-blue" (click)="batchFileInput.click()">Choose image files</button>
+        </div>
+
+        <span class="dropzone-fine">PNG, JPG, WebP, AVIF, SVG &bull; Parallel browser threads</span>
+      </div>
+    } @else {
+      <!-- Active Batch Queue List -->
+      <div class="active-batch-stage">
+        <div class="stage-sub-bar">
+          <span class="batch-count-title">{{ items().length }} items in queue</span>
+          <div class="stage-sub-actions">
+            <button class="btn-ghost-dark" (click)="batchFileInput.click()">+ Add more</button>
+            <button class="btn-ghost-dark" (click)="clearAll()">Clear all</button>
+          </div>
+        </div>
+
+        <div class="batch-items-container">
+          @for (item of items(); track item.id) {
+            <div class="minimal-batch-item" [class.done]="item.status === 'done'">
+              <img [src]="item.previewUrl" class="mini-thumb" alt="thumbnail" />
+
+              <div class="item-name-block">
+                <span class="item-file-name">{{ item.name }}</span>
+                <span class="item-file-size">{{ formatBytes(item.originalSize) }}</span>
+              </div>
+
+              <div class="item-status-block">
+                @if (item.status === 'done' && item.processedSize) {
+                  <span class="proc-size-text">{{ formatBytes(item.processedSize) }}</span>
+                  <span class="savings-tag">
+                    -{{ Math.max(0, Math.round(((item.originalSize - item.processedSize) / item.originalSize) * 100)) }}%
+                  </span>
+                  <button class="btn-mini-dl" (click)="downloadItem(item)" title="Download">↓</button>
+                } @else if (item.status === 'processing') {
+                  <span class="processing-tag">Processing...</span>
+                } @else {
+                  <span class="pending-tag">Ready</span>
+                }
+
+                <button class="btn-item-close" (click)="removeItem(item.id)">✕</button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <input
+      #batchFileInput
+      type="file"
+      multiple
+      accept="image/*"
+      (change)="onFilesSelected($event)"
+      style="display: none"
+    />
+  </div>
+
+    </section>
+  </div>
+  <!-- Card Footer -->
+  <div class="card-footer">
+    <div class="footer-status-text">
+      @if (items().length > 0) {
+        <span>
+          {{ items().length }} files &bull; Total: {{ formatBytes(totalOriginalSize()) }}
+          @if (totalSavingsPercent() > 0) {
+            &bull; Saved: <b style="color: #34d399">-{{ totalSavingsPercent() }}%</b>
+          }
+        </span>
+      } @else {
+        <span>Add images to start batch processing.</span>
+      }
+    </div>
+
+    <div class="footer-actions-group">
+      @if (items().length > 0) {
+        @if (hasDoneItems() && !hasUnprocessedItems()) {
+          <button class="btn-primary-blue" (click)="downloadAll()">
+            Download all files ({{ items().length }}) &rarr;
+          </button>
+        } @else {
+          <button
+            class="btn-primary-blue"
+            [disabled]="isBatchProcessing()"
+            (click)="processAll()"
+          >
+            {{ isBatchProcessing() ? 'Processing...' : 'Convert & save all →' }}
+          </button>
+        }
+      }
+    </div>
+  </div>
+</div>

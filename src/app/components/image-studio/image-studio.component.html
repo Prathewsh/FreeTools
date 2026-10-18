@@ -1,0 +1,306 @@
+<div class="simple-tool-card">
+  <!-- Card Header -->
+  <div class="card-header">
+    <span class="card-title">Image manipulator & studio</span>
+    <div class="device-badge">
+      <span class="green-dot"></span>
+      <span>Files stay on your device</span>
+    </div>
+  </div>
+
+  <div class="editor-layout">
+    <aside class="editor-options" aria-label="Tool options">
+      <div class="options-heading">TOOL OPTIONS <span>Adjust & refine</span></div>
+@if (hasImage()) {
+          <div class="editor-tool-picker">
+            <button [class.active]="activeSubTool() === 'crop'" (click)="activeSubTool.set('crop')">Crop & Aspect</button>
+            <button [class.active]="activeSubTool() === 'resize'" (click)="activeSubTool.set('resize')">Resize</button>
+            <button [class.active]="activeSubTool() === 'rotate'" (click)="activeSubTool.set('rotate')">Rotate & Flip</button>
+            <button [class.active]="activeSubTool() === 'filters'" (click)="activeSubTool.set('filters')">Filters</button>
+            <button [class.active]="activeSubTool() === 'watermark'" (click)="activeSubTool.set('watermark'); renderPreview()">Watermark</button>
+          </div>
+}
+      @if (!hasImage()) { <p class="options-hint">Upload an image to crop, resize, rotate, and adjust its appearance.</p> }
+  <!-- Sub-tool Context Controls Area -->
+  @if (hasImage()) {
+    <div class="subtool-context-panel">
+      <!-- CROP CONTROLS -->
+      @if (activeSubTool() === 'crop') {
+        <div class="context-row">
+          <div class="pill-group">
+            <span class="sub-label">Preset:</span>
+            <button class="mini-chip" [class.active]="cropRatio() === 'free'" (click)="setCropRatio('free')">Free</button>
+            <button class="mini-chip" [class.active]="cropRatio() === '1:1'" (click)="setCropRatio('1:1')">1:1 Square</button>
+            <button class="mini-chip" [class.active]="cropRatio() === '16:9'" (click)="setCropRatio('16:9')">16:9 Widescreen</button>
+            <button class="mini-chip" [class.active]="cropRatio() === '4:3'" (click)="setCropRatio('4:3')">4:3 Standard</button>
+            <button class="mini-chip" [class.active]="cropRatio() === '9:16'" (click)="setCropRatio('9:16')">9:16 Story</button>
+            <button class="mini-chip" [class.active]="cropRatio() === 'circle'" (click)="setCropRatio('circle')">Circle Avatar</button>
+          </div>
+
+          <div class="context-actions">
+            <button class="btn-ghost-dark" (click)="resetCropBox()">Reset Box</button>
+            <button class="btn-primary-blue" (click)="applyCrop()">Apply Crop</button>
+          </div>
+        </div>
+      }
+
+      <!-- RESIZE CONTROLS -->
+      @if (activeSubTool() === 'resize') {
+        <div class="context-row">
+          <div class="dimension-inputs-row">
+            <div class="input-inline">
+              <label>Width:</label>
+              <input type="number" [ngModel]="resizeWidth()" (ngModelChange)="onResizeWidthChange($event)" />
+            </div>
+            <button class="lock-aspect-btn" [class.locked]="lockAspectRatio()" (click)="lockAspectRatio.set(!lockAspectRatio())">
+              🔗
+            </button>
+            <div class="input-inline">
+              <label>Height:</label>
+              <input type="number" [ngModel]="resizeHeight()" (ngModelChange)="onResizeHeightChange($event)" />
+            </div>
+          </div>
+
+          <div class="context-actions">
+            <button class="btn-ghost-dark" (click)="setPresetSize(1920, 1080)">1080p</button>
+            <button class="btn-ghost-dark" (click)="setPresetSize(1280, 720)">720p</button>
+            <button class="btn-ghost-dark" (click)="setPresetSize(512, 512)">512&times;512</button>
+            <button class="btn-primary-blue" (click)="applyResize()">Apply Resize</button>
+          </div>
+        </div>
+      }
+
+      <!-- ROTATE CONTROLS -->
+      @if (activeSubTool() === 'rotate') {
+        <div class="context-row">
+          <div class="btn-group-row">
+            <button class="btn-secondary-dark" (click)="rotate90CCW()">↺ -90°</button>
+            <button class="btn-secondary-dark" (click)="rotate90CW()">↻ +90°</button>
+            <button class="btn-secondary-dark" [class.active]="flipHorizontal()" (click)="toggleFlipH()">⇄ Flip H</button>
+            <button class="btn-secondary-dark" [class.active]="flipVertical()" (click)="toggleFlipV()">⇅ Flip V</button>
+          </div>
+
+          <div class="context-actions">
+            <button class="btn-primary-blue" (click)="applyRotation()">Apply Rotation</button>
+          </div>
+        </div>
+      }
+
+      <!-- FILTERS CONTROLS -->
+      @if (activeSubTool() === 'filters') {
+        <div class="filters-context-block">
+          <div class="presets-chip-row">
+            <button class="mini-chip" (click)="applyFilterPreset('noir')">Noir B&W</button>
+            <button class="mini-chip" (click)="applyFilterPreset('cyberpunk')">Cyberpunk</button>
+            <button class="mini-chip" (click)="applyFilterPreset('vintage')">Vintage</button>
+            <button class="mini-chip" (click)="applyFilterPreset('dramatic')">Dramatic</button>
+            <button class="mini-chip" (click)="applyFilterPreset('warm')">Warm</button>
+            <button class="mini-chip" (click)="resetFilterValues()">Reset All</button>
+          </div>
+
+          <div class="sliders-row mt-2">
+            <div class="slider-item">
+              <div class="slider-label-row"><span>Brightness</span><span>{{ filters().brightness }}</span></div>
+              <input type="range" min="-100" max="100" [ngModel]="filters().brightness" (ngModelChange)="updateFilter('brightness', $event)"/>
+            </div>
+            <div class="slider-item">
+              <div class="slider-label-row"><span>Contrast</span><span>{{ filters().contrast }}</span></div>
+              <input type="range" min="-100" max="100" [ngModel]="filters().contrast" (ngModelChange)="updateFilter('contrast', $event)"/>
+            </div>
+            <div class="slider-item">
+              <div class="slider-label-row"><span>Saturation</span><span>{{ filters().saturation }}</span></div>
+              <input type="range" min="-100" max="100" [ngModel]="filters().saturation" (ngModelChange)="updateFilter('saturation', $event)"/>
+            </div>
+            <div class="slider-item">
+              <div class="slider-label-row"><span>Sharpen</span><span>{{ filters().sharpen }}%</span></div>
+              <input type="range" min="0" max="100" [ngModel]="filters().sharpen" (ngModelChange)="updateFilter('sharpen', $event)"/>
+            </div>
+          </div>
+
+          <div class="right-align-actions mt-2">
+            <button class="btn-primary-blue" (click)="applyFiltersPermanently()">Bake Filters</button>
+          </div>
+        </div>
+      }
+
+      <!-- WATERMARK CONTROLS -->
+      @if (activeSubTool() === 'watermark') {
+        <div class="context-row">
+          <div class="watermark-inputs-row">
+            <input
+              type="text"
+              placeholder="Watermark text (e.g. © FreeTools by MGE)"
+              [ngModel]="watermark().text"
+              (ngModelChange)="updateWatermark('text', $event)"
+              class="watermark-text-field"
+            />
+            <input type="color" [ngModel]="watermark().color" (ngModelChange)="updateWatermark('color', $event)" />
+            <select [ngModel]="watermark().position" (ngModelChange)="updateWatermark('position', $event)">
+              <option value="bottom-right">Bottom Right</option>
+              <option value="bottom-left">Bottom Left</option>
+              <option value="center">Center</option>
+              <option value="top-right">Top Right</option>
+              <option value="tile">Repeat Tile</option>
+            </select>
+          </div>
+
+          <div class="context-actions">
+            <button class="btn-primary-blue" (click)="applyWatermarkPermanently()">Bake Watermark</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Format Radio Cards & Quality Dropdown (matching reference UI) -->
+  <div class="config-grid">
+    <!-- Left: Format Radio Cards -->
+    <div class="config-col">
+      <label class="config-label">Export format</label>
+      <div class="radio-cards-row">
+        <div
+          class="radio-card"
+          [class.selected]="exportFormat() === 'image/webp'"
+          (click)="exportFormat.set('image/webp'); calculateEstimatedSize()"
+        >
+          <div class="radio-circle">
+            <div class="radio-inner" *ngIf="exportFormat() === 'image/webp'"></div>
+          </div>
+          <span class="card-name">WEBP (Compact)</span>
+          <span class="card-badge">.webp</span>
+        </div>
+
+        <div
+          class="radio-card"
+          [class.selected]="exportFormat() === 'image/jpeg'"
+          (click)="exportFormat.set('image/jpeg'); calculateEstimatedSize()"
+        >
+          <div class="radio-circle">
+            <div class="radio-inner" *ngIf="exportFormat() === 'image/jpeg'"></div>
+          </div>
+          <span class="card-name">JPEG (Standard)</span>
+          <span class="card-badge">.jpg</span>
+        </div>
+
+        <div
+          class="radio-card"
+          [class.selected]="exportFormat() === 'image/png'"
+          (click)="exportFormat.set('image/png'); calculateEstimatedSize()"
+        >
+          <div class="radio-circle">
+            <div class="radio-inner" *ngIf="exportFormat() === 'image/png'"></div>
+          </div>
+          <span class="card-name">PNG (Lossless)</span>
+          <span class="card-badge">.png</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Quality Dropdown -->
+    <div class="config-col">
+      <label class="config-label">Save quality & compression</label>
+      <select
+        class="custom-select"
+        [ngModel]="exportQuality()"
+        (ngModelChange)="exportQuality.set($event); calculateEstimatedSize()"
+      >
+        <option [value]="0.92">92% &bull; Ultra High Quality</option>
+        <option [value]="0.85">85% &bull; Balanced Optimal (Recommended)</option>
+        <option [value]="0.75">75% &bull; High Compression (Small size)</option>
+        <option [value]="0.60">60% &bull; Maximum Compression</option>
+      </select>
+      <span class="config-helper">Estimated size: {{ estimatedSize() }} &bull; Direct in-memory download</span>
+    </div>
+  </div>
+
+    </aside>
+    <section class="editor-stage" aria-label="Canvas workspace">
+  <!-- Inner Zone (Canvas or Dropzone) -->
+  <div class="inner-dropzone-container" (dragover)="$event.preventDefault()" (drop)="onDropFile($event)">
+    @if (!hasImage()) {
+      <div class="empty-dropzone" (click)="fileInput.click()">
+        <div class="box-arrow-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+        </div>
+
+        <h3 class="dropzone-title">Choose an image or drop here</h3>
+        <p class="dropzone-sub">Crop, resize, rotate, enhance with live filters and watermarks in-memory.</p>
+
+        <div class="dropzone-actions" (click)="$event.stopPropagation()">
+          <button class="btn-primary-blue" (click)="fileInput.click()">Choose image file</button>
+        </div>
+
+        <span class="dropzone-fine">Runs in browser memory &bull; Zero telemetry or uploads</span>
+      </div>
+    } @else {
+      <!-- Active Manipulator Stage -->
+      <div class="active-studio-stage">
+        <!-- Sub-tool Pill Switcher Bar -->
+        <div class="stage-sub-bar">
+
+
+          <div class="stage-sub-actions">
+            <button class="btn-ghost-dark" [disabled]="!canUndo()" (click)="undo()" title="Undo">↺ Undo</button>
+            <button class="btn-ghost-dark" [disabled]="!canRedo()" (click)="redo()" title="Redo">↻ Redo</button>
+            <button class="btn-ghost-dark" (click)="fileInput.click()">Change image</button>
+          </div>
+        </div>
+
+        <!-- Canvas Viewport -->
+        <div class="canvas-viewport checkerboard-pattern">
+          <div class="canvas-container">
+            <canvas #stageCanvas class="fitted-canvas"></canvas>
+
+            @if (activeSubTool() === 'crop') {
+              <div class="crop-overlay-wrapper">
+                <div
+                  class="crop-box"
+                  [class.circle-crop]="cropRatio() === 'circle'"
+                  [style.left.%]="(cropBox().x / imageDimensions().width) * 100"
+                  [style.top.%]="(cropBox().y / imageDimensions().height) * 100"
+                  [style.width.%]="(cropBox().w / imageDimensions().width) * 100"
+                  [style.height.%]="(cropBox().h / imageDimensions().height) * 100"
+                  (mousedown)="onCropMouseDown($event, 'move')"
+                >
+                  <div class="handle handle-tl" (mousedown)="onCropMouseDown($event, 'nw')"></div>
+                  <div class="handle handle-tr" (mousedown)="onCropMouseDown($event, 'ne')"></div>
+                  <div class="handle handle-br" (mousedown)="onCropMouseDown($event, 'se')"></div>
+                  <div class="handle handle-bl" (mousedown)="onCropMouseDown($event, 'sw')"></div>
+                  <div class="crop-size-badge">{{ cropBox().w }} &times; {{ cropBox().h }}</div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <input #fileInput type="file" accept="image/*" (change)="onFileSelected($event)" style="display: none" />
+  </div>
+
+    </section>
+  </div>
+  <!-- Card Footer -->
+  <div class="card-footer">
+    <div class="footer-status-text">
+      @if (hasImage()) {
+        <span>{{ imageDimensions().width }} &times; {{ imageDimensions().height }} px &bull; {{ estimatedSize() }}</span>
+      } @else {
+        <span>Choose an image to get started.</span>
+      }
+    </div>
+
+    <div class="footer-actions-group">
+      <button class="btn-ghost-dark" (click)="copyImage()">Copy Image</button>
+      <button
+        class="btn-primary-blue"
+        [disabled]="!hasImage() || isProcessing()"
+        (click)="downloadImage()"
+      >
+        Download & save image &rarr;
+      </button>
+    </div>
+  </div>
+</div>

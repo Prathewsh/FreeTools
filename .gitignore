@@ -1,17 +1,24 @@
-# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
-
 # Compiled output
 /dist
 /tmp
 /out-tsc
 /bazel-out
+/build
+/.angular
+/.cache
 
-# Node
+# Node dependencies
 /node_modules
-npm-debug.log
-yarn-error.log
+/.npm
+.angular-config.json
+npm-debug.log*
+npm-error.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# IDEs and editors
+# IDEs and Editors
 .idea/
 .project
 .classpath
@@ -19,8 +26,7 @@ yarn-error.log
 *.launch
 .settings/
 *.sublime-workspace
-
-# Visual Studio Code
+*.sublime-project
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
@@ -28,17 +34,33 @@ yarn-error.log
 !.vscode/extensions.json
 !.vscode/mcp.json
 .history/*
+*.swp
+*.swo
 
-# Miscellaneous
-/.angular/cache
-.sass-cache/
-/connect.lock
+# Test & Automation Artifacts
 /coverage
-/libpeerconnection.log
 testem.log
 /typings
-__screenshots__/
+test-results/
+playwright-report/
+blob-report/
+.vitest/
+*.tsbuildinfo
+.tempmediaStorage/
+.system_generated/
+
+# Environment and local files
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
 
 # System files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db

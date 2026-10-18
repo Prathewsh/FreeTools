@@ -1,0 +1,242 @@
+<div class="simple-tool-card">
+  <!-- Card Header -->
+  <div class="card-header">
+    <span class="card-title">Cut and trim audio</span>
+    <div class="device-badge">
+      <span class="green-dot"></span>
+      <span>Files stay on your device</span>
+    </div>
+  </div>
+
+  <div class="editor-layout">
+    <aside class="editor-options" aria-label="Tool options">
+      <div class="options-heading">TOOL OPTIONS <span>Adjust & refine</span></div>
+
+      @if (!hasAudio()) { <p class="options-hint">Open an audio file to select a region and adjust your cut.</p> }
+  <!-- Config Options Grid (Matching Reference UI) -->
+  @if (hasAudio()) {
+  <div class="config-grid">
+    <!-- Left: Cut Action Radio Cards -->
+    <div class="config-col">
+      <label class="config-label">Cut operation</label>
+      <div class="radio-cards-row">
+        <div
+          class="radio-card"
+          [class.selected]="cutOperation() === 'trim'"
+          (click)="cutOperation.set('trim')"
+        >
+          <div class="radio-circle">
+            <div class="radio-inner" *ngIf="cutOperation() === 'trim'"></div>
+          </div>
+          <span class="card-name">Trim & Keep Selection</span>
+          <span class="card-badge">.wav</span>
+        </div>
+
+        <div
+          class="radio-card"
+          [class.selected]="cutOperation() === 'splice'"
+          (click)="cutOperation.set('splice')"
+        >
+          <div class="radio-circle">
+            <div class="radio-inner" *ngIf="cutOperation() === 'splice'"></div>
+          </div>
+          <span class="card-name">Delete & Splice</span>
+          <span class="card-badge">.wav</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Playback Speed & Output Format -->
+    <div class="config-col">
+      <label class="config-label">Playback speed</label>
+      <select
+        class="custom-select"
+        [ngModel]="playbackSpeed()"
+        (ngModelChange)="playbackSpeed.set($event)"
+      >
+        <option [value]="0.75">0.75&times; Slow</option>
+        <option [value]="1.0">1.0&times; Normal Speed</option>
+        <option [value]="1.25">1.25&times; Faster</option>
+        <option [value]="1.5">1.5&times; High Speed</option>
+      </select>
+      <span class="config-helper">Lossless 16-bit PCM RIFF WAV format</span>
+    </div>
+  </div>
+
+  <!-- Fade In / Fade Out Sliders -->
+  <div class="sliders-row">
+    <div class="slider-item">
+      <div class="slider-label-row">
+        <span>Fade In curve</span>
+        <span class="slider-val">{{ fadeInDuration() }}s</span>
+      </div>
+      <input
+        type="range"
+        min="0"
+        max="3.0"
+        step="0.1"
+        [ngModel]="fadeInDuration()"
+        (ngModelChange)="fadeInDuration.set($event)"
+      />
+    </div>
+
+    <div class="slider-item">
+      <div class="slider-label-row">
+        <span>Fade Out curve</span>
+        <span class="slider-val">{{ fadeOutDuration() }}s</span>
+      </div>
+      <input
+        type="range"
+        min="0"
+        max="3.0"
+        step="0.1"
+        [ngModel]="fadeOutDuration()"
+        (ngModelChange)="fadeOutDuration.set($event)"
+      />
+    </div>
+  </div>
+
+  }
+
+  <!-- Audio Preview player if exported -->
+  @if (exportedUrl(); as url) {
+    <div class="export-preview-row">
+      <audio controls [src]="url" class="minimal-audio-player"></audio>
+      <span class="export-size-badge">{{ exportedSize() }}</span>
+    </div>
+  }
+
+    </aside>
+    <section class="editor-stage" aria-label="Canvas workspace">
+  <!-- Inner Zone (Waveform Canvas or Dropzone) -->
+  <div class="inner-dropzone-container" (dragover)="$event.preventDefault()" (drop)="onDropFile($event)">
+    @if (!hasAudio()) {
+      <div class="empty-dropzone" (click)="fileInput.click()">
+        <div class="box-arrow-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+          </svg>
+        </div>
+
+        <h3 class="dropzone-title">Choose an audio file or drop here</h3>
+        <p class="dropzone-sub">MP3, WAV, FLAC, OGG or M4A. Trim, slice, and fade audio locally.</p>
+
+        <div class="dropzone-actions" (click)="$event.stopPropagation()">
+          <button class="btn-primary-blue" (click)="fileInput.click()">Choose audio file</button>
+          <button
+            class="btn-secondary-dark"
+            [class.mic-active]="isRecordingMic()"
+            (click)="toggleMicRecording()"
+          >
+            {{ isRecordingMic() ? 'Stop Recording' : 'Record Mic' }}
+          </button>
+        </div>
+
+        <span class="dropzone-fine">Lossless 16-bit PCM WAV encoder &bull; Zero server upload</span>
+      </div>
+    } @else {
+      <!-- Active Waveform Stage -->
+      <div class="active-audio-stage">
+        <!-- Top Track Bar -->
+        <div class="track-header-bar">
+          <div class="track-name-group">
+            <span class="track-note">🎵</span>
+            <span class="track-filename">{{ audioName() }}</span>
+            <span class="track-pill">{{ formatTime(audioDuration()) }}</span>
+          </div>
+
+          <div class="track-bar-actions">
+            <button class="btn-ghost-dark" (click)="fileInput.click()">Change Audio</button>
+          </div>
+        </div>
+
+        <!-- Canvas Waveform -->
+        <div class="waveform-viewport" (mouseleave)="onWaveformMouseUp()">
+          @if (isLoading()) {
+            <div class="loading-curtain">
+              <div class="mini-spinner"></div>
+              <span>Decoding audio stream...</span>
+            </div>
+          }
+
+          <canvas
+            #waveformCanvas
+            class="waveform-canvas-el"
+            (mousedown)="onWaveformMouseDown($event)"
+            (mousemove)="onWaveformMouseMove($event)"
+            (mouseup)="onWaveformMouseUp()"
+          ></canvas>
+        </div>
+
+        <!-- Transport & Timing Row -->
+        <div class="waveform-controls-row">
+          <div class="transport-buttons">
+            <button class="btn-play-action" (click)="togglePlayPause()" title="Play selection">
+              @if (isPlaying()) {
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                Pause
+              } @else {
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Play Selection
+              }
+            </button>
+
+            <button class="btn-ghost-dark" (click)="playFull()">Play Full</button>
+
+            <button
+              class="btn-ghost-dark"
+              [class.active-pill]="isLooping()"
+              (click)="isLooping.set(!isLooping())"
+            >
+              Loop
+            </button>
+
+            <button class="btn-ghost-dark" (click)="stopPlayback()">Stop</button>
+          </div>
+
+          <div class="timing-badges">
+            <div class="time-item">
+              <span class="time-dim">Start:</span>
+              <span class="time-bold green">{{ formatTime(trimStart()) }}</span>
+              <button class="btn-tiny" (click)="setStartAtPlayhead()">At Cursor</button>
+            </div>
+            <div class="time-item">
+              <span class="time-dim">End:</span>
+              <span class="time-bold red">{{ formatTime(trimEnd()) }}</span>
+              <button class="btn-tiny" (click)="setEndAtPlayhead()">At Cursor</button>
+            </div>
+            <div class="time-item">
+              <span class="time-dim">Duration:</span>
+              <span class="time-bold highlight">{{ formatTime(selectionDuration()) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <input #fileInput type="file" accept="audio/*" (change)="onFileSelected($event)" style="display: none" />
+  </div>
+
+    </section>
+  </div>
+  <!-- Card Footer -->
+  <div class="card-footer">
+    <div class="footer-status-text">
+      @if (hasAudio()) {
+        <span>{{ audioName() }} &bull; Selected {{ formatTime(selectionDuration()) }}</span>
+      } @else {
+        <span>Choose an audio file to get started.</span>
+      }
+    </div>
+
+    <div class="footer-actions-group">
+      <button
+        class="btn-primary-blue"
+        [disabled]="!hasAudio() || isLoading()"
+        (click)="exportAndDownload()"
+      >
+        Export & save WAV &rarr;
+      </button>
+    </div>
+  </div>
+</div>

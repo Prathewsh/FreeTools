@@ -1,0 +1,91 @@
+<div class="simple-tool-card">
+  <!-- Card Header -->
+  <div class="card-header">
+    <span class="card-title">Extract color palette & eyedropper</span>
+    <div class="device-badge">
+      <span class="green-dot"></span>
+      <span>Files stay on your device</span>
+    </div>
+  </div>
+
+  <div class="editor-layout">
+    <aside class="editor-options" aria-label="Tool options">
+      <div class="options-heading">TOOL OPTIONS <span>Adjust & refine</span></div>
+
+      @if (!hasImage()) { <p class="options-hint">Upload an image to explore its dominant colors.</p> }
+  <!-- Swatches Grid (Matching Reference UI) -->
+  @if (hasImage()) {
+  <div class="palette-swatches-card">
+    <div class="swatches-header">
+      <span class="config-label">Dominant color palette</span>
+      @if (copiedColor()) {
+        <span class="copied-badge">Copied {{ copiedColor() }} to clipboard!</span>
+      }
+    </div>
+
+    <div class="minimal-swatches-row">
+      @for (color of colors(); track color) {
+        <div class="swatch-pill" (click)="copyHex(color)" title="Click to copy {{ color }}">
+          <div class="swatch-box" [style.backgroundColor]="color"></div>
+          <span class="swatch-code">{{ color }}</span>
+        </div>
+      }
+    </div>
+
+    <div
+      class="gradient-preview-line mt-2"
+      [style.background]="'linear-gradient(90deg, ' + colors().join(', ') + ')'"
+    ></div>
+  </div>
+
+  }
+
+    </aside>
+    <section class="editor-stage" aria-label="Canvas workspace">
+  <!-- Inner Zone (Canvas or Dropzone) -->
+  <div class="inner-dropzone-container" (dragover)="$event.preventDefault()" (drop)="onDropFile($event)">
+    @if (!hasImage()) {
+      <div class="empty-dropzone" (click)="fileInput.click()">
+        <h3 class="dropzone-title">Choose an image or drop here</h3>
+        <p class="dropzone-sub">Extract a color palette and pick colors from your image.</p>
+        <div class="dropzone-actions" (click)="$event.stopPropagation()">
+          <button class="btn-primary-blue" [disabled]="isLoading()" (click)="fileInput.click()">{{ isLoading() ? 'Loading image...' : 'Choose image file' }}</button>
+        </div>
+        <span class="dropzone-fine">PNG, JPG, WebP &bull; Files stay on your device</span>
+      </div>
+    }
+    <div class="active-palette-stage" [style.display]="hasImage() ? null : 'none'">
+      <div class="stage-sub-bar">
+        <span class="palette-tip">Click anywhere on the image to sample the exact pixel HEX</span>
+        <div class="stage-sub-actions">
+          <button class="btn-ghost-dark" (click)="fileInput.click()">Upload image</button>
+        </div>
+      </div>
+
+      <div class="canvas-viewport crosshair">
+        <canvas #paletteCanvas class="fitted-canvas" (click)="handleCanvasClick($event)"></canvas>
+      </div>
+    </div>
+
+    <input #fileInput type="file" accept="image/*" (change)="onFileSelected($event)" style="display: none" />
+  </div>
+
+    </section>
+  </div>
+  <!-- Card Footer -->
+  <div class="card-footer">
+    <div class="footer-status-text">
+      @if (pickedPixelColor(); as hex) {
+        <span>Sampled color: <b [style.color]="hex">{{ hex }}</b></span>
+      } @else {
+        <span>{{ hasImage() ? 'Click any color swatch to copy HEX code to clipboard.' : 'Choose an image to get started.' }}</span>
+      }
+    </div>
+
+    <div class="footer-actions-group">
+      <button class="btn-primary-blue" (click)="fileInput.click()">
+        Upload photo &rarr;
+      </button>
+    </div>
+  </div>
+</div>
