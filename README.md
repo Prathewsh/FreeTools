@@ -194,7 +194,7 @@ Found a bug or want a specific tool added?
 
 ## Contributing
 
-Contributions and community-built tools are welcome.
+Contributions and community-built tools are welcome. Please read our [Contributing Guide](CONTRIBUTING.md) for development setup, PR guidelines, and tool creation rules.
 
 1. Fork the repository.
 2. Create your feature branch (`git checkout -b feature/my-new-tool`).
@@ -206,6 +206,12 @@ Contributions and community-built tools are welcome.
 
 ---
 
+## Code of Conduct
+
+We are committed to providing a welcoming, inclusive, and harassment-free community. By participating, you agree to uphold our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+---
+
 ## License
 
-This project is licensed under the MIT License. Free for personal and commercial use.
+This project is licensed under the MIT License. Free for personal and commercial use. See [LICENSE](LICENSE) for details.
