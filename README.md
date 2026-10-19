@@ -8,6 +8,8 @@ I got tired of searching for simple tools online only to deal with the same frus
 
 So I decided to build the toolkit I actually wanted and give it away for free. No signups, no subscriptions, no tracking, and no server uploads, everything executes directly in your browser.
 
+This is just the beginning. I'll keep building and adding more tools to replace every bloated, paywalled utility out there.
+
 ---
 
 ## Features
