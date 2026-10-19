@@ -1,0 +1,94 @@
+<div class="simple-tool-card">
+  <div class="card-header">
+    <span class="card-title">Basic video editor</span>
+    <div class="device-badge"><span class="green-dot"></span><span>Video stays on your device</span></div>
+  </div>
+
+  <div class="editor-layout">
+    <aside class="editor-options" aria-label="Video editing options">
+      <div class="options-heading">VIDEO OPTIONS <span>Trim, transform & export</span></div>
+      @if (!hasVideo()) {
+        <p class="options-hint">Open a video to reveal trimming and playback controls.</p>
+      } @else {
+        <section class="option-section">
+          <div class="section-heading"><span>Trim clip</span><strong>{{ formatTime(selectionDuration()) }}</strong></div>
+          <label>Start <span>{{ formatTime(trimStart()) }}</span>
+            <input type="range" min="0" [max]="duration()" step="0.05" [ngModel]="trimStart()" (ngModelChange)="updateTrimStart($event)" />
+          </label>
+          <label>End <span>{{ formatTime(trimEnd()) }}</span>
+            <input type="range" min="0" [max]="duration()" step="0.05" [ngModel]="trimEnd()" (ngModelChange)="updateTrimEnd($event)" />
+          </label>
+          <div class="two-buttons"><button class="btn-ghost-dark" (click)="setStartAtPlayhead()">Start at cursor</button><button class="btn-ghost-dark" (click)="setEndAtPlayhead()">End at cursor</button></div>
+        </section>
+
+        <section class="option-section">
+          <div class="section-heading"><span>Playback</span></div>
+          <label>Volume <span>{{ muted() ? 'Muted' : (volume() * 100).toFixed(0) + '%' }}</span>
+            <input type="range" min="0" max="1" step="0.05" [ngModel]="volume()" (ngModelChange)="volume.set($event); applyPlaybackSettings()" />
+          </label>
+          <label>Preview speed
+            <select [ngModel]="playbackRate()" (ngModelChange)="playbackRate.set($event); applyPlaybackSettings()">
+              <option [ngValue]="0.5">0.5× Slow</option><option [ngValue]="1">1× Normal</option><option [ngValue]="1.5">1.5× Fast</option><option [ngValue]="2">2× Faster</option>
+            </select>
+          </label>
+          <label class="check-row"><input type="checkbox" [ngModel]="muted()" (ngModelChange)="muted.set($event); applyPlaybackSettings()" /> Mute exported video</label>
+        </section>
+
+        <section class="option-section">
+          <div class="section-heading"><span>Transform</span><strong>{{ rotation() }}°</strong></div>
+          <div class="transform-grid">
+            <button (click)="rotate()">↻ Rotate</button>
+            <button [class.active]="flipHorizontal()" (click)="flipHorizontal.set(!flipHorizontal())">⇄ Flip H</button>
+            <button [class.active]="flipVertical()" (click)="flipVertical.set(!flipVertical())">⇅ Flip V</button>
+            <button (click)="resetEdits()">Reset</button>
+          </div>
+        </section>
+
+        <div class="export-note">Export renders the selected clip in real time as WebM. Keep this tab active until it finishes.</div>
+      }
+    </aside>
+
+    <section class="editor-stage">
+      <div class="inner-dropzone-container" (dragover)="$event.preventDefault()" (drop)="onDrop($event)">
+        @if (!hasVideo()) {
+          <div class="empty-dropzone" (click)="fileInput.click()">
+            <div class="box-arrow-icon">▶</div>
+            <h3 class="dropzone-title">Choose a video or drop it here</h3>
+            <p class="dropzone-sub">Trim, preview, rotate, flip, capture frames, and export locally.</p>
+            <div class="dropzone-actions"><button class="btn-primary-blue" (click)="fileInput.click(); $event.stopPropagation()">Choose video file</button></div>
+            <span class="dropzone-fine">MP4, WebM and browser-supported formats · No upload</span>
+          </div>
+        } @else {
+          <div class="active-video-stage">
+            <div class="stage-sub-bar">
+              <div class="video-file"><strong>{{ fileName() }}</strong><span>{{ formatBytes(fileSize()) }} · {{ formatTime(duration()) }}</span></div>
+              <button class="btn-ghost-dark" (click)="fileInput.click()">Change video</button>
+            </div>
+            <div class="video-viewport">
+              <video #videoPlayer [src]="videoUrl()" playsinline (loadedmetadata)="onMetadataLoaded()" (timeupdate)="onTimeUpdate()" (play)="onPlayState(true)" (pause)="onPlayState(false)" [style.transform]="transformStyle()"></video>
+              @if (isExporting()) {
+                <div class="export-overlay"><span>Rendering {{ exportProgress().toFixed(0) }}%</span><div><i [style.width.%]="exportProgress()"></i></div></div>
+              }
+            </div>
+            <div class="transport-row">
+              <button class="play-button" (click)="togglePlayback()">{{ isPlaying() ? '❚❚ Pause' : '▶ Play clip' }}</button>
+              <input class="seek" type="range" min="0" [max]="duration()" step="0.02" [ngModel]="currentTime()" (ngModelChange)="seek($event)" />
+              <span>{{ formatTime(currentTime()) }}</span>
+            </div>
+          </div>
+        }
+        <input #fileInput type="file" accept="video/*" (change)="onFileSelected($event)" hidden />
+      </div>
+      @if (errorMessage()) { <div class="video-message error">{{ errorMessage() }}</div> }
+      @if (statusMessage()) { <div class="video-message">{{ statusMessage() }}</div> }
+    </section>
+  </div>
+
+  <div class="card-footer">
+    <div class="footer-status-text">@if (hasVideo()) { <span>Selection: {{ formatTime(selectionDuration()) }} · Local browser rendering</span> } @else { <span>Choose a video to get started.</span> }</div>
+    <div class="footer-actions-group">
+      <button class="btn-ghost-dark" [disabled]="!hasVideo()" (click)="captureFrame()">Capture frame</button>
+      <button class="btn-primary-blue" [disabled]="!hasVideo() || isExporting()" (click)="exportVideo()">{{ isExporting() ? 'Rendering…' : 'Export trimmed WebM' }}</button>
+    </div>
+  </div>
+</div>

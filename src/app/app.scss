@@ -22,5 +22,6 @@
  .studio-body { flex-direction: column; }
  .tool-rail { width: 100%; flex-direction: row; padding: 8px; justify-content: space-around; gap: 2px; border-right: 0; border-bottom: 1px solid #303137; }
  .rail-heading, .rail-bottom { display: none; }
- .rail-tool { min-height: 56px; width: auto; flex: 1; font-size: 9px; }
+ .tool-rail { overflow-x: auto; justify-content: flex-start; }
+ .rail-tool { min-width: 66px; min-height: 56px; width: auto; flex: 1; font-size: 9px; }
 }

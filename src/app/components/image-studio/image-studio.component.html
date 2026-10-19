@@ -10,14 +10,18 @@
 
   <div class="editor-layout">
     <aside class="editor-options" aria-label="Tool options">
-      <div class="options-heading">TOOL OPTIONS <span>Adjust & refine</span></div>
+      <div class="sidebar-intro">
+        <span class="sidebar-kicker">IMAGE STUDIO</span>
+        <strong>Adjust & refine</strong>
+        <span>Choose a tool, make your changes, then export.</span>
+      </div>
 @if (hasImage()) {
           <div class="editor-tool-picker">
-            <button [class.active]="activeSubTool() === 'crop'" (click)="activeSubTool.set('crop')">Crop & Aspect</button>
-            <button [class.active]="activeSubTool() === 'resize'" (click)="activeSubTool.set('resize')">Resize</button>
-            <button [class.active]="activeSubTool() === 'rotate'" (click)="activeSubTool.set('rotate')">Rotate & Flip</button>
-            <button [class.active]="activeSubTool() === 'filters'" (click)="activeSubTool.set('filters')">Filters</button>
-            <button [class.active]="activeSubTool() === 'watermark'" (click)="activeSubTool.set('watermark'); renderPreview()">Watermark</button>
+            <button [class.active]="activeSubTool() === 'crop'" (click)="activeSubTool.set('crop')"><span aria-hidden="true">⌗</span>Crop</button>
+            <button [class.active]="activeSubTool() === 'resize'" (click)="activeSubTool.set('resize')"><span aria-hidden="true">↗</span>Resize</button>
+            <button [class.active]="activeSubTool() === 'rotate'" (click)="activeSubTool.set('rotate')"><span aria-hidden="true">↻</span>Rotate</button>
+            <button [class.active]="activeSubTool() === 'filters'" (click)="activeSubTool.set('filters')"><span aria-hidden="true">◐</span>Adjust</button>
+            <button [class.active]="activeSubTool() === 'watermark'" (click)="activeSubTool.set('watermark'); renderPreview()"><span aria-hidden="true">T</span>Mark</button>
           </div>
 }
       @if (!hasImage()) { <p class="options-hint">Upload an image to crop, resize, rotate, and adjust its appearance.</p> }
@@ -26,20 +30,25 @@
     <div class="subtool-context-panel">
       <!-- CROP CONTROLS -->
       @if (activeSubTool() === 'crop') {
-        <div class="context-row">
-          <div class="pill-group">
-            <span class="sub-label">Preset:</span>
-            <button class="mini-chip" [class.active]="cropRatio() === 'free'" (click)="setCropRatio('free')">Free</button>
-            <button class="mini-chip" [class.active]="cropRatio() === '1:1'" (click)="setCropRatio('1:1')">1:1 Square</button>
-            <button class="mini-chip" [class.active]="cropRatio() === '16:9'" (click)="setCropRatio('16:9')">16:9 Widescreen</button>
-            <button class="mini-chip" [class.active]="cropRatio() === '4:3'" (click)="setCropRatio('4:3')">4:3 Standard</button>
-            <button class="mini-chip" [class.active]="cropRatio() === '9:16'" (click)="setCropRatio('9:16')">9:16 Story</button>
-            <button class="mini-chip" [class.active]="cropRatio() === 'circle'" (click)="setCropRatio('circle')">Circle Avatar</button>
-          </div>
-
-          <div class="context-actions">
-            <button class="btn-ghost-dark" (click)="resetCropBox()">Reset Box</button>
-            <button class="btn-primary-blue" (click)="applyCrop()">Apply Crop</button>
+        <div class="control-stack">
+          <div class="section-title"><span>Crop settings</span><small>{{ cropBox().w }} × {{ cropBox().h }} px</small></div>
+          <label class="field-block">
+            <span>Aspect ratio</span>
+            <select [ngModel]="cropRatio()" (ngModelChange)="setCropRatio($event)">
+              <option value="free">Freeform</option>
+              <option value="1:1">1:1 · Square</option>
+              <option value="16:9">16:9 · Widescreen</option>
+              <option value="4:3">4:3 · Standard</option>
+              <option value="9:16">9:16 · Story</option>
+              <option value="3:2">3:2 · Photo</option>
+              <option value="2:3">2:3 · Portrait</option>
+              <option value="circle">Circle · Avatar</option>
+            </select>
+          </label>
+          <p class="control-tip">Drag the frame or its corner handles directly on the image.</p>
+          <div class="action-pair">
+            <button class="btn-ghost-dark" (click)="resetCropBox()">Reset</button>
+            <button class="btn-primary-blue" (click)="applyCrop()">Apply crop</button>
           </div>
         </div>
       }
@@ -50,14 +59,25 @@
           <div class="dimension-inputs-row">
             <div class="input-inline">
               <label>Width:</label>
-              <input type="number" [ngModel]="resizeWidth()" (ngModelChange)="onResizeWidthChange($event)" />
+              <input type="number" min="1" max="16384" [ngModel]="resizeWidth()" (ngModelChange)="onResizeWidthChange($event)" />
             </div>
             <button class="lock-aspect-btn" [class.locked]="lockAspectRatio()" (click)="lockAspectRatio.set(!lockAspectRatio())">
               🔗
             </button>
             <div class="input-inline">
               <label>Height:</label>
-              <input type="number" [ngModel]="resizeHeight()" (ngModelChange)="onResizeHeightChange($event)" />
+              <input type="number" min="1" max="16384" [ngModel]="resizeHeight()" (ngModelChange)="onResizeHeightChange($event)" />
+            </div>
+            <div class="input-inline">
+              <label>Scale:</label>
+              <select class="custom-select" [ngModel]="scalePercentage()" (ngModelChange)="onScalePercentageChange($event)">
+                <option [ngValue]="25">25%</option>
+                <option [ngValue]="50">50%</option>
+                <option [ngValue]="75">75%</option>
+                <option [ngValue]="100">100%</option>
+                <option [ngValue]="150">150%</option>
+                <option [ngValue]="200">200%</option>
+              </select>
             </div>
           </div>
 
@@ -65,6 +85,8 @@
             <button class="btn-ghost-dark" (click)="setPresetSize(1920, 1080)">1080p</button>
             <button class="btn-ghost-dark" (click)="setPresetSize(1280, 720)">720p</button>
             <button class="btn-ghost-dark" (click)="setPresetSize(512, 512)">512&times;512</button>
+            <button class="btn-ghost-dark" (click)="setPresetSize(1080, 1080)">Social square</button>
+            <button class="btn-ghost-dark" (click)="setPresetSize(1080, 1350)">Portrait post</button>
             <button class="btn-primary-blue" (click)="applyResize()">Apply Resize</button>
           </div>
         </div>
@@ -78,6 +100,10 @@
             <button class="btn-secondary-dark" (click)="rotate90CW()">↻ +90°</button>
             <button class="btn-secondary-dark" [class.active]="flipHorizontal()" (click)="toggleFlipH()">⇄ Flip H</button>
             <button class="btn-secondary-dark" [class.active]="flipVertical()" (click)="toggleFlipV()">⇅ Flip V</button>
+          </div>
+          <div class="slider-item">
+            <div class="slider-label-row"><span>Fine rotation</span><span>{{ rotationAngle() }}°</span></div>
+            <input type="range" min="-180" max="180" step="1" [ngModel]="rotationAngle()" (ngModelChange)="setRotation($event)" />
           </div>
 
           <div class="context-actions">
@@ -95,7 +121,35 @@
             <button class="mini-chip" (click)="applyFilterPreset('vintage')">Vintage</button>
             <button class="mini-chip" (click)="applyFilterPreset('dramatic')">Dramatic</button>
             <button class="mini-chip" (click)="applyFilterPreset('warm')">Warm</button>
+            <button class="mini-chip" (click)="applyFilterPreset('cold')">Cold</button>
             <button class="mini-chip" (click)="resetFilterValues()">Reset All</button>
+          </div>
+
+          <div class="sliders-row mt-2">
+            <div class="slider-item">
+              <div class="slider-label-row"><span>Exposure</span><span>{{ filters().exposure }}</span></div>
+              <input type="range" min="-100" max="100" [ngModel]="filters().exposure" (ngModelChange)="updateFilter('exposure', $event)"/>
+            </div>
+            <div class="slider-item">
+              <div class="slider-label-row"><span>Hue</span><span>{{ filters().hueRotate }}°</span></div>
+              <input type="range" min="0" max="360" [ngModel]="filters().hueRotate" (ngModelChange)="updateFilter('hueRotate', $event)"/>
+            </div>
+            <div class="slider-item">
+              <div class="slider-label-row"><span>Blur</span><span>{{ filters().blur }}px</span></div>
+              <input type="range" min="0" max="20" step="0.5" [ngModel]="filters().blur" (ngModelChange)="updateFilter('blur', $event)"/>
+            </div>
+            <div class="slider-item">
+              <div class="slider-label-row"><span>Sepia</span><span>{{ filters().sepia }}%</span></div>
+              <input type="range" min="0" max="100" [ngModel]="filters().sepia" (ngModelChange)="updateFilter('sepia', $event)"/>
+            </div>
+            <div class="slider-item">
+              <div class="slider-label-row"><span>Grayscale</span><span>{{ filters().grayscale }}%</span></div>
+              <input type="range" min="0" max="100" [ngModel]="filters().grayscale" (ngModelChange)="updateFilter('grayscale', $event)"/>
+            </div>
+            <div class="slider-item">
+              <div class="slider-label-row"><span>Invert</span><span>{{ filters().invert }}%</span></div>
+              <input type="range" min="0" max="100" [ngModel]="filters().invert" (ngModelChange)="updateFilter('invert', $event)"/>
+            </div>
           </div>
 
           <div class="sliders-row mt-2">
@@ -140,8 +194,18 @@
               <option value="bottom-left">Bottom Left</option>
               <option value="center">Center</option>
               <option value="top-right">Top Right</option>
+              <option value="top-left">Top Left</option>
               <option value="tile">Repeat Tile</option>
             </select>
+            <label class="input-inline">Size
+              <input type="number" min="8" max="240" [ngModel]="watermark().fontSize" (ngModelChange)="updateWatermark('fontSize', $event)" />
+            </label>
+            <label class="input-inline">Opacity
+              <input type="range" min="0.1" max="1" step="0.05" [ngModel]="watermark().opacity" (ngModelChange)="updateWatermark('opacity', $event)" />
+            </label>
+            <label class="custom-checkbox-label">
+              <input type="checkbox" [ngModel]="watermark().bold" (ngModelChange)="updateWatermark('bold', $event)" /> Bold
+            </label>
           </div>
 
           <div class="context-actions">
@@ -152,65 +216,46 @@
     </div>
   }
 
-  <!-- Format Radio Cards & Quality Dropdown (matching reference UI) -->
-  <div class="config-grid">
-    <!-- Left: Format Radio Cards -->
-    <div class="config-col">
-      <label class="config-label">Export format</label>
-      <div class="radio-cards-row">
-        <div
-          class="radio-card"
+  <div class="export-panel">
+    <div class="section-title">
+      <span>Export</span>
+      <small>{{ estimatedSize() }}</small>
+    </div>
+    <div class="export-format-grid" aria-label="Export format">
+        <button
+          class="format-option"
           [class.selected]="exportFormat() === 'image/webp'"
           (click)="exportFormat.set('image/webp'); calculateEstimatedSize()"
         >
-          <div class="radio-circle">
-            <div class="radio-inner" *ngIf="exportFormat() === 'image/webp'"></div>
-          </div>
-          <span class="card-name">WEBP (Compact)</span>
-          <span class="card-badge">.webp</span>
-        </div>
+          <strong>WebP</strong><span>Smallest</span>
+        </button>
 
-        <div
-          class="radio-card"
+        <button
+          class="format-option"
           [class.selected]="exportFormat() === 'image/jpeg'"
           (click)="exportFormat.set('image/jpeg'); calculateEstimatedSize()"
         >
-          <div class="radio-circle">
-            <div class="radio-inner" *ngIf="exportFormat() === 'image/jpeg'"></div>
-          </div>
-          <span class="card-name">JPEG (Standard)</span>
-          <span class="card-badge">.jpg</span>
-        </div>
+          <strong>JPEG</strong><span>Universal</span>
+        </button>
 
-        <div
-          class="radio-card"
+        <button
+          class="format-option"
           [class.selected]="exportFormat() === 'image/png'"
           (click)="exportFormat.set('image/png'); calculateEstimatedSize()"
         >
-          <div class="radio-circle">
-            <div class="radio-inner" *ngIf="exportFormat() === 'image/png'"></div>
-          </div>
-          <span class="card-name">PNG (Lossless)</span>
-          <span class="card-badge">.png</span>
-        </div>
-      </div>
+          <strong>PNG</strong><span>Lossless</span>
+        </button>
     </div>
 
-    <!-- Right: Quality Dropdown -->
-    <div class="config-col">
-      <label class="config-label">Save quality & compression</label>
-      <select
-        class="custom-select"
-        [ngModel]="exportQuality()"
-        (ngModelChange)="exportQuality.set($event); calculateEstimatedSize()"
-      >
-        <option [value]="0.92">92% &bull; Ultra High Quality</option>
-        <option [value]="0.85">85% &bull; Balanced Optimal (Recommended)</option>
-        <option [value]="0.75">75% &bull; High Compression (Small size)</option>
-        <option [value]="0.60">60% &bull; Maximum Compression</option>
-      </select>
-      <span class="config-helper">Estimated size: {{ estimatedSize() }} &bull; Direct in-memory download</span>
-    </div>
+    @if (exportFormat() !== 'image/png') {
+      <div class="quality-control">
+        <div class="quality-label"><span>Quality</span><strong>{{ Math.round(exportQuality() * 100) }}%</strong></div>
+        <input type="range" min="0.4" max="1" step="0.05" [ngModel]="exportQuality()" (ngModelChange)="exportQuality.set($event); calculateEstimatedSize()" />
+        <div class="range-hints"><span>Smaller file</span><span>Best quality</span></div>
+      </div>
+    } @else {
+      <p class="lossless-note">PNG is exported losslessly and preserves transparency.</p>
+    }
   </div>
 
     </aside>

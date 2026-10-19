@@ -24,6 +24,101 @@ export interface BackdropConfig {
 export class BackgroundRemoverService {
   constructor() {}
 
+  private colorDistance(
+    a: { r: number; g: number; b: number },
+    b: { r: number; g: number; b: number }
+  ): number {
+    // Red-mean distance tracks perceived color difference better than raw RGB.
+    const redMean = (a.r + b.r) / 2;
+    const dr = a.r - b.r;
+    const dg = a.g - b.g;
+    const db = a.b - b.b;
+    return Math.sqrt(
+      (2 + redMean / 256) * dr * dr +
+      4 * dg * dg +
+      (2 + (255 - redMean) / 256) * db * db
+    );
+  }
+
+  private detectBackgroundColors(
+    data: Uint8ClampedArray,
+    width: number,
+    height: number
+  ): { r: number; g: number; b: number }[] {
+    interface Cluster {
+      r: number;
+      g: number;
+      b: number;
+      count: number;
+      sides: Set<number>;
+      centerHits: number;
+    }
+
+    const clusters: Cluster[] = [];
+    const sample = (x: number, y: number, side: number) => {
+      const offset = (y * width + x) * 4;
+      if (data[offset + 3] < 24) return;
+      const color = { r: data[offset], g: data[offset + 1], b: data[offset + 2] };
+      let cluster = clusters.find((candidate) => this.colorDistance(candidate, color) < 42);
+      if (!cluster) {
+        cluster = { ...color, count: 0, sides: new Set<number>(), centerHits: 0 };
+        clusters.push(cluster);
+      }
+      cluster.count++;
+      cluster.sides.add(side);
+      const weight = 1 / cluster.count;
+      cluster.r += (color.r - cluster.r) * weight;
+      cluster.g += (color.g - cluster.g) * weight;
+      cluster.b += (color.b - cluster.b) * weight;
+    };
+
+    const stepX = Math.max(1, Math.floor(width / 80));
+    const stepY = Math.max(1, Math.floor(height / 80));
+    for (let x = 0; x < width; x += stepX) {
+      sample(x, 0, 0);
+      sample(x, height - 1, 2);
+    }
+    for (let y = 0; y < height; y += stepY) {
+      sample(0, y, 3);
+      sample(width - 1, y, 1);
+    }
+
+    // A cluster common in the center is probably the subject touching an edge.
+    const centerStepX = Math.max(1, Math.floor(width / 16));
+    const centerStepY = Math.max(1, Math.floor(height / 16));
+    for (let y = Math.floor(height * 0.25); y <= height * 0.75; y += centerStepY) {
+      for (let x = Math.floor(width * 0.25); x <= width * 0.75; x += centerStepX) {
+        const offset = (y * width + x) * 4;
+        const color = { r: data[offset], g: data[offset + 1], b: data[offset + 2] };
+        const nearest = clusters
+          .map((cluster) => ({ cluster, distance: this.colorDistance(cluster, color) }))
+          .sort((a, b) => a.distance - b.distance)[0];
+        if (nearest && nearest.distance < 42) nearest.cluster.centerHits++;
+      }
+    }
+
+    const ranked = clusters
+      .map((cluster) => ({
+        cluster,
+        score: cluster.count * (1 + cluster.sides.size * 0.35) / (1 + cluster.centerHits * 0.9)
+      }))
+      .sort((a, b) => b.score - a.score);
+
+    if (!ranked.length) return [{ r: 255, g: 255, b: 255 }];
+    const bestScore = ranked[0].score;
+    const selected = ranked
+      .filter(({ cluster, score }) => score >= bestScore * 0.55 && cluster.sides.size >= 2)
+      .slice(0, 3)
+      .map(({ cluster }) => ({
+        r: Math.round(cluster.r),
+        g: Math.round(cluster.g),
+        b: Math.round(cluster.b)
+      }));
+    if (selected.length) return selected;
+    const fallback = ranked[0].cluster;
+    return [{ r: Math.round(fallback.r), g: Math.round(fallback.g), b: Math.round(fallback.b) }];
+  }
+
   removeBackground(
     source: HTMLImageElement | HTMLCanvasElement,
     options: BgRemoveOptions,
@@ -46,29 +141,13 @@ export class BackgroundRemoverService {
     if (options.sampleColor) {
       bgColors.push(options.sampleColor);
     } else {
-      // Auto-sample 4 corners + 4 edge centers for robust background detection
-      const sampleIndices = [
-        0,                                   // Top-left
-        (w - 1) * 4,                         // Top-right
-        ((h - 1) * w) * 4,                   // Bottom-left
-        ((h - 1) * w + (w - 1)) * 4,         // Bottom-right
-        Math.floor(w / 2) * 4,               // Top-center
-        ((h - 1) * w + Math.floor(w / 2)) * 4, // Bottom-center
-        (Math.floor(h / 2) * w) * 4,         // Left-center
-        (Math.floor(h / 2) * w + (w - 1)) * 4 // Right-center
-      ];
-
-      for (const idx of sampleIndices) {
-        bgColors.push({
-          r: data[idx],
-          g: data[idx + 1],
-          b: data[idx + 2]
-        });
-      }
+      bgColors = this.detectBackgroundColors(data, w, h);
     }
 
-    const toleranceThreshold = (options.tolerance / 100) * 441.67; // max distance in RGB space = sqrt(255^2 * 3) ~ 441.67
-    const featherRange = Math.max(1, (options.feather / 100) * 120);
+    // Keep the UI's percentage intuitive without letting a normal value erase
+    // broad ranges of foreground colors.
+    const toleranceThreshold = 12 + options.tolerance * 1.55;
+    const featherRange = Math.max(1, options.feather * 3.25);
 
     // Alpha mask buffer
     const alphaMask = new Uint8Array(w * h);
@@ -82,7 +161,7 @@ export class BackgroundRemoverService {
       let minDistance = 9999;
       for (let i = 0; i < bgColors.length; i++) {
         const bg = bgColors[i];
-        const dist = Math.hypot(r - bg.r, g - bg.g, b - bg.b);
+        const dist = this.colorDistance({ r, g, b }, bg);
         if (dist < minDistance) minDistance = dist;
       }
       return minDistance;
@@ -96,7 +175,8 @@ export class BackgroundRemoverService {
       let qHead = 0;
       let qTail = 0;
 
-      // Seed outer image edges into the queue
+      // Only seed pixels that resemble the detected background. Subject colors
+      // touching an edge can no longer become background samples by themselves.
       for (let x = 0; x < w; x++) {
         // Top edge
         const topIdx = x;
@@ -149,29 +229,52 @@ export class BackgroundRemoverService {
         }
       }
 
-      // Construct alpha mask with feathering along the boundary
+      // Construct a hard connected mask first. Feathering is applied by pixel
+      // distance below, so similarly colored subject details stay intact.
       for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
           const idx = y * w + x;
-          if (isBackground[idx] === 1) {
-            alphaMask[idx] = 0;
-          } else {
-            const dist = getBgDistance(idx * 4);
-            if (dist <= toleranceThreshold + featherRange) {
-              const hasBgNeighbor =
-                (x > 0 && isBackground[idx - 1] === 1) ||
-                (x < w - 1 && isBackground[idx + 1] === 1) ||
-                (y > 0 && isBackground[idx - w] === 1) ||
-                (y < h - 1 && isBackground[idx + w] === 1);
+          alphaMask[idx] = isBackground[idx] === 1 ? 0 : 255;
+        }
+      }
 
-              if (hasBgNeighbor) {
-                const alpha = Math.round(((dist - toleranceThreshold) / featherRange) * 255);
-                alphaMask[idx] = Math.max(0, Math.min(255, alpha));
-              } else {
-                alphaMask[idx] = 255;
-              }
-            } else {
-              alphaMask[idx] = 255;
+      const featherPixels = Math.min(20, Math.max(0, Math.round(options.feather)));
+      if (featherPixels > 0) {
+        const edgeQueue = new Int32Array(totalPixels);
+        const distances = new Int16Array(totalPixels);
+        distances.fill(-1);
+        let edgeHead = 0;
+        let edgeTail = 0;
+
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            const idx = y * w + x;
+            if (isBackground[idx]) continue;
+            const touchesBackground =
+              (x > 0 && isBackground[idx - 1] === 1) ||
+              (x < w - 1 && isBackground[idx + 1] === 1) ||
+              (y > 0 && isBackground[idx - w] === 1) ||
+              (y < h - 1 && isBackground[idx + w] === 1);
+            if (touchesBackground) {
+              distances[idx] = 1;
+              edgeQueue[edgeTail++] = idx;
+            }
+          }
+        }
+
+        while (edgeHead < edgeTail) {
+          const idx = edgeQueue[edgeHead++];
+          const distance = distances[idx];
+          alphaMask[idx] = Math.round(255 * distance / (featherPixels + 1));
+          if (distance >= featherPixels) continue;
+          const x = idx % w;
+          const neighbors = [idx - w, idx + w, idx - 1, idx + 1];
+          for (let n = 0; n < neighbors.length; n++) {
+            const next = neighbors[n];
+            const horizontalWrap = n >= 2 && Math.abs((next % w) - x) !== 1;
+            if (next >= 0 && next < totalPixels && !horizontalWrap && !isBackground[next] && distances[next] === -1) {
+              distances[next] = distance + 1;
+              edgeQueue[edgeTail++] = next;
             }
           }
         }
@@ -192,14 +295,6 @@ export class BackgroundRemoverService {
 
           alphaMask[idx] = alpha;
         }
-      }
-    }
-
-    // Apply custom touchup mask overrides if provided
-    if (customMask && customMask.length === alphaMask.length) {
-      for (let i = 0; i < alphaMask.length; i++) {
-        if (customMask[i] === 1) alphaMask[i] = 255; // Keep forced
-        else if (customMask[i] === 2) alphaMask[i] = 0; // Erase forced
       }
     }
 
@@ -224,6 +319,14 @@ export class BackgroundRemoverService {
       }
       for (let i = 0; i < alphaMask.length; i++) {
         alphaMask[i] = smoothed[i];
+      }
+    }
+
+    // Apply manual edits last so smoothing cannot weaken explicit keep/erase strokes.
+    if (customMask && customMask.length === alphaMask.length) {
+      for (let i = 0; i < alphaMask.length; i++) {
+        if (customMask[i] === 1) alphaMask[i] = 255;
+        else if (customMask[i] === 2) alphaMask[i] = 0;
       }
     }
 

@@ -4,10 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { BgRemoverComponent } from './components/bg-remover/bg-remover.component';
 import { ImageStudioComponent } from './components/image-studio/image-studio.component';
 import { AudioCutterComponent } from './components/audio-cutter/audio-cutter.component';
+import { VideoEditorComponent } from './components/video-editor/video-editor.component';
 import { BatchConverterComponent } from './components/batch-converter/batch-converter.component';
 import { ColorPaletteComponent } from './components/color-palette/color-palette.component';
+import { JsonFormatterComponent } from './components/json-formatter/json-formatter.component';
 
-export type ToolTab = 'bg-remover' | 'image-studio' | 'audio-cutter' | 'batch-converter' | 'color-palette';
+export type ToolTab = 'bg-remover' | 'image-studio' | 'video-editor' | 'audio-cutter' | 'batch-converter' | 'color-palette' | 'json-formatter';
 
 interface ToolItem {
   id: ToolTab;
@@ -26,9 +28,11 @@ interface ToolItem {
     FormsModule,
     BgRemoverComponent,
     ImageStudioComponent,
+    VideoEditorComponent,
     AudioCutterComponent,
     BatchConverterComponent,
-    ColorPaletteComponent
+    ColorPaletteComponent,
+    JsonFormatterComponent
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss'
@@ -56,6 +60,14 @@ export class App {
       icon: 'image'
     },
     {
+      id: 'video-editor',
+      title: 'Basic Video Editor',
+      category: 'Video Tools',
+      badge: 'Trim & Export',
+      description: 'Trim, rotate, flip, preview, and export video locally.',
+      icon: 'video'
+    },
+    {
       id: 'audio-cutter',
       title: 'Audio Cutter & Sound Lab',
       category: 'Audio Tools',
@@ -78,6 +90,14 @@ export class App {
       badge: 'Hex & HSL',
       description: 'Extract dominant color schemes from any graphic.',
       icon: 'palette'
+    },
+    {
+      id: 'json-formatter',
+      title: 'JSON Formatter & Viewer',
+      category: 'Developer Tools',
+      badge: 'Format & Validate',
+      description: 'Beautify, validate, minify, search, and inspect JSON trees.',
+      icon: 'braces'
     }
   ];
 

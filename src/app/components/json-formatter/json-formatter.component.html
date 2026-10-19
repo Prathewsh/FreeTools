@@ -1,0 +1,94 @@
+<div class="simple-tool-card json-tool">
+  <div class="card-header">
+    <span class="card-title">JSON formatter & viewer</span>
+    <div class="device-badge"><span class="green-dot"></span><span>Data stays on your device</span></div>
+  </div>
+
+  <div class="json-toolbar">
+    <div class="toolbar-primary">
+      <button class="btn-primary-blue" (click)="format()">Format JSON</button>
+      <button class="btn-secondary-dark" (click)="validate()">Validate</button>
+      <button class="btn-secondary-dark" (click)="minify()">Minify</button>
+    </div>
+    <div class="toolbar-options">
+      <label>Indent
+        <select [ngModel]="indentSize()" (ngModelChange)="indentSize.set($event); outputText() && format()">
+          <option [ngValue]="2">2 spaces</option>
+          <option [ngValue]="3">3 spaces</option>
+          <option [ngValue]="4">4 spaces</option>
+        </select>
+      </label>
+      <label class="sort-toggle"><input type="checkbox" [ngModel]="sortKeys()" (ngModelChange)="sortKeys.set($event)" /> Sort keys</label>
+      <input #jsonFileInput type="file" accept="application/json,.json" (change)="onFileSelected($event)" hidden />
+      <button class="btn-ghost-dark" (click)="jsonFileInput.click()">Open file</button>
+      <button class="btn-ghost-dark" (click)="loadSample()">Sample</button>
+      <button class="btn-ghost-dark danger" (click)="clear()">Clear</button>
+    </div>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="status-banner error" role="alert"><span>!</span>{{ errorMessage() }}</div>
+  } @else if (successMessage()) {
+    <div class="status-banner success" role="status"><span>✓</span>{{ successMessage() }}</div>
+  }
+
+  <div class="json-workspace">
+    <section class="editor-pane input-pane">
+      <div class="pane-header">
+        <div><span class="pane-kicker">INPUT</span><strong>Source JSON</strong></div>
+        <span>{{ lineCount() }} lines · {{ formatBytes(characterCount()) }}</span>
+      </div>
+      <textarea
+        spellcheck="false"
+        aria-label="JSON input"
+        placeholder="Paste JSON here or open a .json file"
+        [ngModel]="inputText()"
+        (ngModelChange)="inputText.set($event); errorMessage.set(''); successMessage.set('')"
+      ></textarea>
+    </section>
+
+    <section class="editor-pane output-pane">
+      <div class="pane-header output-header">
+        <div><span class="pane-kicker">OUTPUT</span><strong>Formatted result</strong></div>
+        <div class="view-switcher">
+          <button [class.active]="viewMode() === 'code'" (click)="viewMode.set('code')">Code</button>
+          <button [class.active]="viewMode() === 'tree'" (click)="viewMode.set('tree')">Tree</button>
+        </div>
+      </div>
+
+      @if (!outputText()) {
+        <div class="empty-output"><span>&#123; &#125;</span><strong>Your formatted JSON appears here</strong><p>Format, validate, or minify the source to begin.</p></div>
+      } @else if (viewMode() === 'code') {
+        <pre class="code-view"><code>{{ outputText() }}</code></pre>
+      } @else {
+        <div class="tree-tools">
+          <input type="search" placeholder="Search keys or values" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
+          <button (click)="expandAll()">Expand all</button>
+          <button (click)="collapseAll()">Collapse</button>
+        </div>
+        <div class="tree-view">
+          @for (row of treeRows(); track row.path) {
+            <button class="tree-row" [class.expandable]="row.expandable" [style.padding-left.px]="12 + row.depth * 20" (click)="row.expandable && togglePath(row.path)">
+              <span class="tree-arrow">{{ row.expandable ? (row.expanded ? '▾' : '▸') : '·' }}</span>
+              <span class="tree-key">{{ row.key }}</span><span class="tree-colon">:</span>
+              <span class="tree-value" [attr.data-type]="row.type">{{ row.preview }}</span>
+              <span class="tree-type">{{ row.type }}</span>
+            </button>
+          }
+          @if (treeRows().length === 0) { <div class="no-results">No matching keys or values.</div> }
+        </div>
+      }
+    </section>
+  </div>
+
+  <div class="card-footer">
+    <div class="footer-status-text">
+      @if (outputText()) { <span>{{ formatBytes(outputBytes()) }} formatted · Local processing only</span> }
+      @else { <span>Paste or open JSON to get started.</span> }
+    </div>
+    <div class="footer-actions-group">
+      <button class="btn-ghost-dark" [disabled]="!outputText()" (click)="copyOutput()">Copy</button>
+      <button class="btn-primary-blue" [disabled]="!outputText()" (click)="download()">Download .json</button>
+    </div>
+  </div>
+</div>

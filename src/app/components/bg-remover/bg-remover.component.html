@@ -44,6 +44,7 @@
           <span class="card-badge">.png</span>
         </div>
       </div>
+      <span class="config-helper">Auto protects subject colors that touch the image edge. Color Key removes a color you pick.</span>
     </div>
 
     <!-- Right: Save format / backdrop dropdown -->
@@ -58,10 +59,44 @@
         <option value="color">Solid Studio White (#FFFFFF)</option>
         <option value="blur">Portrait Bokeh Blur (DSLR Depth)</option>
         <option value="gradient">Studio Cyberpunk Gradient</option>
+        <option value="custom-image">Custom background image</option>
       </select>
       <span class="config-helper">Instant export &bull; High resolution canvas rendering</span>
     </div>
   </div>
+
+  @if (backdropType() === 'color') {
+    <div class="backdrop-options" aria-label="Background colors">
+      <span class="config-label">Background color</span>
+      @for (color of colorPresets; track color) {
+        <button class="color-swatch" [class.active]="backdropColor() === color" [style.background]="color" [title]="color" (click)="setBackdropColor(color)"></button>
+      }
+      <input type="color" [ngModel]="backdropColor()" (ngModelChange)="setBackdropColor($event)" aria-label="Custom background color" />
+    </div>
+  }
+
+  @if (backdropType() === 'gradient') {
+    <div class="backdrop-options" aria-label="Background gradients">
+      <span class="config-label">Gradient style</span>
+      @for (gradient of gradientPresets; track gradient.label) {
+        <button class="gradient-chip" [class.active]="backdropGradient() === gradient.val" [style.background]="'linear-gradient(135deg, ' + gradient.val + ')'" (click)="setBackdropGradient(gradient.val)">{{ gradient.label }}</button>
+      }
+    </div>
+  }
+
+  @if (backdropType() === 'blur') {
+    <div class="slider-item backdrop-slider">
+      <div class="slider-label-row"><span>Background blur</span><span class="slider-val">{{ blurAmount() }}px</span></div>
+      <input type="range" min="4" max="40" [ngModel]="blurAmount()" (ngModelChange)="blurAmount.set($event); updateCompositedCanvas(); renderCanvases()" />
+    </div>
+  }
+
+  @if (backdropType() === 'custom-image') {
+    <div class="backdrop-options">
+      <button class="btn-secondary-dark" (click)="backdropFileInput.click()">Choose background image</button>
+      <span class="config-helper">The image fills the canvas behind your cutout.</span>
+    </div>
+  }
 
   <!-- Sliders & Checkboxes Row -->
   <div class="sliders-row">
@@ -114,6 +149,28 @@
     </label>
   </div>
 
+  <div class="refine-panel">
+    <div class="refine-heading">
+      <div>
+        <strong>Refine cutout</strong>
+        <span>Paint over difficult hair, clothing, or gaps.</span>
+      </div>
+      @if (brushActive() || eyedropperActive()) {
+        <button class="btn-ghost-dark" (click)="disableRefineTools()">Done</button>
+      }
+    </div>
+    <div class="refine-actions">
+      <button class="btn-secondary-dark" [class.active]="brushActive() && brushMode() === 'keep'" (click)="setBrushMode('keep')">+ Restore subject</button>
+      <button class="btn-secondary-dark" [class.active]="brushActive() && brushMode() === 'erase'" (click)="setBrushMode('erase')">− Erase background</button>
+      <button class="btn-secondary-dark" [class.active]="eyedropperActive()" (click)="eyedropperActive.set(true); brushActive.set(false)">Pick background</button>
+      <button class="btn-ghost-dark" (click)="clearTouchup()">Clear edits</button>
+      <label class="brush-size-control">
+        Brush <span>{{ brushSize() }}px</span>
+        <input type="range" min="6" max="100" [ngModel]="brushSize()" (ngModelChange)="brushSize.set($event)" />
+      </label>
+    </div>
+  </div>
+
   }
 
     </aside>
@@ -162,7 +219,7 @@
           }
 
           @if (viewMode() === 'split') {
-            <div class="split-wrapper" (click)="handleCanvasClick($event)">
+            <div class="split-wrapper" (click)="handleCanvasClick($event)" (mousedown)="startPainting($event)" (mousemove)="paintMove($event)" (mouseup)="stopPainting()" (mouseleave)="stopPainting()">
               <canvas #resultCanvas class="fitted-canvas"></canvas>
 
               <div class="split-clipped-original" [style.clipPath]="'inset(0 ' + (100 - splitPosition()) + '% 0 0)'">
@@ -173,9 +230,13 @@
                 <div class="split-knob">⇄</div>
               </div>
 
+              <canvas #brushCanvas class="brush-overlay" [class.painting]="brushActive()"></canvas>
+
               <input
                 type="range"
                 class="hidden-split-slider"
+                [class.disabled]="brushActive() || eyedropperActive()"
+                [disabled]="brushActive() || eyedropperActive()"
                 min="0"
                 max="100"
                 [ngModel]="splitPosition()"
@@ -183,8 +244,9 @@
               />
             </div>
           } @else {
-            <div class="solo-wrapper" (click)="handleCanvasClick($event)">
+            <div class="solo-wrapper" (click)="handleCanvasClick($event)" (mousedown)="startPainting($event)" (mousemove)="paintMove($event)" (mouseup)="stopPainting()" (mouseleave)="stopPainting()">
               <canvas #resultCanvas class="fitted-canvas"></canvas>
+              <canvas #brushCanvas class="brush-overlay" [class.painting]="brushActive()"></canvas>
             </div>
           }
         </div>
@@ -192,6 +254,7 @@
     }
 
     <input #fileInput type="file" accept="image/*" (change)="onFileSelected($event)" style="display: none" />
+    <input #backdropFileInput type="file" accept="image/*" (change)="onBackdropFileSelected($event)" style="display: none" />
   </div>
 
     </section>
@@ -208,6 +271,7 @@
 
     <div class="footer-actions-group">
       @if (hasImage()) {
+        <button class="btn-ghost-dark" (click)="copyToClipboard()">Copy PNG</button>
         <button class="btn-ghost-dark" (click)="onSendToStudio()">
           Send to Manipulator
         </button>

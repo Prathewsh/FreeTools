@@ -9,8 +9,8 @@
       <span class="rail-heading">WORKSPACE</span>
       @for (tool of tools; track tool.id; let i = $index) {
         <button class="rail-tool" [class.active]="activeTab() === tool.id" [attr.aria-pressed]="activeTab() === tool.id" (click)="selectTool(tool.id)" [title]="tool.title">
-          <span class="rail-icon" aria-hidden="true">{{ ['✂', '▧', '≋', '▱', '◉'][i] }}</span>
-          <span>{{ ['Remove BG', 'Image editor', 'Audio editor', 'Batch export', 'Colors'][i] }}</span>
+          <span class="rail-icon" aria-hidden="true">{{ ['✂', '▧', '▶', '≋', '▱', '◉', '{ }'][i] }}</span>
+          <span>{{ ['Remove BG', 'Image editor', 'Video editor', 'Audio editor', 'Batch export', 'Colors', 'JSON'][i] }}</span>
         </button>
       }
       <div class="rail-bottom">PRIVATE<br>BY DESIGN</div>
@@ -26,6 +26,10 @@
         <app-image-studio [incomingImage]="studioIncomingImage()"></app-image-studio>
       }
 
+      @if (activeTab() === 'video-editor') {
+        <app-video-editor></app-video-editor>
+      }
+
       @if (activeTab() === 'audio-cutter') {
         <app-audio-cutter></app-audio-cutter>
       }
@@ -36,6 +40,10 @@
 
       @if (activeTab() === 'color-palette') {
         <app-color-palette></app-color-palette>
+      }
+
+      @if (activeTab() === 'json-formatter') {
+        <app-json-formatter></app-json-formatter>
       }
     </div>
     </main>

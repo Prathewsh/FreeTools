@@ -343,6 +343,19 @@ export class BgRemoverComponent implements OnInit, AfterViewInit, OnDestroy {
     this.processBackgroundRemoval();
   }
 
+  setBrushMode(mode: 'keep' | 'erase') {
+    this.brushMode.set(mode);
+    this.brushActive.set(true);
+    this.eyedropperActive.set(false);
+    this.renderBrushCanvas();
+  }
+
+  disableRefineTools() {
+    this.brushActive.set(false);
+    this.eyedropperActive.set(false);
+    this.renderBrushCanvas();
+  }
+
   // Backdrop actions
   setBackdrop(type: 'transparent' | 'color' | 'gradient' | 'blur' | 'custom-image') {
     this.backdropType.set(type);

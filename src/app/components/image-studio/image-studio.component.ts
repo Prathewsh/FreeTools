@@ -22,6 +22,8 @@ interface HistoryState {
   height: number;
 }
 
+type CropRatio = 'free' | '1:1' | '16:9' | '4:3' | '9:16' | '3:2' | '2:3' | 'circle';
+
 @Component({
   selector: 'app-image-studio',
   standalone: true,
@@ -64,7 +66,7 @@ export class ImageStudioComponent implements AfterViewInit {
   canRedo = computed(() => this.historyIndex() < this.history.length - 1);
 
   // 1. Crop State
-  cropRatio = signal<'free' | '1:1' | '16:9' | '4:3' | '9:16' | '3:2' | 'circle'>('free');
+  cropRatio = signal<CropRatio>('free');
   cropBox = signal<{ x: number; y: number; w: number; h: number }>({ x: 0, y: 0, w: 0, h: 0 });
   isDraggingCrop = false;
   dragMode: 'move' | 'nw' | 'ne' | 'se' | 'sw' = 'move';
@@ -269,7 +271,7 @@ export class ImageStudioComponent implements AfterViewInit {
     this.cropBox.set({ x: cropX, y: cropY, w: cropW, h: cropH });
   }
 
-  setCropRatio(ratio: 'free' | '1:1' | '16:9' | '4:3' | '9:16' | '3:2' | 'circle') {
+  setCropRatio(ratio: CropRatio) {
     this.cropRatio.set(ratio);
     const current = this.cropBox();
     const origW = this.imageDimensions().width;
@@ -281,6 +283,7 @@ export class ImageStudioComponent implements AfterViewInit {
     else if (ratio === '4:3') targetRatio = 4 / 3;
     else if (ratio === '9:16') targetRatio = 9 / 16;
     else if (ratio === '3:2') targetRatio = 3 / 2;
+    else if (ratio === '2:3') targetRatio = 2 / 3;
     else return;
 
     let newW = current.w;
@@ -305,6 +308,7 @@ export class ImageStudioComponent implements AfterViewInit {
       case '4:3': return 4 / 3;
       case '9:16': return 9 / 16;
       case '3:2': return 3 / 2;
+      case '2:3': return 2 / 3;
       default: return 1;
     }
   }
@@ -419,6 +423,7 @@ export class ImageStudioComponent implements AfterViewInit {
 
   // --- RESIZE TOOL ---
   onResizeWidthChange(val: number) {
+    val = this.safeDimension(val);
     this.resizeWidth.set(val);
     if (this.lockAspectRatio() && this.currentCanvas) {
       const ratio = this.currentCanvas.height / this.currentCanvas.width;
@@ -427,6 +432,7 @@ export class ImageStudioComponent implements AfterViewInit {
   }
 
   onResizeHeightChange(val: number) {
+    val = this.safeDimension(val);
     this.resizeHeight.set(val);
     if (this.lockAspectRatio() && this.currentCanvas) {
       const ratio = this.currentCanvas.width / this.currentCanvas.height;
@@ -435,6 +441,7 @@ export class ImageStudioComponent implements AfterViewInit {
   }
 
   onScalePercentageChange(pct: number) {
+    pct = Math.min(400, Math.max(1, Number(pct) || 100));
     this.scalePercentage.set(pct);
     if (!this.currentCanvas) return;
     const factor = pct / 100;
@@ -445,17 +452,31 @@ export class ImageStudioComponent implements AfterViewInit {
   setPresetSize(w: number, h: number) {
     this.resizeWidth.set(w);
     this.resizeHeight.set(h);
+    this.scalePercentage.set(100);
   }
 
   applyResize() {
     if (!this.currentCanvas) return;
-    const resized = this.imageService.resizeImage(this.currentCanvas, this.resizeWidth(), this.resizeHeight());
+    const width = this.safeDimension(this.resizeWidth());
+    const height = this.safeDimension(this.resizeHeight());
+    this.resizeWidth.set(width);
+    this.resizeHeight.set(height);
+    const resized = this.imageService.resizeImage(this.currentCanvas, width, height);
     this.currentCanvas = resized;
     this.imageDimensions.set({ width: resized.width, height: resized.height });
     this.resetCropBox();
     this.pushHistory();
     this.renderPreview();
     this.calculateEstimatedSize();
+  }
+
+  private safeDimension(value: number): number {
+    return Math.min(16384, Math.max(1, Math.round(Number(value) || 1)));
+  }
+
+  setRotation(angle: number) {
+    this.rotationAngle.set(Math.min(180, Math.max(-180, Number(angle) || 0)));
+    this.renderPreview();
   }
 
   // --- ROTATE & FLIP TOOL ---
