@@ -184,6 +184,28 @@ Build outputs are generated in the `dist/` directory.
 
 ---
 
+## Issues & Requesting New Tools
+
+Found a bug or want a specific tool added?
+- **Report an Issue**: If something is broken or misbehaving, open a bug report on the [Issues page](https://github.com/Prathewsh/FreeTools/issues) with reproduction steps and browser details.
+- **Request a Tool**: If there is an online utility you're tired of paying for or having to log in to use, submit a tool request on [GitHub Issues](https://github.com/Prathewsh/FreeTools/issues).
+
+---
+
+## Contributing
+
+Contributions and community-built tools are welcome.
+
+1. Fork the repository.
+2. Create your feature branch (`git checkout -b feature/my-new-tool`).
+3. Commit your changes (`git commit -m 'Add new tool'`).
+4. Push to the branch (`git push origin feature/my-new-tool`).
+5. Open a Pull Request.
+
+> **Note**: All tools must preserve the core philosophy—100% client-side in-browser execution with zero external server dependencies, uploads, or telemetry.
+
+---
+
 ## License
 
-MIT License. Free for personal and commercial use.
+This project is licensed under the MIT License. Free for personal and commercial use.
