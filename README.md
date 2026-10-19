@@ -1,6 +1,6 @@
 # FreeTools by MGE - In-Browser Media Studio & Tool Repo
 
-A high-performance, privacy-first local media processing suite built with Angular. All image and audio operations execute 100% directly inside browser memory via Canvas and Web Audio APIs. No files or telemetry are transmitted to external servers.
+A high-performance, privacy-first local media processing suite and developer toolkit built with Angular. All image, audio, video, and data operations execute 100% directly inside browser memory via Canvas, Web Audio, and MediaRecorder APIs. No files or telemetry are transmitted to external servers.
 
 ---
 
@@ -49,7 +49,23 @@ A high-performance, privacy-first local media processing suite built with Angula
 
 ---
 
-### 3. Audio Cutter & Trimmer
+### 3. Basic Video Editor
+- **Clipping & Trimming**:
+  - Interactive start and end trim sliders with live timestamp formatting.
+  - "Start at cursor" and "End at cursor" one-click markers.
+- **Playback & Audio Controls**:
+  - Variable preview speed (0.5×, 1×, 1.5×, 2×).
+  - Volume slider and option to mute exported audio track.
+- **Transforms & Capture**:
+  - 90-degree incremental rotation.
+  - Horizontal and vertical flipping.
+  - Instant frame capture saved locally as PNG.
+- **Client-Side Export**:
+  - Real-time WebM video rendering via HTML5 Canvas and MediaRecorder APIs.
+
+---
+
+### 4. Audio Cutter & Trimmer
 - **High-DPI Waveform Engine**:
   - Canvas-based peak visualization with timestamp grid and playhead tracking.
   - Draggable start and end trim handles with window-bound tracking.
@@ -62,13 +78,13 @@ A high-performance, privacy-first local media processing suite built with Angula
   - Linear fade-in and fade-out envelope curves (0 to 3.0 seconds).
   - Volume boost adjustment (0.1x to 3.0x).
 - **Audio Input & Export**:
-    - Decodes MP3, WAV, FLAC, OGG, and M4A via `AudioContext.decodeAudioData`.
+  - Decodes MP3, WAV, FLAC, OGG, and M4A via `AudioContext.decodeAudioData`.
   - In-browser microphone recording.
   - Lossless 16-bit PCM RIFF WAV exporter.
 
 ---
 
-### 4. Batch Converter & Compressor
+### 5. Batch Converter & Compressor
 - Multi-file drag-and-drop queue for bulk processing.
 - Format conversion across WebP, JPEG, and PNG.
 - Sequential processing via browser canvas.
@@ -78,9 +94,24 @@ A high-performance, privacy-first local media processing suite built with Angula
 
 ---
 
-### 5. Color Palette Generator
+### 6. Color Palette Generator
 - Extracts dominant colors from any uploaded image using median/quantization analysis.
 - Interactive canvas pixel eyedropper with one-click hex code clipboard copying.
+
+---
+
+### 7. JSON Formatter & Viewer
+- **Formatting & Validation**:
+  - Beautify with customizable indentation (2 spaces, 4 spaces, tabs).
+  - Compact minification.
+  - Alphabetical key sorting (A–Z and Z–A).
+  - Instant syntax error detection with error message banner.
+- **Inspection & Tree View**:
+  - Collapsible interactive tree viewer with nested object/array traversal.
+  - Live search filtering across keys and values.
+  - Type badges (string, number, boolean, null, object, array).
+- **Import & Export**:
+  - Drag-and-drop file upload, file download, and one-click clipboard copy.
 
 ---
 
@@ -90,6 +121,7 @@ A high-performance, privacy-first local media processing suite built with Angula
 - **Styling**: SCSS with design tokens matching a dark matte aesthetic
 - **Audio Processing**: Web Audio API (`AudioContext`, `AudioBuffer`, custom WAV PCM encoder)
 - **Image Processing**: HTML5 Canvas 2D API (`OffscreenCanvas`, pixel manipulation, convolution matrices)
+- **Video Processing**: MediaStream / MediaRecorder API, HTML5 Canvas 2D frame manipulation
 - **Zero Dependencies for Processing**: No server backend or external third-party SDK dependencies required.
 
 ---
