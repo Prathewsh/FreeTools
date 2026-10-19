@@ -12,6 +12,8 @@ This is just the beginning. I'll keep building and adding more tools to replace 
 
 Wanna download your own generated models from Meshy? I have that too: [GrabThatMesh](https://github.com/Prathewsh/GrabThatMesh).
 
+Modern Geometric ( MGE ) is my team btw for those who are wondering about that. check it out here : [MGE](https://github.com/Mgeometric).
+
 ---
 
 ## Features
