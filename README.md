@@ -2,11 +2,18 @@
 
 A high-performance, privacy-first local media processing suite and developer toolkit built with Angular. All image, audio, video, and data operations execute 100% directly inside browser memory via Canvas, Web Audio, and MediaRecorder APIs. No files or telemetry are transmitted to external servers.
 
+### The Story Behind This
+
+I got tired of searching for simple tools online only to deal with the same frustrating pattern every single time: websites forcing you to create an account, locking basic downloads behind paywalls, slapping watermarks across your files, or giving you nothing more than a tiny preview.
+
+So I decided to build the toolkit I actually wanted and give it away for free. No signups, no subscriptions, no tracking, and no server uploads, everything executes directly in your browser.
+
 ---
 
 ## Features
 
 ### 1. Background Remover
+
 - **Extraction Engines**:
   - **Auto Smart AI**: Border-connected BFS flood-fill matting that protects foreground subjects (clothing, teeth, skin, eyes) while isolating edges.
   - **Color-Key Eyedropper**: Sample any custom background color directly on the canvas.
@@ -27,6 +34,7 @@ A high-performance, privacy-first local media processing suite and developer too
 ---
 
 ### 2. Image Manipulator & Studio
+
 - **Crop & Aspect Ratio**:
   - Interactive crop box with mouse drag and corner resize handles.
   - Aspect ratio presets: Free, 1:1 Square, 16:9 Widescreen, 4:3 Standard, 9:16 Story, 3:2, and Circle Avatar.
@@ -50,6 +58,7 @@ A high-performance, privacy-first local media processing suite and developer too
 ---
 
 ### 3. Basic Video Editor
+
 - **Clipping & Trimming**:
   - Interactive start and end trim sliders with live timestamp formatting.
   - "Start at cursor" and "End at cursor" one-click markers.
@@ -66,6 +75,7 @@ A high-performance, privacy-first local media processing suite and developer too
 ---
 
 ### 4. Audio Cutter & Trimmer
+
 - **High-DPI Waveform Engine**:
   - Canvas-based peak visualization with timestamp grid and playhead tracking.
   - Draggable start and end trim handles with window-bound tracking.
@@ -85,6 +95,7 @@ A high-performance, privacy-first local media processing suite and developer too
 ---
 
 ### 5. Batch Converter & Compressor
+
 - Multi-file drag-and-drop queue for bulk processing.
 - Format conversion across WebP, JPEG, and PNG.
 - Sequential processing via browser canvas.
@@ -95,12 +106,14 @@ A high-performance, privacy-first local media processing suite and developer too
 ---
 
 ### 6. Color Palette Generator
+
 - Extracts dominant colors from any uploaded image using median/quantization analysis.
 - Interactive canvas pixel eyedropper with one-click hex code clipboard copying.
 
 ---
 
 ### 7. JSON Formatter & Viewer
+
 - **Formatting & Validation**:
   - Beautify with customizable indentation (2 spaces, 4 spaces, tabs).
   - Compact minification.
@@ -129,32 +142,42 @@ A high-performance, privacy-first local media processing suite and developer too
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js 22.22.3+, 24.15.0+, or 26+ (matching Angular CLI requirements).
 - npm or yarn
 
 ### Installation
+
 Clone the repository and install dependencies:
+
 ```bash
 npm install
 ```
 
 ### Development Server
+
 Run the development server locally:
+
 ```bash
 npm start
 # or
 npx ng serve --port 4200
 ```
+
 Open your browser and navigate to `http://localhost:4200/`.
 
 ### Production Build
+
 To create an optimized production build:
+
 ```bash
 npm run build
 ```
+
 Build outputs are generated in the `dist/` directory.
 
 ---
 
 ## License
+
 MIT License. Free for personal and commercial use.
