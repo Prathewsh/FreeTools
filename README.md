@@ -10,6 +10,8 @@ So I decided to build the toolkit I actually wanted and give it away for free. N
 
 This is just the beginning. I'll keep building and adding more tools to replace every bloated, paywalled utility out there.
 
+Wanna download your own generated models from Meshy? I have that too: [GrabThatMesh](https://github.com/Prathewsh/GrabThatMesh).
+
 ---
 
 ## Features
