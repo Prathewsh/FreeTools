@@ -9,7 +9,7 @@
       <div class="options-heading">DATASET CONFIG <span>Parameters</span></div>
       <div class="prop-group">
         <label>Record Count (1 to 500):</label>
-        <input type="number" min="1" max="500" [ngModel]="recordCount()" (ngModelChange)="recordCount.set($event); generateDataset()" class="num-input" />
+        <input type="number" min="1" max="500" [ngModel]="recordCount()" (ngModelChange)="recordCount.set($event)" class="num-input" />
       </div>
 
       <div class="options-heading mt-3">EXPORT FORMAT <span>Output</span></div>
@@ -19,6 +19,28 @@
         <button [class.active]="exportFormat() === 'sql'" (click)="exportFormat.set('sql')">SQL</button>
       </div>
 
+      @if (exportFormat() === 'sql') {
+        <div class="prop-group"><label for="sql-table">SQL table name</label><input id="sql-table" class="num-input" [ngModel]="tableName()" (ngModelChange)="tableName.set($event)" /></div>
+        <p class="config-help">SQL uses double-quoted identifiers and preserves your field names.</p>
+      }
+      <div class="options-heading mt-3">FIELDS <span>Names & generators</span></div>
+      @for (field of fields(); track field.id) {
+        <div class="field-config">
+          <input class="num-input" aria-label="Field name" [ngModel]="field.name" (ngModelChange)="updateField(field.id, { name: $event })" />
+          <select class="num-input" [attr.aria-label]="'Generator for ' + field.name" [ngModel]="field.generator" (ngModelChange)="updateField(field.id, { generator: $event })">
+            @for (generator of generators; track generator) { <option [value]="generator">{{ generator === 'custom' ? 'Custom text' : generator }}</option> }
+          </select>
+          @if (field.generator === 'custom' || field.generator === 'number') {
+            <input class="num-input" [type]="field.generator === 'number' ? 'number' : 'text'" aria-label="Default value" placeholder="Default value" [ngModel]="field.value" (ngModelChange)="updateField(field.id, { value: $event })" />
+          }
+          @if (field.generator === 'boolean') {
+            <select class="num-input" aria-label="Default boolean value" [ngModel]="field.value" (ngModelChange)="updateField(field.id, { value: $event })"><option value="">false</option><option value="true">true</option></select>
+          }
+          <button class="btn-ghost-dark" (click)="removeField(field.id)" [attr.aria-label]="'Remove field ' + field.name">Remove field</button>
+        </div>
+      }
+      <button class="btn-ghost-dark" (click)="addField()">+ Add custom field</button>
+      <p class="config-help">Field names update exports immediately. Generator and default changes apply when you regenerate. Regenerating replaces all edited rows.</p>
       <button class="btn-primary-blue mt-4" (click)="generateDataset()">
         <i class="lni lni-reload"></i> Regenerate Dataset
       </button>
@@ -27,16 +49,55 @@
     <div class="editor-stage faker-stage">
       <div class="faker-header-bar">
         <span>Generated {{ generatedData().length }} Entities ({{ exportFormat().toUpperCase() }})</span>
-        <button class="btn-copy" (click)="copyOutput()">Copy All</button>
+        <button class="btn-copy" [disabled]="!!exportError()" (click)="copyOutput()">Copy All</button>
       </div>
-      <pre class="faker-pre"><code>{{ formattedOutput() }}</code></pre>
+      <div class="data-toolbar">
+        <button class="btn-ghost-dark" [attr.aria-pressed]="view() === 'edit'" (click)="view.set('edit')">Table editor</button>
+        <button class="btn-ghost-dark" [attr.aria-pressed]="view() === 'output'" (click)="view.set('output')">Editable preview</button>
+        <button class="btn-ghost-dark" [disabled]="generatedData().length >= 500 || !fields().length" (click)="addRow()">+ Add row</button>
+      </div>
+      @if (validationError()) { <p class="data-error" role="alert">{{ validationError() }}</p> }
+      @if (view() === 'edit') {
+        <p class="config-help">Edit any value or change its type. JSON, CSV, and SQL exports use the same edited data.</p>
+        <div class="data-table-scroll">
+          <table class="data-table">
+            <thead><tr><th>Row</th>@for (field of fields(); track field.id) { <th>{{ field.name }}</th> }<th>Actions</th></tr></thead>
+            <tbody>
+              @for (row of generatedData(); track $index; let rowIndex = $index) {
+                <tr><th>{{ rowIndex + 1 }}</th>
+                  @for (field of fields(); track field.id) {
+                    <td>
+                      <select [attr.aria-label]="field.name + ' type, row ' + (rowIndex + 1)" [ngModel]="cellType(row[field.id])" (ngModelChange)="changeCellType(rowIndex, field.id, $event)">
+                        <option value="string">Text</option><option value="number">Number</option><option value="boolean">Boolean</option><option value="null">Null</option>
+                      </select>
+                      @switch (cellType(row[field.id])) {
+                        @case ('boolean') { <select [attr.aria-label]="field.name + ', row ' + (rowIndex + 1)" [ngModel]="row[field.id]" (ngModelChange)="editCell(rowIndex, field.id, $event)"><option [ngValue]="true">true</option><option [ngValue]="false">false</option></select> }
+                        @case ('number') { <input type="number" [attr.aria-label]="field.name + ', row ' + (rowIndex + 1)" [ngModel]="row[field.id]" (ngModelChange)="editNumber(rowIndex, field.id, $event)" /> }
+                        @case ('null') { <span class="null-value">NULL</span> }
+                        @default { <textarea rows="2" [attr.aria-label]="field.name + ', row ' + (rowIndex + 1)" [ngModel]="row[field.id]" (ngModelChange)="editCell(rowIndex, field.id, $event)"></textarea> }
+                      }
+                    </td>
+                  }
+                  <td><button class="btn-ghost-dark" (click)="removeRow(rowIndex)" [attr.aria-label]="'Remove row ' + (rowIndex + 1)">Remove</button></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="config-help">Edit {{ exportFormat().toUpperCase() }} directly below. Copy and download use this exact text. Each format keeps its own edits.</p>
+        @if (hasOutputDraft()) {
+          <div class="draft-notice"><span>Custom {{ exportFormat().toUpperCase() }} text — table and generator changes won't overwrite it.</span><button class="btn-ghost-dark" (click)="resetOutput()">Discard edits & use generated data</button></div>
+        }
+        <textarea class="faker-pre faker-output-editor" aria-label="Editable dataset preview" spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off" [ngModel]="editableOutput()" (ngModelChange)="editOutput($event)"></textarea>
+      }
     </div>
   </div>
 
   <div class="card-footer">
     <div class="footer-status-text"><span>{{ generatedData().length }} Mock Records Ready</span></div>
     <div class="footer-actions-group">
-      <button class="btn-primary-blue" (click)="downloadOutput()">Download Dataset ({{ exportFormat().toUpperCase() }}) &rarr;</button>
+      <button class="btn-primary-blue" [disabled]="!!exportError()" (click)="downloadOutput()">Download Dataset ({{ exportFormat().toUpperCase() }}) &rarr;</button>
     </div>
   </div>
 </div>
