@@ -33,7 +33,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (c of parsedCharacters(); track c.hex + c.char) {
+            @for (c of parsedCharacters(); track $index) {
               <tr>
                 <td class="char-cell">{{ c.char }}</td>
                 <td><code>{{ c.hex }}</code></td>
@@ -52,7 +52,7 @@
   @if (mode() === 'symbols') {
     <div class="palette-section">
       <div class="search-bar">
-        <input type="text" placeholder="Filter symbols..." [ngModel]="searchSymbol()" (ngModelChange)="searchSymbol.set($event)" />
+        <input type="text" placeholder="Search category, symbol, or code point (e.g. U+2192)..." [ngModel]="searchSymbol()" (ngModelChange)="searchSymbol.set($event)" />
       </div>
 
       <div class="palette-categories">
@@ -68,6 +68,7 @@
             </div>
           </div>
         }
+        @if (filteredCategories().length === 0) { <p>No symbols match your search.</p> }
       </div>
     </div>
   }

@@ -17,7 +17,7 @@ interface SymbolCategory {
   styleUrl: './unicode-tools.component.scss'
 })
 export class UnicodeToolsComponent {
-  mode = signal<UnicodeMode>('symbols');
+  mode = signal<UnicodeMode>('lookup');
   inputText = signal('Hello 🌍');
   searchSymbol = signal('');
   copiedText = signal('');
@@ -66,7 +66,7 @@ export class UnicodeToolsComponent {
       name: 'Stars, Checks & Marks',
       symbols: [
         '★', '☆', '✦', '✧', '✩', '✪', '✫', '✬', '✭', '✮', '✯', '✰',
-        '✓', '✔', '✕', '✖', '✗', '✘', '⊕', '⊗', '✓', '✕', '✚', '✛',
+        '✓', '✔', '✕', '✖', '✗', '✘', '⊕', '⊗', '☑', '☒', '✚', '✛',
         '✜', '✝', '✞', '✟', '✠', '✡', '✢', '✣', '✤', '✥', '✱', '✲',
         '✳', '✴', '✵', '✶', '✷', '✸', '✹', '✺', '✻', '✼', '✽', '✾'
       ]
@@ -102,7 +102,7 @@ export class UnicodeToolsComponent {
       symbols: [
         '♠', '♣', '♥', '♦', '♤', '♧', '♡', '♢', '♔', '♕', '♖', '♗',
         '♘', '♙', '♚', '♛', '♜', '♝', '♞', '♟', '♈', '♉', '♊', '♋',
-        '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓', '⚀', '⚁', '⚂', '⚃'
+        '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'
       ]
     },
     {
@@ -117,8 +117,46 @@ export class UnicodeToolsComponent {
         '①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩',
         '❶', '❷', '❸', '❹', '❺', '❻', '❼', '❽', '❾', '❿',
         '㈠', '㈡', '㈢', '㈣', '㈤', '㈥', '㈦', '㈧', '㈨', '㈩',
-        'Ⓐ', 'Ⓑ', 'Ⓒ', 'Ⓓ', 'Ⓔ', 'Ⓕ', 'Ⓖ', 'Ⓗ', 'Ⓘ', 'Ⓙ'
+        '⓪', '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱', '⑲', '⑳',
+        ...Array.from({ length: 26 }, (_, i) => String.fromCodePoint(0x24B6 + i)),
+        ...Array.from({ length: 26 }, (_, i) => String.fromCodePoint(0x24D0 + i))
       ]
+    },
+    {
+      name: 'Box Drawing & Borders',
+      symbols: Array.from('─━│┃┄┅┆┇┈┉┊┋┌┍┎┏┐┑┒┓└┕┖┗┘┙┚┛├┝┞┟┠┡┢┣┤┥┦┧┨┩┪┫┬┭┮┯┰┱┲┳┴┵┶┷┸┹┺┻┼┽┾┿╀╁╂╃╄╅╆╇╈╉╊╋═║╔╗╚╝╠╣╦╩╬╭╮╯╰╱╲╳')
+    },
+    {
+      name: 'Shading & Block Elements',
+      symbols: Array.from('▀▁▂▃▄▅▆▇█▉▊▋▌▍▎▏▐░▒▓▔▕▖▗▘▙▚▛▜▝▞▟')
+    },
+    {
+      name: 'Keyboard, Computing & Controls',
+      symbols: Array.from('⌘⌥⌃⇧⇪⌫⌦⎋⏎↵⇥⇤␣⌨⏏⏻⏼⏽⏾⏯⏭⏮⏩⏪⏫⏬⏸⏹⏺⌚⌛⏳⏰⏱⏲⎇⎈⌂')
+    },
+    {
+      name: 'Weather, Nature & Astronomy',
+      symbols: Array.from('☀☁☂☃☄☼☽☾★☆⚡❄❅❆☔⛄⛅⛈🌈🌊🌍🌎🌏🌑🌒🌓🌔🌕🌖🌗🌘☉☿♀♁♂♃♄♅♆♇')
+    },
+    {
+      name: 'Science, Units & Letterlike Symbols',
+      symbols: Array.from('℃℉KÅΩ℧µℏℎℓ℮℅℆℞℥℔Ⅎℵℶℷℸℂℍℕℙℚℝℤℬℰℱℋℐℒℳℛℭℌℑℜℨ')
+    },
+    {
+      name: 'Logic, Relations & Advanced Math',
+      symbols: Array.from('⇐⇒⇔⇍⇎⇏↦↤↪↩↼↽⇀⇁⊢⊣⊤⊥⊨⊩⊪⊫⊬⊭⊮⊯≔≕≜≝≟≪≫≲≳≺≻≼≽⊊⊋⊎⊏⊐⊑⊒⋀⋁⋂⋃⋄⋅⋆⋈⋮⋯⋰⋱⟨⟩⟦⟧⌈⌉⌊⌋')
+    },
+    {
+      name: 'Roman Numerals',
+      symbols: Array.from('ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫⅬⅭⅮⅯⅰⅱⅲⅳⅴⅵⅶⅷⅸⅹⅺⅻⅼⅽⅾⅿ')
+    },
+    {
+      name: 'Accented Latin Letters',
+      symbols: Array.from('ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØŒÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøœùúûüýþÿĀāĂăĄąĆćČčĎďĐđĒēĖėĘęĞğİıŁłŃńŇňŌōŐőŘřŚśŠšŤťŪūŮůŰűŹźŻżŽž')
+    },
+    {
+      name: 'Safety, Accessibility & Public Signs',
+      symbols: Array.from('⚠☢☣⚕⚖⚙⚒⚓⛏⛑⛔♿🚻🚹🚺🚼🚭🚮🚰🚱🚳🚷🛂🛃🛄🛅♻⚐⚑☮☯☤☥')
     }
   ];
 
@@ -128,7 +166,7 @@ export class UnicodeToolsComponent {
     return this.symbolCategories
       .map(cat => ({
         ...cat,
-        symbols: cat.symbols.filter(s => s.toLowerCase().includes(q))
+        symbols: cat.name.toLowerCase().includes(q) ? cat.symbols : cat.symbols.filter(s => s.toLowerCase().includes(q) || Array.from(s).some(char => ('u+' + char.codePointAt(0)!.toString(16).padStart(4, '0')).includes(q)))
       }))
       .filter(cat => cat.symbols.length > 0);
   });
