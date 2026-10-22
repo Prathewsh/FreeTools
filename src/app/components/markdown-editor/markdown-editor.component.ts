@@ -18,7 +18,7 @@ export class MarkdownEditorComponent {
     breaks: false,
     // Angular removes input elements from innerHTML; keep task markers visible.
     renderer: {
-      checkbox: ({ checked }) => `<span class="task-marker" role="img" aria-label="${checked ? 'Completed' : 'Not completed'}">${checked ? '☑' : '☐'}</span> `
+      checkbox: ({ checked }: { checked: boolean }) => `<span class="task-marker" role="img" aria-label="${checked ? 'Completed' : 'Not completed'}">${checked ? '☑' : '☐'}</span> `
     }
   });
   markdownText = signal<string>(`# Welcome to FreeTools Markdown Studio
@@ -98,4 +98,3 @@ const greet = (name: string): string => {
     setTimeout(() => URL.revokeObjectURL(url), 0);
   }
 }
-
