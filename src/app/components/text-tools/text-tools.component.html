@@ -1,0 +1,92 @@
+<div class="simple-tool-card text-tool">
+  <div class="card-header">
+    <span class="card-title">Text Manipulation & Analysis</span>
+    <div class="device-badge"><span class="green-dot"></span><span>Runs locally in browser</span></div>
+  </div>
+
+  <div class="subtool-bar">
+    <button [class.active]="activeSubtool() === 'case'" (click)="activeSubtool.set('case')">Case Converter</button>
+    <button [class.active]="activeSubtool() === 'counter'" (click)="activeSubtool.set('counter')">Word Counter</button>
+    <button [class.active]="activeSubtool() === 'replace'" (click)="activeSubtool.set('replace')">Find & Replace</button>
+    <button [class.active]="activeSubtool() === 'cleaner'" (click)="activeSubtool.set('cleaner')">Line Tools & Cleaner</button>
+  </div>
+
+  @if (activeSubtool() === 'case') {
+    <div class="action-chips">
+      <button class="chip-btn" (click)="toUpperCase()">UPPERCASE</button>
+      <button class="chip-btn" (click)="toLowerCase()">lowercase</button>
+      <button class="chip-btn" (click)="toTitleCase()">Title Case</button>
+      <button class="chip-btn" (click)="toSentenceCase()">Sentence case</button>
+      <button class="chip-btn" (click)="toCamelCase()">camelCase</button>
+      <button class="chip-btn" (click)="toSnakeCase()">snake_case</button>
+      <button class="chip-btn" (click)="toKebabCase()">kebab-case</button>
+    </div>
+  }
+
+  @if (activeSubtool() === 'cleaner') {
+    <div class="action-chips">
+      <button class="chip-btn" (click)="trimWhitespace()">Trim lines</button>
+      <button class="chip-btn" (click)="removeEmptyLines()">Remove blank lines</button>
+      <button class="chip-btn" (click)="removeDuplicateLines()">Remove duplicate lines</button>
+      <button class="chip-btn" (click)="sortLinesAsc()">Sort lines (A-Z)</button>
+      <button class="chip-btn" (click)="sortLinesDesc()">Sort lines (Z-A)</button>
+      <button class="chip-btn" (click)="reverseLines()">Reverse line order</button>
+    </div>
+  }
+
+  @if (activeSubtool() === 'replace') {
+    <div class="replace-bar">
+      <input type="text" placeholder="Find text..." [ngModel]="findText()" (ngModelChange)="findText.set($event)" />
+      <input type="text" placeholder="Replace with..." [ngModel]="replaceText()" (ngModelChange)="replaceText.set($event)" />
+      <label><input type="checkbox" [ngModel]="matchCase()" (ngModelChange)="matchCase.set($event)" /> Match case</label>
+      <label><input type="checkbox" [ngModel]="useRegex()" (ngModelChange)="useRegex.set($event)" /> Regex</label>
+      <button class="btn-primary-blue" (click)="executeReplace()">Replace all</button>
+    </div>
+  }
+
+  @if (activeSubtool() === 'counter') {
+    <div class="stats-cards">
+      <div class="stat-card"><strong>{{ charCount() }}</strong><span>Characters</span></div>
+      <div class="stat-card"><strong>{{ charNoSpaces() }}</strong><span>Chars (no spaces)</span></div>
+      <div class="stat-card"><strong>{{ wordCount() }}</strong><span>Words</span></div>
+      <div class="stat-card"><strong>{{ lineCount() }}</strong><span>Lines</span></div>
+      <div class="stat-card"><strong>{{ sentenceCount() }}</strong><span>Sentences</span></div>
+      <div class="stat-card"><strong>{{ readingTime() }} min</strong><span>Reading time</span></div>
+    </div>
+  }
+
+  <div class="dual-editor">
+    <div class="editor-box">
+      <div class="box-title">Input Text</div>
+      <textarea
+        placeholder="Type or paste your text here..."
+        [ngModel]="inputText()"
+        (ngModelChange)="inputText.set($event)"
+      ></textarea>
+    </div>
+    <div class="editor-box">
+      <div class="box-title">
+        <span>Result</span>
+        @if (outputText()) {
+          <button class="mini-copy-btn" (click)="copyOutput()">Copy</button>
+        }
+      </div>
+      <textarea
+        placeholder="Resulting text will appear here..."
+        [ngModel]="outputText()"
+        readonly
+      ></textarea>
+    </div>
+  </div>
+
+  <div class="card-footer">
+    <div class="footer-status-text">
+      <span>{{ charCount() }} characters · {{ wordCount() }} words</span>
+    </div>
+    <div class="footer-actions-group">
+      <button class="btn-ghost-dark" (click)="clear()">Clear</button>
+      <button class="btn-primary-blue" [disabled]="!outputText()" (click)="copyOutput()">Copy result</button>
+    </div>
+  </div>
+</div>
+

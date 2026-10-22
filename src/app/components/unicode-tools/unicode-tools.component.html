@@ -1,0 +1,75 @@
+<div class="simple-tool-card unicode-tool">
+  <div class="card-header">
+    <span class="card-title">Unicode & Special Character Tools</span>
+    <div class="device-badge"><span class="green-dot"></span><span>Runs locally in browser</span></div>
+  </div>
+
+  <div class="subtool-bar">
+    <button [class.active]="mode() === 'lookup'" (click)="mode.set('lookup')">Character Inspector</button>
+    <button [class.active]="mode() === 'symbols'" (click)="mode.set('symbols')">Symbol Palette</button>
+  </div>
+
+  @if (copiedText()) {
+    <div class="toast-notice">Copied "{{ copiedText() }}" to clipboard!</div>
+  }
+
+  @if (mode() === 'lookup') {
+    <div class="inspector-section">
+      <div class="input-block">
+        <label>Type or paste any text to inspect code points:</label>
+        <input type="text" [ngModel]="inputText()" (ngModelChange)="inputText.set($event)" placeholder="Enter text or emoji..." />
+      </div>
+
+      <div class="chars-table-wrapper">
+        <table class="chars-table">
+          <thead>
+            <tr>
+              <th>Char</th>
+              <th>Unicode Hex</th>
+              <th>Decimal</th>
+              <th>HTML Entity</th>
+              <th>URL Encoded</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of parsedCharacters(); track c.hex + c.char) {
+              <tr>
+                <td class="char-cell">{{ c.char }}</td>
+                <td><code>{{ c.hex }}</code></td>
+                <td>{{ c.codePoint }}</td>
+                <td><code>{{ c.htmlEntity }}</code></td>
+                <td><code>{{ c.utf8 }}</code></td>
+                <td><button class="mini-copy-btn" (click)="copySymbol(c.hex)">Copy Hex</button></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  @if (mode() === 'symbols') {
+    <div class="palette-section">
+      <div class="search-bar">
+        <input type="text" placeholder="Filter symbols..." [ngModel]="searchSymbol()" (ngModelChange)="searchSymbol.set($event)" />
+      </div>
+
+      <div class="palette-categories">
+        @for (cat of filteredCategories(); track cat.name) {
+          <div class="category-block">
+            <h3>{{ cat.name }}</h3>
+            <div class="symbols-grid">
+              @for (sym of cat.symbols; track sym) {
+                <button class="sym-btn" (click)="copySymbol(sym)" [title]="'Copy ' + sym">
+                  {{ sym }}
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
+

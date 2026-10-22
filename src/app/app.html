@@ -1,23 +1,141 @@
 <div class="studio-shell">
-  <header class="studio-topbar">
-    <a class="studio-brand" href="./" aria-label="FreeTools by MGE home"><span class="brand-mark">F</span> FreeTools <span class="brand-edition">BY MGE</span></a>
-    <h1>In-browser Media Studio & Tools</h1>
-    <span class="privacy-status"><span></span> Local workspace</span>
-  </header>
   <div class="studio-body">
-    <nav class="tool-rail" aria-label="Studio tools">
-      <span class="rail-heading">WORKSPACE</span>
-      @for (tool of tools; track tool.id; let i = $index) {
-        <button class="rail-tool" [class.active]="activeTab() === tool.id" [attr.aria-pressed]="activeTab() === tool.id" (click)="selectTool(tool.id)" [title]="tool.title">
-          <span class="rail-icon" aria-hidden="true">{{ ['✂', '▧', '▶', '≋', '▱', '◉', '{ }'][i] }}</span>
-          <span>{{ ['Remove BG', 'Image editor', 'Video editor', 'Audio editor', 'Batch export', 'Colors', 'JSON'][i] }}</span>
+    <nav class="tool-rail" [class.collapsed]="railCollapsed()" aria-label="Studio tools">
+      <!-- Brand in Sidebar Top -->
+      <div class="sidebar-brand-block">
+        <div class="brand-left" (click)="openWelcome()" style="cursor: pointer;">
+          <div class="brand-hexagon-logo">
+            <img src="icon.png" alt="FreeTools" class="brand-logo-img" />
+          </div>
+          <span class="brand-title-text" [class.hidden]="railCollapsed()">FreeTools</span>
+        </div>
+        <button class="rail-collapse-btn" (click)="toggleRail()" [title]="railCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'">
+          <i class="collapse-icon lni" [ngClass]="railCollapsed() ? 'lni-chevron-right' : 'lni-chevron-left'"></i>
         </button>
-      }
-      <div class="rail-bottom">PRIVATE<br>BY DESIGN</div>
+      </div>
+
+      <!-- Quick Search Bar with ⌘K Badge -->
+      <div class="rail-search-section" [class.hidden]="railCollapsed()">
+        <div class="search-input-pill">
+          <i class="lni lni-search-alt search-ico"></i>
+          <input
+            type="text"
+            placeholder="Search"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+            class="rail-search-input"
+          />
+          <div class="cmd-k-badge">
+            <span class="cmd-sym">⌘</span>
+            <span class="cmd-letter">K</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="rail-scroll-area">
+        @for (cat of filteredCategories(); track cat.name) {
+          <div class="rail-category-group">
+            <div 
+              class="rail-cat-header" 
+              (click)="toggleCategory(cat.name)"
+              [class.expanded]="!isCategoryCollapsed(cat.name)"
+              [title]="cat.name">
+              <span class="cat-leading-icon">
+                <i [class]="cat.iconSvg"></i>
+              </span>
+              @if (!railCollapsed()) {
+                <span class="rail-cat-label">{{ cat.name }}</span>
+                <span class="cat-chevron" [class.collapsed]="isCategoryCollapsed(cat.name)">
+                  <i class="lni lni-chevron-down"></i>
+                </span>
+              }
+            </div>
+
+            @if (!isCategoryCollapsed(cat.name)) {
+              <div class="rail-tools-tree" [class.collapsed-rail]="railCollapsed()">
+                @for (tool of cat.tools; track tool.id) {
+                  <button
+                    class="rail-tool"
+                    [class.active]="activeTab() === tool.id"
+                    [attr.aria-pressed]="activeTab() === tool.id"
+                    (click)="selectTool(tool.id)"
+                    [title]="tool.title"
+                  >
+                    @if (railCollapsed()) {
+                      <span class="collapsed-tool-initial">{{ tool.title.slice(0, 2) }}</span>
+                    }
+                    <span class="rail-label" [class.hidden]="railCollapsed()">{{ tool.title }}</span>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="rail-bottom" [class.collapsed]="railCollapsed()">
+        <a 
+          href="https://github.com/Prathewsh/FreeTools" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          class="rail-github-btn" 
+          title="Visit GitHub repository">
+          <i class="lni lni-github-original"></i>
+          @if (!railCollapsed()) {
+            <span>GitHub</span>
+          }
+        </a>
+      </div>
     </nav>
     <main class="workspace-main" aria-label="Editing workspace">
-    <!-- Active Tool Card Mount -->
     <div class="tool-content-mount">
+      @if (activeTab() === 'welcome') {
+        <div class="welcome-container">
+          <div class="welcome-hero">
+            <h1 class="welcome-hero-heading">
+              <span class="heading-white">Free tools,</span>
+              <span class="heading-accent">all in one place</span>
+            </h1>
+
+            <p class="welcome-tagline">
+              A free, all-in-one developer, media, and security toolkit. Everything runs directly in your browser — your files and data never leave your device.
+            </p>
+
+            <div class="welcome-perks-row">
+              <div class="perk-item">
+                <i class="lni lni-checkmark-circle perk-icon"></i>
+                <span>No sign-up</span>
+              </div>
+              <div class="perk-item">
+                <i class="lni lni-checkmark-circle perk-icon"></i>
+                <span>Completely free</span>
+              </div>
+              <div class="perk-item">
+                <i class="lni lni-checkmark-circle perk-icon"></i>
+                <span>Works instantly</span>
+              </div>
+              <div class="perk-item">
+                <i class="lni lni-checkmark-circle perk-icon"></i>
+                <span>No paywalls or watermarks</span>
+              </div>
+            </div>
+
+            <div class="welcome-github-callout">
+              <span>Need a new tool or have a feature idea?</span>
+              <a
+                href="https://github.com/Prathewsh/FreeTools/issues/new?title=%5BTool+Request%5D+&body=**Tool+Name%3A**%0A%0A**Description%3A**%0A%0A**Use+Case%3A**"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn-request-tool"
+              >
+                <i class="lni lni-github-original"></i>
+                <span>Open an Issue on GitHub</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      }
+
       @if (activeTab() === 'bg-remover') {
         <app-bg-remover (sendToStudio)="handleSendToStudio($event)"></app-bg-remover>
       }
@@ -26,12 +144,68 @@
         <app-image-studio [incomingImage]="studioIncomingImage()"></app-image-studio>
       }
 
-      @if (activeTab() === 'video-editor') {
-        <app-video-editor></app-video-editor>
+      @if (activeTab() === 'image-compressor') {
+        <app-image-compressor></app-image-compressor>
       }
 
-      @if (activeTab() === 'audio-cutter') {
-        <app-audio-cutter></app-audio-cutter>
+      @if (activeTab() === 'metadata-remover') {
+        <app-metadata-remover></app-metadata-remover>
+      }
+
+      @if (activeTab() === 'ai-image-inspector') {
+        <app-ai-image-inspector></app-ai-image-inspector>
+      }
+
+      @if (activeTab() === 'gradient-generator') {
+        <app-gradient-generator></app-gradient-generator>
+      }
+
+      @if (activeTab() === 'box-shadow-generator') {
+        <app-box-shadow-generator></app-box-shadow-generator>
+      }
+
+      @if (activeTab() === 'colour-converter') {
+        <app-colour-converter></app-colour-converter>
+      }
+
+      @if (activeTab() === 'archive-explorer') {
+        <app-archive-explorer></app-archive-explorer>
+      }
+
+      @if (activeTab() === 'password-tool') {
+        <app-password-tool></app-password-tool>
+      }
+
+      @if (activeTab() === 'pdf-signer') {
+        <app-pdf-signer></app-pdf-signer>
+      }
+
+      @if (activeTab() === 'lorem-ipsum') {
+        <app-lorem-ipsum></app-lorem-ipsum>
+      }
+
+      @if (activeTab() === 'article-to-markdown') {
+        <app-article-to-markdown></app-article-to-markdown>
+      }
+
+      @if (activeTab() === 'base64-tool') {
+        <app-base64-tool></app-base64-tool>
+      }
+
+      @if (activeTab() === 'qr-code-generator') {
+        <app-qr-code-generator></app-qr-code-generator>
+      }
+
+      @if (activeTab() === 'wheel-chance') {
+        <app-wheel-chance></app-wheel-chance>
+      }
+
+      @if (activeTab() === 'color-replacer') {
+        <app-color-replacer></app-color-replacer>
+      }
+
+      @if (activeTab() === 'gif-tools') {
+        <app-gif-tools></app-gif-tools>
       }
 
       @if (activeTab() === 'batch-converter') {
@@ -42,8 +216,92 @@
         <app-color-palette></app-color-palette>
       }
 
+      @if (activeTab() === 'pdf-editor') {
+        <app-pdf-editor></app-pdf-editor>
+      }
+
+      @if (activeTab() === 'video-editor') {
+        <app-video-editor></app-video-editor>
+      }
+
+      @if (activeTab() === 'audio-cutter') {
+        <app-audio-cutter></app-audio-cutter>
+      }
+
+      @if (activeTab() === 'text-tools') {
+        <app-text-tools></app-text-tools>
+      }
+
+      @if (activeTab() === 'binary-tools') {
+        <app-binary-tools></app-binary-tools>
+      }
+
+      @if (activeTab() === 'unicode-tools') {
+        <app-unicode-tools></app-unicode-tools>
+      }
+
+      @if (activeTab() === 'time-tools') {
+        <app-time-tools></app-time-tools>
+      }
+
+      @if (activeTab() === 'math-tools') {
+        <app-math-tools></app-math-tools>
+      }
+
       @if (activeTab() === 'json-formatter') {
         <app-json-formatter></app-json-formatter>
+      }
+
+      @if (activeTab() === 'json-diff') {
+        <app-json-diff></app-json-diff>
+      }
+
+      @if (activeTab() === 'screenshot-studio') {
+        <app-screenshot-studio></app-screenshot-studio>
+      }
+
+      @if (activeTab() === 'hash-generator') {
+        <app-hash-generator></app-hash-generator>
+      }
+
+      @if (activeTab() === 'markdown-editor') {
+        <app-markdown-editor></app-markdown-editor>
+      }
+
+      @if (activeTab() === 'robots-generator') {
+        <app-robots-generator></app-robots-generator>
+      }
+
+      @if (activeTab() === 'data-faker') {
+        <app-data-faker></app-data-faker>
+      }
+
+      @if (activeTab() === 'breakpoint-previewer') {
+        <app-breakpoint-previewer></app-breakpoint-previewer>
+      }
+
+      @if (activeTab() === 'clip-path-builder') {
+        <app-clip-path-builder></app-clip-path-builder>
+      }
+
+      @if (activeTab() === 'file-crypto') {
+        <app-file-crypto></app-file-crypto>
+      }
+
+      @if (activeTab() === 'cert-inspector') {
+        <app-cert-inspector></app-cert-inspector>
+      }
+
+      @if (activeTab() === 'pdf-inspector') {
+        <app-pdf-inspector></app-pdf-inspector>
+      }
+
+      @if (activeTab() === 'ip-checker') {
+        <app-ip-checker></app-ip-checker>
+      }
+
+      @if (activeTab() === 'speed-test') {
+        <app-speed-test></app-speed-test>
       }
     </div>
     </main>

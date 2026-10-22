@@ -1,0 +1,43 @@
+<div class="simple-tool-card">
+  <div class="card-header">
+    <span class="card-title">Realistic Synthetic Data Faker</span>
+    <div class="device-badge"><span class="green-dot"></span><span>100% In-memory generation</span></div>
+  </div>
+
+  <div class="editor-layout">
+    <aside class="editor-options">
+      <div class="options-heading">DATASET CONFIG <span>Parameters</span></div>
+      <div class="prop-group">
+        <label>Record Count (1 to 500):</label>
+        <input type="number" min="1" max="500" [ngModel]="recordCount()" (ngModelChange)="recordCount.set($event); generateDataset()" class="num-input" />
+      </div>
+
+      <div class="options-heading mt-3">EXPORT FORMAT <span>Output</span></div>
+      <div class="format-radios">
+        <button [class.active]="exportFormat() === 'json'" (click)="exportFormat.set('json')">JSON</button>
+        <button [class.active]="exportFormat() === 'csv'" (click)="exportFormat.set('csv')">CSV</button>
+        <button [class.active]="exportFormat() === 'sql'" (click)="exportFormat.set('sql')">SQL</button>
+      </div>
+
+      <button class="btn-primary-blue mt-4" (click)="generateDataset()">
+        <i class="lni lni-reload"></i> Regenerate Dataset
+      </button>
+    </aside>
+
+    <div class="editor-stage faker-stage">
+      <div class="faker-header-bar">
+        <span>Generated {{ generatedData().length }} Entities ({{ exportFormat().toUpperCase() }})</span>
+        <button class="btn-copy" (click)="copyOutput()">Copy All</button>
+      </div>
+      <pre class="faker-pre"><code>{{ formattedOutput() }}</code></pre>
+    </div>
+  </div>
+
+  <div class="card-footer">
+    <div class="footer-status-text"><span>{{ generatedData().length }} Mock Records Ready</span></div>
+    <div class="footer-actions-group">
+      <button class="btn-primary-blue" (click)="downloadOutput()">Download Dataset ({{ exportFormat().toUpperCase() }}) &rarr;</button>
+    </div>
+  </div>
+</div>
+

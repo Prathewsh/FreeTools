@@ -1,0 +1,61 @@
+<div class="wheel-container">
+  <div class="header">
+    <h2>Wheel of Chance</h2>
+    <p class="subtitle">Spin a custom prize wheel to randomly select winners, make fair decisions, and eliminate options.</p>
+  </div>
+
+  <div class="wheel-grid">
+    <!-- Wheel Canvas Area -->
+    <div class="wheel-stage">
+      <div class="canvas-wrap">
+        <canvas #wheelCanvas width="380" height="380"></canvas>
+        <div class="pointer">▶</div>
+      </div>
+      <button class="btn btn-primary btn-spin" [disabled]="isSpinning()" (click)="spin()">
+        {{ isSpinning() ? 'Spinning...' : 'SPIN WHEEL' }}
+      </button>
+
+      @if (winner()) {
+        <div class="winner-banner">
+          🎉 Winner: <strong>{{ winner() }}</strong>
+          @if (removeWinner()) {
+            <span class="sub">(Removing from next round...)</span>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Options List & Config -->
+    <div class="options-card">
+      <div class="add-row">
+        <input 
+          type="text" 
+          placeholder="Add option or name..." 
+          [(ngModel)]="newOption" 
+          (keyup.enter)="addOption()" />
+        <button class="btn btn-primary" (click)="addOption()">Add</button>
+      </div>
+
+      <div class="setting-check">
+        <label>
+          <input type="checkbox" [ngModel]="removeWinner()" (ngModelChange)="removeWinner.set($event)" />
+          Automatically eliminate winner after spin
+        </label>
+      </div>
+
+      <div class="items-list">
+        <div class="list-title">Active Slices ({{ items().length }})</div>
+        @for (item of items(); track $index) {
+          <div class="slice-row">
+            <span class="color-dot" [style.backgroundColor]="colors[$index % colors.length]"></span>
+            <span class="slice-name">{{ item }}</span>
+            @if (items().length > 2) {
+              <button class="btn-del" (click)="removeItem($index)">✕</button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+

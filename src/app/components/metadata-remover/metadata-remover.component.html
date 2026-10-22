@@ -1,0 +1,46 @@
+<div class="metadata-container">
+  <div class="metadata-header">
+    <div class="header-left">
+      <h2>Metadata & EXIF Remover</h2>
+      <p class="subtitle">Strip EXIF metadata (GPS coordinates, camera model, exposure, serial numbers, timestamps) before sharing images.</p>
+    </div>
+    @if (images().length > 0) {
+      <div class="header-actions">
+        <button class="btn btn-secondary" (click)="clearAll()">Clear All</button>
+        <button class="btn btn-primary" (click)="downloadAll()">Download All Cleaned</button>
+      </div>
+    }
+  </div>
+
+  <div 
+    class="upload-box" 
+    [class.dragging]="isDragging()"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave()"
+    (drop)="onDrop($event)"
+    (click)="fileInput.click()">
+    <input #fileInput type="file" multiple accept="image/jpeg,image/png,image/webp,image/heic" (change)="onFilesSelected($event)" style="display: none;" />
+    <div class="icon">🛡️</div>
+    <h3>Drop images here to strip EXIF & GPS data</h3>
+    <p>Sanitized pixel-by-pixel right in your browser. No metadata survives.</p>
+  </div>
+
+  @if (images().length > 0) {
+    <div class="grid-list">
+      @for (item of images(); track item.name) {
+        <div class="image-item-card">
+          <img [src]="item.previewUrl" [alt]="item.name" />
+          <div class="item-details">
+            <span class="file-name" [title]="item.name">{{ item.name }}</span>
+            <div class="size-pill">
+              <span class="shield">🛡️ EXIF Scrubbed</span>
+              <span>{{ formatBytes(item.cleanedSize) }}</span>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" (click)="downloadImage(item)">Download Clean</button>
+        </div>
+      }
+    </div>
+  }
+</div>
+

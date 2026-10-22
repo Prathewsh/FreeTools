@@ -1,0 +1,71 @@
+<div class="gradient-container">
+  <div class="header">
+    <h2>CSS Gradient Generator</h2>
+    <p class="subtitle">Create linear and radial gradients with real-time preview and export pure CSS instantly.</p>
+  </div>
+
+  <div class="editor-grid">
+    <!-- Visual Preview -->
+    <div class="preview-card" [style.background]="gradientCss()">
+      <div class="preview-overlay">
+        <button class="btn btn-primary" (click)="copyCss()">
+          {{ copied() ? '✓ Copied CSS!' : 'Copy CSS Code' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-card">
+      <div class="control-row">
+        <label>Type</label>
+        <div class="btn-group">
+          <button class="btn-toggle" [class.active]="type() === 'linear'" (click)="type.set('linear')">Linear</button>
+          <button class="btn-toggle" [class.active]="type() === 'radial'" (click)="type.set('radial')">Radial</button>
+        </div>
+      </div>
+
+      @if (type() === 'linear') {
+        <div class="control-row">
+          <div class="label-val">
+            <label>Angle</label>
+            <span>{{ angle() }}°</span>
+          </div>
+          <input type="range" min="0" max="360" [ngModel]="angle()" (ngModelChange)="angle.set($event)" />
+        </div>
+      } @else {
+        <div class="control-row">
+          <label>Shape</label>
+          <div class="btn-group">
+            <button class="btn-toggle" [class.active]="radialShape() === 'circle'" (click)="radialShape.set('circle')">Circle</button>
+            <button class="btn-toggle" [class.active]="radialShape() === 'ellipse'" (click)="radialShape.set('ellipse')">Ellipse</button>
+          </div>
+        </div>
+      }
+
+      <div class="stops-section">
+        <div class="stops-header">
+          <label>Color Stops</label>
+          <button class="btn-link" (click)="addStop()">+ Add Color</button>
+        </div>
+
+        <div class="stops-list">
+          @for (stop of stops(); track $index) {
+            <div class="stop-item">
+              <input type="color" [ngModel]="stop.color" (ngModelChange)="updateStopColor($index, $event)" />
+              <input type="range" min="0" max="100" [ngModel]="stop.position" (ngModelChange)="updateStopPos($index, $event)" />
+              <span class="pos-num">{{ stop.position }}%</span>
+              @if (stops().length > 2) {
+                <button class="btn-del" (click)="removeStop($index)">✕</button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="code-box">
+        <code>{{ fullCssCode() }}</code>
+      </div>
+    </div>
+  </div>
+</div>
+

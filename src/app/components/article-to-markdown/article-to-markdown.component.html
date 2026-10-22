@@ -1,0 +1,55 @@
+<div class="article-container">
+  <div class="header">
+    <div class="header-left">
+      <h2>Article to Clean Markdown</h2>
+      <p class="subtitle">Extract clean readable Markdown from articles and blog URLs — strips out navigation, cookie banners, sidebars, and ads.</p>
+    </div>
+    @if (markdownOutput()) {
+      <div class="header-actions">
+        <button class="btn btn-secondary" (click)="copyMarkdown()">{{ copied() ? '✓ Copied' : 'Copy MD' }}</button>
+        <button class="btn btn-primary" (click)="downloadMarkdown()">Download .md</button>
+      </div>
+    }
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn" [class.active]="activeTab() === 'url'" (click)="activeTab.set('url')">Fetch URL</button>
+    <button class="tab-btn" [class.active]="activeTab() === 'paste'" (click)="activeTab.set('paste')">Paste Article HTML</button>
+  </div>
+
+  @if (activeTab() === 'url') {
+    <div class="input-card">
+      <div class="url-input-bar">
+        <input 
+          type="url" 
+          placeholder="https://example.com/article/great-post..." 
+          [(ngModel)]="url" 
+          (keyup.enter)="fetchArticle()" />
+        <button class="btn btn-primary" [disabled]="isLoading()" (click)="fetchArticle()">
+          {{ isLoading() ? 'Extracting...' : 'Extract Clean Markdown' }}
+        </button>
+      </div>
+      @if (errorMsg()) {
+        <div class="warning-box">{{ errorMsg() }}</div>
+      }
+    </div>
+  } @else {
+    <div class="input-card">
+      <textarea 
+        class="html-area" 
+        placeholder="Paste article page HTML source or text here..." 
+        [(ngModel)]="rawHtmlInput"></textarea>
+      <button class="btn btn-primary mt-2" (click)="processPastedHtml()">Convert to Clean Markdown</button>
+    </div>
+  }
+
+  @if (markdownOutput()) {
+    <div class="markdown-preview-card">
+      <div class="preview-header">
+        <strong>Extracted Markdown: {{ articleTitle() }}</strong>
+      </div>
+      <textarea readonly class="md-output" [value]="markdownOutput()"></textarea>
+    </div>
+  }
+</div>
+

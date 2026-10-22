@@ -1,0 +1,184 @@
+<div class="simple-tool-card time-tool">
+  <div class="card-header">
+    <span class="card-title">Time &amp; Date Utilities</span>
+    <div class="device-badge"><span class="green-dot"></span><span>Live in-browser clock</span></div>
+  </div>
+
+  <div class="subtool-bar">
+    <button [class.active]="activeSubtool() === 'epoch'" (click)="activeSubtool.set('epoch')">Unix Timestamp / Epoch</button>
+    <button [class.active]="activeSubtool() === 'world'" (click)="activeSubtool.set('world')">World Clocks</button>
+    <button [class.active]="activeSubtool() === 'stopwatch'" (click)="activeSubtool.set('stopwatch')">Stopwatch &amp; Laps</button>
+    <button [class.active]="activeSubtool() === 'diff'" (click)="activeSubtool.set('diff')">Date Difference</button>
+  </div>
+
+  @if (activeSubtool() === 'epoch') {
+    <div class="epoch-section">
+      <div class="current-epoch-banner">
+        <div>
+          <span>Current Unix Epoch Time:</span>
+          <strong>{{ currentEpoch() }}</strong>
+        </div>
+        <button class="chip-btn" (click)="copy(currentEpoch())">Copy Epoch</button>
+      </div>
+
+      <div class="converter-pair">
+        <div class="box-card">
+          <h3>Convert Epoch to Human Date</h3>
+          <div class="input-inline">
+            <input type="text" [ngModel]="inputEpoch()" (ngModelChange)="inputEpoch.set($event)" placeholder="e.g. 1700000000" />
+            <button class="chip-btn" (click)="setCurrentEpoch()">Now</button>
+          </div>
+          @if (epochToDateResult(); as res) {
+            <div class="date-results">
+              <div><span>UTC:</span><strong>{{ res.utc }}</strong></div>
+              <div><span>Local:</span><strong>{{ res.local }}</strong></div>
+              <div><span>ISO 8601:</span><code>{{ res.iso }}</code></div>
+            </div>
+          }
+        </div>
+
+        <div class="box-card">
+          <h3>Convert Date to Epoch</h3>
+          <div class="input-inline">
+            <input type="text" [ngModel]="inputIso()" (ngModelChange)="inputIso.set($event)" placeholder="e.g. 2026-10-22T10:00:00Z" />
+          </div>
+          @if (dateToEpochResult(); as res) {
+            <div class="date-results">
+              <div><span>Seconds:</span><strong>{{ res.seconds }}</strong></div>
+              <div><span>Milliseconds:</span><strong>{{ res.millis }}</strong></div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (activeSubtool() === 'world') {
+    <div class="world-clock-toolbar">
+      <div class="search-input-wrap">
+        <i class="lni lni-search-alt"></i>
+        <input
+          type="text"
+          placeholder="Search city, timezone (e.g. Tokyo, Europe, America/New_York, +05:30)..."
+          [ngModel]="clockSearchQuery()"
+          (ngModelChange)="clockSearchQuery.set($event)"
+        />
+        @if (clockSearchQuery()) {
+          <button class="clear-search" (click)="clockSearchQuery.set('')">✕</button>
+        }
+      </div>
+
+      <div class="filter-controls">
+        <label class="region-select-wrap">
+          <span class="filter-label">Region:</span>
+          <select [ngModel]="selectedRegion()" (ngModelChange)="selectedRegion.set($event)">
+            @for (reg of availableRegions(); track reg) {
+              <option [value]="reg">{{ reg }}</option>
+            }
+          </select>
+        </label>
+
+        <button
+          class="btn-filter-toggle"
+          [class.active]="onlyPinned()"
+          (click)="onlyPinned.set(!onlyPinned())"
+          title="Show pinned clocks only"
+        >
+          <span class="star-icon">★</span> Pinned Only ({{ pinnedZones().size }})
+        </button>
+
+        <div class="clocks-count-badge">
+          {{ displayedClocks().length }} / {{ allSupportedTimezones.length }} Clocks
+        </div>
+      </div>
+    </div>
+
+    <div class="world-grid">
+      @for (clock of displayedClocks(); track clock.tz) {
+        <div class="clock-tile" [class.pinned]="clock.isPinned">
+          <div class="clock-tile-header">
+            <span class="region-tag">{{ clock.region }}</span>
+            <div class="header-right">
+              @if (clock.offset) {
+                <span class="offset-tag">{{ clock.offset }}</span>
+              }
+              <button
+                class="pin-btn"
+                [class.pinned]="clock.isPinned"
+                (click)="togglePin(clock.tz, $event)"
+                title="Pin / Unpin clock"
+              >
+                ★
+              </button>
+            </div>
+          </div>
+          <div class="city-name" [title]="clock.tz">{{ clock.city }}</div>
+          <div class="time-display">{{ clock.time }}</div>
+          <div class="clock-tile-footer">
+            <span class="date-display">{{ clock.date }}</span>
+            <span class="tz-subtext" (click)="copy(clock.tz)" title="Click to copy timezone ID">{{ clock.tz }}</span>
+          </div>
+        </div>
+      } @empty {
+        <div class="empty-world-clocks">
+          <i class="lni lni-world"></i>
+          <p>No world clocks matching "{{ clockSearchQuery() }}"</p>
+          <button class="btn-secondary-dark" (click)="clockSearchQuery.set(''); selectedRegion.set('All'); onlyPinned.set(false)">
+            Reset Filters
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  @if (activeSubtool() === 'stopwatch') {
+    <div class="stopwatch-container">
+      <div class="stopwatch-digits">{{ formatTime(stopwatchTime()) }}</div>
+      <div class="stopwatch-actions">
+        @if (!stopwatchRunning()) {
+          <button class="btn-primary-blue" (click)="startStopwatch()">Start</button>
+        } @else {
+          <button class="btn-secondary-dark" (click)="pauseStopwatch()">Pause</button>
+          <button class="btn-secondary-dark" (click)="recordLap()">Lap</button>
+        }
+        <button class="btn-ghost-dark" (click)="resetStopwatch()">Reset</button>
+      </div>
+
+      @if (laps().length > 0) {
+        <div class="laps-table-wrapper">
+          <table class="laps-table">
+            <thead>
+              <tr><th>Lap #</th><th>Split Time</th></tr>
+            </thead>
+            <tbody>
+              @for (lap of laps(); track $index) {
+                <tr><td>Lap {{ laps().length - $index }}</td><td>{{ formatTime(lap) }}</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+
+  @if (activeSubtool() === 'diff') {
+    <div class="diff-card">
+      <div class="dates-input-row">
+        <label>Start Date:
+          <input type="date" [ngModel]="startDate()" (ngModelChange)="startDate.set($event)" />
+        </label>
+        <label>End Date:
+          <input type="date" [ngModel]="endDate()" (ngModelChange)="endDate.set($event)" />
+        </label>
+      </div>
+
+      @if (dateDiffResult(); as diff) {
+        <div class="diff-results-grid">
+          <div class="diff-tile"><strong>{{ diff.days }}</strong><span>Total Days</span></div>
+          <div class="diff-tile"><strong>{{ diff.weeks }}</strong><span>Total Weeks</span></div>
+          <div class="diff-tile"><strong>{{ diff.hours }}</strong><span>Total Hours</span></div>
+        </div>
+      }
+    </div>
+  }
+</div>

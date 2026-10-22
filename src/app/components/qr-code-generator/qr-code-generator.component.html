@@ -1,0 +1,56 @@
+<div class="qr-container">
+  <div class="header">
+    <h2>QR Code Generator</h2>
+    <p class="subtitle">Generate high-resolution PNG QR codes for links, text, contacts, and Wi-Fi networks with custom colors.</p>
+  </div>
+
+  <div class="qr-grid">
+    <!-- QR Preview -->
+    <div class="preview-card">
+      @if (qrDataUrl()) {
+        <img [src]="qrDataUrl()" alt="QR Code" />
+        <button class="btn btn-primary" (click)="downloadQR()">Download PNG</button>
+      } @else {
+        <div class="empty">Type content to generate QR code</div>
+      }
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-card">
+      <div class="control-row">
+        <label>URL or Text Content</label>
+        <textarea [ngModel]="qrText()" (ngModelChange)="qrText.set($event)" placeholder="Enter URL or text..."></textarea>
+      </div>
+
+      <div class="control-row">
+        <div class="label-val">
+          <label>Size</label>
+          <span>{{ size() }} × {{ size() }} px</span>
+        </div>
+        <input type="range" min="150" max="600" step="10" [ngModel]="size()" (ngModelChange)="size.set($event)" />
+      </div>
+
+      <div class="color-row">
+        <div class="color-group">
+          <label>Foreground Color</label>
+          <input type="color" [ngModel]="darkColor()" (ngModelChange)="darkColor.set($event)" />
+        </div>
+        <div class="color-group">
+          <label>Background Color</label>
+          <input type="color" [ngModel]="lightColor()" (ngModelChange)="lightColor.set($event)" />
+        </div>
+      </div>
+
+      <div class="control-row">
+        <label>Error Correction Level</label>
+        <div class="btn-group">
+          <button [class.active]="errorCorrection() === 'L'" (click)="errorCorrection.set('L')">Low (7%)</button>
+          <button [class.active]="errorCorrection() === 'M'" (click)="errorCorrection.set('M')">Medium (15%)</button>
+          <button [class.active]="errorCorrection() === 'Q'" (click)="errorCorrection.set('Q')">Quartile (25%)</button>
+          <button [class.active]="errorCorrection() === 'H'" (click)="errorCorrection.set('H')">High (30%)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,85 @@
+<div class="simple-tool-card">
+  <div class="card-header">
+    <span class="card-title">Verifiable AI &amp; Metadata Inspector</span>
+  </div>
+
+  <div class="editor-layout">
+    <aside class="editor-options" aria-label="Tool options">
+      <div class="options-heading">METADATA ENGINE <span>Inspect file signals</span></div>
+      <p class="options-hint">
+        Checks real embedded Content Credentials (C2PA), Stable Diffusion prompts, AI tool tags, and physical camera EXIF without guessing.
+      </p>
+
+      @if (result(); as res) {
+        <div class="signals-list">
+          <div class="signal-item">
+            <span class="signal-lbl">C2PA Manifest</span>
+            <span class="signal-val" [class.active]="res.c2paPresent">{{ res.c2paPresent ? '✓ Present' : 'None detected' }}</span>
+          </div>
+
+          <div class="signal-item">
+            <span class="signal-lbl">Camera Hardware</span>
+            <span class="signal-val">{{ res.cameraInfo || 'None (or stripped)' }}</span>
+          </div>
+
+          <div class="signal-item">
+            <span class="signal-lbl">Software Tag</span>
+            <span class="signal-val">{{ res.softwareInfo || 'None' }}</span>
+          </div>
+        </div>
+
+        @if (res.foundTags.length > 0) {
+          <div class="tags-section">
+            <div class="tags-title">Verified Embedded Signatures</div>
+            @for (t of res.foundTags; track t.key) {
+              <div class="tag-card">
+                <div class="tag-hdr">
+                  <strong>{{ t.key }}</strong>
+                  <span class="tag-origin">{{ t.origin }}</span>
+                </div>
+                <div class="tag-val">{{ t.value }}</div>
+              </div>
+            }
+          </div>
+        }
+      }
+    </aside>
+
+    <div class="editor-stage">
+      <div class="inner-dropzone-container">
+        @if (!result()) {
+          <div 
+            class="empty-dropzone" 
+            [class.dragging]="isDragging()"
+            (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave()"
+            (drop)="onDrop($event)"
+            (click)="fileIn.click()">
+            <input #fileIn type="file" accept="image/*" (change)="onFileChange($event)" style="display: none;" />
+            <div class="box-arrow-icon"><i class="lni lni-microscope"></i></div>
+            <h2 class="dropzone-title">Choose an image or drop a file</h2>
+            <p class="dropzone-sub">Upload an image to inspect embedded C2PA credentials, AI prompts, and camera EXIF.</p>
+            <div class="dropzone-actions">
+              <button class="btn-primary-blue" (click)="$event.stopPropagation(); fileIn.click()">Choose image file</button>
+            </div>
+            <span class="dropzone-fine">PNG, JPG, WebP &bull; In-browser analysis only</span>
+          </div>
+        } @else {
+          <div class="inspector-stage-active">
+            <div class="verdict-banner" [class.ai-detected]="result()?.hasAiSignals" [class.camera-detected]="result()?.exifPresent && !result()?.hasAiSignals">
+              <div class="verdict-title">{{ result()?.verdict }}</div>
+              <div class="verdict-desc">{{ result()?.verdictDetail }}</div>
+            </div>
+
+            <div class="inspector-preview-wrapper">
+              <img [src]="previewUrl()" [alt]="fileName()" />
+              <div class="file-caption">{{ fileName() }} ({{ formatBytes(fileSize()) }})</div>
+            </div>
+
+            <button class="btn-secondary-dark mt-3" (click)="result.set(null)">Inspect Another Image</button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

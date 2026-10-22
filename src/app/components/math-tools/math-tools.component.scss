@@ -1,0 +1,586 @@
+.math-tool {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+}
+
+.subtool-bar {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid #303137;
+  padding-bottom: 12px;
+  flex-wrap: wrap;
+
+  button {
+    background: transparent;
+    border: 1px solid #303137;
+    border-radius: 6px;
+    padding: 7px 14px;
+    font-size: 12px;
+    color: #9b9ea9;
+    cursor: pointer;
+
+    &:hover { background: #27282e; color: #fff; }
+    &.active {
+      background: #30372b;
+      border-color: #49533e;
+      color: #c1e993;
+    }
+  }
+}
+
+.input-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  label {
+    font-size: 11px;
+    color: #838794;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  input, textarea {
+    background: #141519;
+    border: 1px solid #303137;
+    border-radius: 6px;
+    padding: 9px 12px;
+    color: #e4e5e9;
+    font-size: 13px;
+    font-family: var(--font-mono);
+    outline: none;
+
+    &:focus {
+      border-color: #c1e993;
+    }
+  }
+}
+
+/* 1. Matrix Section */
+.matrix-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.matrix-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: #191a1f;
+  border: 1px solid #303137;
+  border-radius: 8px;
+  padding: 12px 16px;
+  flex-wrap: wrap;
+
+  .dim-presets, .op-select, .scalar-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .lbl {
+      font-size: 11px;
+      color: #838794;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    button {
+      background: #141519;
+      border: 1px solid #303137;
+      color: #9b9ea9;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+
+      &:hover {
+        background: #202228;
+        color: #fff;
+      }
+      &.active {
+        background: #30372b;
+        border-color: #49533e;
+        color: #c1e993;
+      }
+    }
+
+    select, input[type="number"] {
+      background: #141519;
+      border: 1px solid #303137;
+      border-radius: 6px;
+      color: #e4e5e9;
+      padding: 6px 10px;
+      font-size: 12px;
+      outline: none;
+    }
+  }
+}
+
+.matrices-layout {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 16px 0;
+}
+
+.matrix-card {
+  background: #191a1f;
+  border: 1px solid #303137;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 100%;
+
+  .matrix-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .matrix-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #e4e5e9;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .size-select-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .size-lbl {
+      font-size: 11px;
+      color: #838794;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .dim-picker {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: #141519;
+      border: 1px solid #303137;
+      border-radius: 6px;
+      padding: 3px 8px;
+
+      .dim-tag {
+        font-size: 10px;
+        color: #838794;
+        text-transform: uppercase;
+        font-weight: 600;
+      }
+
+      select {
+        background: #1e2027;
+        border: 1px solid #383a44;
+        border-radius: 4px;
+        color: #c1e993;
+        font-family: var(--font-mono);
+        font-weight: 700;
+        font-size: 12px;
+        padding: 2px 6px;
+        cursor: pointer;
+        outline: none;
+
+        &:focus {
+          border-color: #c1e993;
+        }
+      }
+
+      .dim-mult {
+        font-size: 12px;
+        color: #6d7280;
+        font-weight: 700;
+        padding: 0 2px;
+      }
+    }
+  }
+
+  .matrix-quick-actions {
+    display: flex;
+    gap: 6px;
+
+    button {
+      background: #141519;
+      border: 1px solid #303137;
+      color: #9b9ea9;
+      padding: 4px 9px;
+      font-size: 11px;
+      font-weight: 500;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+
+      &:hover {
+        background: #252830;
+        color: #fff;
+        border-color: #494d5b;
+      }
+    }
+  }
+
+  .matrix-scroll-wrap {
+    max-width: 100%;
+    max-height: 420px;
+    overflow: auto;
+    padding: 4px;
+  }
+
+  .matrix-grid {
+    display: grid;
+    gap: 6px;
+
+    input {
+      width: 48px;
+      height: 36px;
+      text-align: center;
+      background: #141519;
+      border: 1px solid #303137;
+      border-radius: 4px;
+      color: #e4e5e9;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      outline: none;
+
+      &:focus {
+        border-color: #c1e993;
+      }
+    }
+  }
+
+  &.result-card {
+    background: #1c221a;
+    border-color: #3d4a34;
+
+    .matrix-title {
+      color: #c1e993;
+    }
+
+    .result-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+
+      .res-row {
+        display: flex;
+        gap: 6px;
+      }
+
+      .res-cell {
+        min-width: 48px;
+        height: 36px;
+        padding: 0 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #141812;
+        border: 1px solid #49533e;
+        border-radius: 4px;
+        color: #c1e993;
+        font-family: var(--font-mono);
+        font-weight: 700;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+    }
+  }
+}
+
+.matrix-symbol {
+  font-size: 20px;
+  color: #838794;
+  font-weight: 700;
+}
+
+/* 2. Eval & Stats */
+.calc-section, .stats-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.result-tile {
+  background: #191a1f;
+  border: 1px solid #303137;
+  border-radius: 8px;
+  padding: 16px;
+
+  .tile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: #838794;
+    text-transform: uppercase;
+    font-weight: 700;
+
+    button {
+      background: transparent;
+      border: 1px solid #303137;
+      color: #9b9ea9;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      &:hover { color: #fff; }
+    }
+  }
+
+  .tile-display {
+    font-size: 22px;
+    font-family: var(--font-mono);
+    color: #c1e993;
+    margin-top: 8px;
+  }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+
+  .stat-tile {
+    background: #191a1f;
+    border: 1px solid #303137;
+    border-radius: 6px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    span { font-size: 10px; text-transform: uppercase; color: #838794; font-weight: 700; }
+    strong { font-size: 15px; font-family: var(--font-mono); color: #e4e5e9; }
+  }
+}
+
+/* 4. Fraction Section */
+.fraction-section {
+  background: #191a1f;
+  border: 1px solid #303137;
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.fraction-calc-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  .frac-box {
+    display: flex;
+    flex-direction: column;
+    width: 70px;
+    gap: 4px;
+
+    input {
+      background: #141519;
+      border: 1px solid #303137;
+      border-radius: 4px;
+      text-align: center;
+      padding: 6px;
+      color: #e4e5e9;
+      font-family: var(--font-mono);
+      font-size: 14px;
+    }
+
+    .frac-line {
+      height: 2px;
+      background: #c1e993;
+      border-radius: 2px;
+    }
+  }
+
+  .frac-op-select {
+    background: #141519;
+    border: 1px solid #303137;
+    color: #e4e5e9;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-family: var(--font-mono);
+  }
+
+  .frac-eq {
+    font-size: 20px;
+    color: #838794;
+  }
+
+  .frac-result-box {
+    background: #1c221a;
+    border: 1px solid #3d4a34;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 18px;
+    color: #c1e993;
+  }
+}
+
+/* 5. Primes Section */
+.primes-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  .prime-factor-box, .gcd-box {
+    background: #191a1f;
+    border: 1px solid #303137;
+    border-radius: 8px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .prime-status, .factors-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #141519;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+
+    span { color: #838794; }
+    strong { font-family: var(--font-mono); font-size: 14px; }
+  }
+
+  .gcd-inputs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    input {
+      flex: 1;
+      background: #141519;
+      border: 1px solid #303137;
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: #e4e5e9;
+      font-family: var(--font-mono);
+    }
+    span { color: #838794; }
+  }
+
+  .gcd-results {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+}
+
+/* 6. Geometry */
+.geometry-section {
+  background: #191a1f;
+  border: 1px solid #303137;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .geo-controls {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+
+    .op-select, .geo-input {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .lbl { font-size: 11px; text-transform: uppercase; color: #838794; font-weight: 700; }
+      select, input {
+        background: #141519;
+        border: 1px solid #303137;
+        border-radius: 6px;
+        padding: 6px 10px;
+        color: #e4e5e9;
+        font-family: var(--font-mono);
+      }
+    }
+  }
+
+  .geo-results {
+    display: flex;
+    gap: 14px;
+
+    .geo-tile {
+      background: #1c221a;
+      border: 1px solid #3d4a34;
+      padding: 12px 18px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 15px;
+      color: #c1e993;
+    }
+  }
+}
+
+/* 7. Percentage Section */
+.percentage-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  .percent-card {
+    background: #191a1f;
+    border: 1px solid #303137;
+    border-radius: 8px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+
+    h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #e4e5e9;
+      margin: 0;
+    }
+
+    .inline-calc {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: #9b9ea9;
+
+      input {
+        width: 70px;
+        background: #141519;
+        border: 1px solid #303137;
+        border-radius: 4px;
+        padding: 6px;
+        color: #e4e5e9;
+        font-family: var(--font-mono);
+        text-align: center;
+      }
+
+      strong {
+        font-family: var(--font-mono);
+        font-size: 15px;
+        color: #c1e993;
+
+        &.positive {
+          color: #c1e993;
+        }
+      }
+    }
+  }
+}

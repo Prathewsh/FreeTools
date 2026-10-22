@@ -1,0 +1,356 @@
+<div class="simple-tool-card math-tool">
+  <div class="card-header">
+    <span class="card-title">Advanced Mathematical & Matrix Suite</span>
+  </div>
+
+  <div class="subtool-bar">
+    <button [class.active]="mode() === 'matrix'" (click)="mode.set('matrix')">Matrix Operations</button>
+    <button [class.active]="mode() === 'eval'" (click)="mode.set('eval')">Scientific Evaluator</button>
+    <button [class.active]="mode() === 'stats'" (click)="mode.set('stats')">Statistics & Variance</button>
+    <button [class.active]="mode() === 'fractions'" (click)="mode.set('fractions')">Fractions & Ratios</button>
+    <button [class.active]="mode() === 'primes'" (click)="mode.set('primes')">Primes & GCD / LCM</button>
+    <button [class.active]="mode() === 'geometry'" (click)="mode.set('geometry')">Geometry & Volume</button>
+    <button [class.active]="mode() === 'percentage'" (click)="mode.set('percentage')">Percentages</button>
+  </div>
+
+  <!-- 1. Matrix Operations -->
+  @if (mode() === 'matrix') {
+    <div class="matrix-section">
+      <div class="matrix-toolbar">
+        <div class="op-select">
+          <span class="lbl">Operation:</span>
+          <select [ngModel]="matrixOp()" (ngModelChange)="matrixOp.set($event)">
+            <option value="multiply">Multiply (A × B)</option>
+            <option value="add">Add (A + B)</option>
+            <option value="subtract">Subtract (A - B)</option>
+            <option value="transpose">Transpose (Aᵀ)</option>
+            <option value="determinant">Determinant |A|</option>
+            <option value="invert">Inverse (A⁻¹)</option>
+            <option value="scalar">Scalar Multiply (k × A)</option>
+          </select>
+        </div>
+
+        <div class="dim-presets">
+          <span class="lbl">Square Presets:</span>
+          <button (click)="setPresetSize(2)">2 × 2</button>
+          <button (click)="setPresetSize(3)">3 × 3</button>
+          <button (click)="setPresetSize(4)">4 × 4</button>
+          <button (click)="setPresetSize(6)">6 × 6</button>
+        </div>
+
+        @if (matrixOp() === 'scalar') {
+          <div class="scalar-input">
+            <span class="lbl">Scalar k =</span>
+            <input type="number" [ngModel]="matrixScalarVal()" (ngModelChange)="matrixScalarVal.set($event)" />
+          </div>
+        }
+      </div>
+
+      <div class="matrices-layout">
+        <!-- Matrix A Container -->
+        <div class="matrix-card">
+          <div class="matrix-header">
+            <span class="matrix-title">Matrix A</span>
+
+            <div class="size-select-group">
+              <span class="size-lbl">Size:</span>
+              <div class="dim-picker">
+                <span class="dim-tag">Rows</span>
+                <select [ngModel]="rowsA()" (ngModelChange)="applySizeA(+$event, colsA())">
+                  @for (n of [1,2,3,4,5,6,7,8,9,10]; track n) {
+                    <option [value]="n">{{ n }}</option>
+                  }
+                </select>
+                <span class="dim-mult">×</span>
+                <span class="dim-tag">Cols</span>
+                <select [ngModel]="colsA()" (ngModelChange)="applySizeA(rowsA(), +$event)">
+                  @for (n of [1,2,3,4,5,6,7,8,9,10]; track n) {
+                    <option [value]="n">{{ n }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <div class="matrix-quick-actions">
+              <button (click)="fillIdentity('A')" title="Fill identity matrix with 1s along diagonal">Identity</button>
+              <button (click)="fillRandom('A')" title="Populate with random numbers between -9 and 9">Random</button>
+              <button (click)="clearMatrix('A')" title="Clear all cells to zero">All Zeros</button>
+            </div>
+          </div>
+
+          <div class="matrix-scroll-wrap">
+            <div class="matrix-grid" [style.grid-template-columns]="'repeat(' + colsA() + ', 1fr)'">
+              @for (row of matrixA(); track $index; let r = $index) {
+                @for (cell of row; track $index; let c = $index) {
+                  <input 
+                    type="number" 
+                    [ngModel]="cell" 
+                    (ngModelChange)="updateCellA(r, c, +$event)" />
+                }
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Operator symbol -->
+        <div class="matrix-symbol">
+          @if (matrixOp() === 'multiply') { × }
+          @if (matrixOp() === 'add') { + }
+          @if (matrixOp() === 'subtract') { - }
+          @if (matrixOp() === 'transpose') { ᵀ }
+          @if (matrixOp() === 'determinant') { det }
+          @if (matrixOp() === 'invert') { ⁻¹ }
+          @if (matrixOp() === 'scalar') { × }
+        </div>
+
+        <!-- Matrix B (if binary op) -->
+        @if (['multiply', 'add', 'subtract'].includes(matrixOp())) {
+          <div class="matrix-card">
+            <div class="matrix-header">
+              <span class="matrix-title">Matrix B</span>
+
+              <div class="size-select-group">
+                <span class="size-lbl">Size:</span>
+                <div class="dim-picker">
+                  <span class="dim-tag">Rows</span>
+                  <select [ngModel]="rowsB()" (ngModelChange)="applySizeB(+$event, colsB())">
+                    @for (n of [1,2,3,4,5,6,7,8,9,10]; track n) {
+                      <option [value]="n">{{ n }}</option>
+                    }
+                  </select>
+                  <span class="dim-mult">×</span>
+                  <span class="dim-tag">Cols</span>
+                  <select [ngModel]="colsB()" (ngModelChange)="applySizeB(rowsB(), +$event)">
+                    @for (n of [1,2,3,4,5,6,7,8,9,10]; track n) {
+                      <option [value]="n">{{ n }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+
+              <div class="matrix-quick-actions">
+                <button (click)="fillIdentity('B')" title="Fill identity matrix with 1s along diagonal">Identity</button>
+                <button (click)="fillRandom('B')" title="Populate with random numbers between -9 and 9">Random</button>
+                <button (click)="clearMatrix('B')" title="Clear all cells to zero">All Zeros</button>
+              </div>
+            </div>
+
+            <div class="matrix-scroll-wrap">
+              <div class="matrix-grid" [style.grid-template-columns]="'repeat(' + colsB() + ', 1fr)'">
+                @for (row of matrixB(); track $index; let r = $index) {
+                  @for (cell of row; track $index; let c = $index) {
+                    <input 
+                      type="number" 
+                      [ngModel]="cell" 
+                      (ngModelChange)="updateCellB(r, c, +$event)" />
+                  }
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        <div class="matrix-symbol">=</div>
+
+        <!-- Matrix Result -->
+        <div class="matrix-card result-card">
+          <div class="matrix-header">
+            <div class="matrix-title">Result</div>
+          </div>
+          <div class="matrix-scroll-wrap">
+            <div class="matrix-grid result-grid">
+              @for (row of matrixResult(); track $index) {
+                <div class="res-row">
+                  @for (cell of row; track $index) {
+                    <div class="res-cell">{{ cell }}</div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- 2. Scientific Evaluator -->
+  @if (mode() === 'eval') {
+    <div class="calc-section">
+      <div class="input-block">
+        <label>Enter math expression (supports sin, cos, tan, sqrt, cbrt, log, ln, pi, e, powers ^):</label>
+        <input type="text" [ngModel]="expression()" (ngModelChange)="expression.set($event)" placeholder="e.g. sin(pi/4) + sqrt(144) * 2^3" />
+      </div>
+
+      <div class="result-tile">
+        <div class="tile-header">
+          <span>Result</span>
+          <button (click)="copy(evalResult())">Copy</button>
+        </div>
+        <div class="tile-display">{{ evalResult() }}</div>
+      </div>
+    </div>
+  }
+
+  <!-- 3. Statistics & Variance -->
+  @if (mode() === 'stats') {
+    <div class="stats-section">
+      <div class="input-block">
+        <label>Enter comma or space-separated numbers:</label>
+        <textarea [ngModel]="statsInput()" (ngModelChange)="statsInput.set($event)" rows="3"></textarea>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-tile"><span>Count (N)</span><strong>{{ statsCount() }}</strong></div>
+        <div class="stat-tile"><span>Sum</span><strong>{{ statsSum() }}</strong></div>
+        <div class="stat-tile"><span>Mean (Average)</span><strong>{{ statsMean() }}</strong></div>
+        <div class="stat-tile"><span>Median</span><strong>{{ statsMedian() }}</strong></div>
+        <div class="stat-tile"><span>Min</span><strong>{{ statsMin() }}</strong></div>
+        <div class="stat-tile"><span>Max</span><strong>{{ statsMax() }}</strong></div>
+        <div class="stat-tile"><span>Range</span><strong>{{ statsRange() }}</strong></div>
+        <div class="stat-tile"><span>Sample Variance (s²)</span><strong>{{ statsVariance() }}</strong></div>
+        <div class="stat-tile"><span>Standard Deviation (s)</span><strong>{{ statsStdDev() }}</strong></div>
+      </div>
+    </div>
+  }
+
+  <!-- 4. Fractions & Ratios -->
+  @if (mode() === 'fractions') {
+    <div class="fraction-section">
+      <div class="fraction-calc-row">
+        <!-- Fraction 1 -->
+        <div class="frac-box">
+          <input type="number" [ngModel]="fracNum1()" (ngModelChange)="fracNum1.set($event)" />
+          <div class="frac-line"></div>
+          <input type="number" [ngModel]="fracDen1()" (ngModelChange)="fracDen1.set($event)" />
+        </div>
+
+        <!-- Operator -->
+        <select class="frac-op-select" [ngModel]="fracOp()" (ngModelChange)="fracOp.set($event)">
+          <option value="+">+</option>
+          <option value="-">-</option>
+          <option value="*">×</option>
+          <option value="/">÷</option>
+        </select>
+
+        <!-- Fraction 2 -->
+        <div class="frac-box">
+          <input type="number" [ngModel]="fracNum2()" (ngModelChange)="fracNum2.set($event)" />
+          <div class="frac-line"></div>
+          <input type="number" [ngModel]="fracDen2()" (ngModelChange)="fracDen2.set($event)" />
+        </div>
+
+        <div class="frac-eq">=</div>
+
+        <div class="frac-result-box">
+          <strong>{{ fractionResult() }}</strong>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- 5. Primes & GCD / LCM -->
+  @if (mode() === 'primes') {
+    <div class="primes-section">
+      <div class="prime-factor-box">
+        <div class="input-block">
+          <label>Test Primality & Prime Factorization:</label>
+          <input type="number" min="1" [ngModel]="primeNum()" (ngModelChange)="primeNum.set($event)" />
+        </div>
+        <div class="prime-status">
+          <span>Is Prime?</span>
+          <strong [style.color]="isPrime() ? '#c1e993' : '#f87171'">{{ isPrime() ? 'YES (Prime)' : 'NO (Composite)' }}</strong>
+        </div>
+        <div class="factors-display">
+          <span>Prime Factors:</span>
+          <strong>{{ primeFactors().join(' × ') }}</strong>
+        </div>
+      </div>
+
+      <div class="gcd-box">
+        <label>Greatest Common Divisor (GCD) & Least Common Multiple (LCM):</label>
+        <div class="gcd-inputs">
+          <input type="number" [ngModel]="gcdA()" (ngModelChange)="gcdA.set($event)" placeholder="A" />
+          <span>and</span>
+          <input type="number" [ngModel]="gcdB()" (ngModelChange)="gcdB.set($event)" placeholder="B" />
+        </div>
+        <div class="gcd-results">
+          <div class="stat-tile"><span>GCD (Greatest Divisor)</span><strong>{{ gcdResult().gcd }}</strong></div>
+          <div class="stat-tile"><span>LCM (Least Multiple)</span><strong>{{ gcdResult().lcm }}</strong></div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- 6. Geometry & Volume -->
+  @if (mode() === 'geometry') {
+    <div class="geometry-section">
+      <div class="geo-controls">
+        <div class="op-select">
+          <span class="lbl">Shape:</span>
+          <select [ngModel]="geoShape()" (ngModelChange)="geoShape.set($event)">
+            <option value="circle">Circle (2D)</option>
+            <option value="rectangle">Rectangle (2D)</option>
+            <option value="triangle">Right Triangle (2D)</option>
+            <option value="sphere">Sphere (3D)</option>
+            <option value="cylinder">Cylinder (3D)</option>
+          </select>
+        </div>
+
+        @if (['circle', 'sphere', 'cylinder'].includes(geoShape())) {
+          <div class="geo-input">
+            <span class="lbl">Radius (r):</span>
+            <input type="number" [ngModel]="geoRadius()" (ngModelChange)="geoRadius.set($event)" />
+          </div>
+        }
+
+        @if (['rectangle', 'triangle'].includes(geoShape())) {
+          <div class="geo-input">
+            <span class="lbl">Width / Base (w):</span>
+            <input type="number" [ngModel]="geoWidth()" (ngModelChange)="geoWidth.set($event)" />
+          </div>
+        }
+
+        @if (['rectangle', 'triangle', 'cylinder'].includes(geoShape())) {
+          <div class="geo-input">
+            <span class="lbl">Height (h):</span>
+            <input type="number" [ngModel]="geoHeight()" (ngModelChange)="geoHeight.set($event)" />
+          </div>
+        }
+      </div>
+
+      <div class="geo-results">
+        <div class="geo-tile">{{ geoResult().p1 }}</div>
+        <div class="geo-tile">{{ geoResult().p2 }}</div>
+      </div>
+    </div>
+  }
+
+  <!-- 7. Percentage -->
+  @if (mode() === 'percentage') {
+    <div class="percentage-section">
+      <div class="percent-card">
+        <h3>What is X% of Y?</h3>
+        <div class="inline-calc">
+          <span>What is</span>
+          <input type="number" [ngModel]="percentA()" (ngModelChange)="percentA.set($event)" />
+          <span>% of</span>
+          <input type="number" [ngModel]="percentB()" (ngModelChange)="percentB.set($event)" />
+          <span>=</span>
+          <strong>{{ percentResult() }}</strong>
+        </div>
+      </div>
+
+      <div class="percent-card">
+        <h3>Percentage Change / Difference</h3>
+        <div class="inline-calc">
+          <span>From</span>
+          <input type="number" [ngModel]="diffA()" (ngModelChange)="diffA.set($event)" />
+          <span>to</span>
+          <input type="number" [ngModel]="diffB()" (ngModelChange)="diffB.set($event)" />
+          <span>=</span>
+          <strong [class.positive]="diffResult().startsWith('+')">{{ diffResult() }}</strong>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,62 @@
+<div class="base64-container">
+  <div class="header">
+    <h2>Base64 Encoder / Decoder</h2>
+    <p class="subtitle">Convert text, code, images, and binary files to and from Base64 data URLs instantly.</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn" [class.active]="mode() === 'text'" (click)="mode.set('text')">Text / String</button>
+    <button class="tab-btn" [class.active]="mode() === 'file'" (click)="mode.set('file')">File & Images</button>
+  </div>
+
+  @if (mode() === 'text') {
+    <div class="text-mode">
+      <div class="panes">
+        <div class="pane">
+          <label>Input</label>
+          <textarea [(ngModel)]="textInput" placeholder="Type or paste text/Base64 here..."></textarea>
+          <div class="actions">
+            <button class="btn btn-primary" (click)="encodeText()">Encode to Base64</button>
+            <button class="btn btn-secondary" (click)="decodeText()">Decode from Base64</button>
+          </div>
+        </div>
+
+        <div class="pane">
+          <div class="pane-header">
+            <label>Output</label>
+            @if (textOutput()) {
+              <button class="copy-btn" (click)="copy(textOutput())">{{ copied() ? '✓ Copied' : 'Copy' }}</button>
+            }
+          </div>
+          <textarea readonly [value]="textOutput()" placeholder="Result appears here..."></textarea>
+          @if (textError()) {
+            <div class="error-msg">{{ textError() }}</div>
+          }
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="file-mode">
+      <div class="upload-zone" (click)="fileIn.click()">
+        <input #fileIn type="file" (change)="onFileSelected($event)" style="display: none;" />
+        <div class="icon">📁</div>
+        <h3>Select any file or image</h3>
+        <p>Converts to Data URL Base64 scheme directly in your browser.</p>
+      </div>
+
+      @if (fileBase64()) {
+        <div class="file-result">
+          <div class="file-meta">
+            <strong>{{ fileName() }}</strong> ({{ fileMime() }})
+            <div class="result-actions">
+              <button class="btn btn-secondary" (click)="copy(fileBase64())">{{ copied() ? '✓ Copied' : 'Copy Base64 Data' }}</button>
+              <button class="btn btn-primary" (click)="downloadDecodedFile()">Download File</button>
+            </div>
+          </div>
+          <textarea readonly class="base64-box" [value]="fileBase64()"></textarea>
+        </div>
+      }
+    </div>
+  }
+</div>
+

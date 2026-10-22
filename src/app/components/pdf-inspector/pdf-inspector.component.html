@@ -1,0 +1,181 @@
+<div class="tool-content">
+  <div class="tool-header">
+    <div class="header-titles">
+      <div class="title-with-badge">
+        <h2>PDF Hidden-Layer & JavaScript Inspector</h2>
+        <span class="badge-vault">Static Heuristic Engine</span>
+      </div>
+      <p class="tool-desc">
+        Deep structural analysis of PDF files. Detect embedded JavaScript payloads, /OpenAction auto-execution, /Launch binary triggers, Optional Content Groups (hidden/conditional layers), and malicious droppers.
+      </p>
+    </div>
+    <div class="device-badge">
+      <span class="green-dot"></span>
+      <span>100% In-Browser &bull; Safe Sandboxed Audit</span>
+    </div>
+  </div>
+
+  <div class="inspector-card">
+    <div class="drop-zone-wrap" (drop)="onDrop($event)" (dragover)="onDragOver($event)">
+      <input type="file" id="pdfInspectInput" accept=".pdf" (change)="onFileSelected($event)" class="file-input" />
+      <label for="pdfInspectInput" class="drop-label">
+        <i class="lni lni-shield"></i>
+        @if (fileName()) {
+          <div class="file-chosen">
+            <span class="name">{{ fileName() }}</span>
+            <span class="size">{{ fileSize() }}</span>
+          </div>
+          <span class="hint">Click or drop another PDF to re-scan</span>
+        } @else {
+          <span class="main-text">Select or drag & drop a PDF document for security analysis</span>
+          <span class="sub-text">Scans dictionary tree for scripts, hidden OCG layers, and execution vectors</span>
+        }
+      </label>
+    </div>
+
+    <div class="demo-bar">
+      <span>Need a test file?</span>
+      <button class="btn-demo" (click)="loadSampleMaliciousPdf()">
+        ⚡ Load Virtual Sample with JavaScript & Hidden Layer
+      </button>
+    </div>
+
+    @if (isAnalyzing()) {
+      <div class="scanning-state">
+        <div class="radar-spinner"></div>
+        <span>Dissecting PDF Object Tree & Decompressing Streams...</span>
+      </div>
+    }
+
+    @if (errorMessage()) {
+      <div class="alert-box error">
+        <span class="alert-icon">⚠️</span>
+        <div class="alert-text">{{ errorMessage() }}</div>
+      </div>
+    }
+
+    <!-- Analysis Dashboard -->
+    @if (metadata(); as meta) {
+      <div class="dashboard">
+        <!-- Threat Overview Cards -->
+        <div class="summary-cards">
+          <div class="summary-card" [class.danger]="meta.hasJavaScript">
+            <span class="card-icon">⚡</span>
+            <div class="card-info">
+              <span class="val">{{ meta.hasJavaScript ? 'DETECTED' : 'CLEAR' }}</span>
+              <span class="lbl">Embedded JavaScript</span>
+            </div>
+          </div>
+
+          <div class="summary-card" [class.warning]="meta.hasHiddenLayers">
+            <span class="card-icon">👁️</span>
+            <div class="card-info">
+              <span class="val">{{ meta.hasHiddenLayers ? 'PRESENT' : 'NONE' }}</span>
+              <span class="lbl">Hidden / OCG Layers</span>
+            </div>
+          </div>
+
+          <div class="summary-card" [class.danger]="meta.hasLaunchActions">
+            <span class="card-icon">🚀</span>
+            <div class="card-info">
+              <span class="val">{{ meta.hasLaunchActions ? 'TRIGGER FOUND' : 'CLEAR' }}</span>
+              <span class="lbl">/Launch Action Exec</span>
+            </div>
+          </div>
+
+          <div class="summary-card" [class.warning]="meta.hasEmbeddedFiles">
+            <span class="card-icon">📎</span>
+            <div class="card-info">
+              <span class="val">{{ meta.hasEmbeddedFiles ? 'ATTACHED' : 'NONE' }}</span>
+              <span class="lbl">Embedded Payloads</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Structural Metadata -->
+        <div class="meta-strip">
+          <div class="meta-cell"><span class="k">PDF Spec:</span> <span class="v">v{{ meta.pdfVersion }}</span></div>
+          <div class="meta-cell"><span class="k">Total Pages:</span> <span class="v">{{ meta.pageCount }}</span></div>
+          <div class="meta-cell"><span class="k">File Size:</span> <span class="v">{{ fileSize() }}</span></div>
+          <div class="meta-cell"><span class="k">Outbound Links:</span> <span class="v">{{ meta.hasExternalUris ? 'Yes' : 'No' }}</span></div>
+        </div>
+
+        <!-- Security Findings Table -->
+        <div class="findings-section">
+          <div class="section-heading">
+            <h3>Discovered Security Vectors ({{ findings().length }})</h3>
+          </div>
+
+          @if (findings().length === 0) {
+            <div class="clean-badge">
+              <span class="badge-icon">✓</span>
+              <div class="clean-text">
+                <strong>Clean PDF Structure</strong>
+                <span>No executable scripts, /OpenAction triggers, or hidden layer anomalies detected.</span>
+              </div>
+            </div>
+          } @else {
+            <div class="findings-list">
+              @for (item of findings(); track item.name) {
+                <div class="finding-card" [class]="item.severity.toLowerCase()">
+                  <div class="finding-top">
+                    <div class="badge-row">
+                      <span class="sev-tag" [class]="item.severity.toLowerCase()">{{ item.severity }}</span>
+                      <span class="cat-tag">{{ item.category }}</span>
+                      <span class="occ-count">{{ item.occurrences }} event(s)</span>
+                    </div>
+                    <span class="finding-name">{{ item.name }}</span>
+                  </div>
+                  <p class="finding-desc">{{ item.description }}</p>
+                  @if (item.snippet) {
+                    <div class="code-snippet">{{ item.snippet }}</div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Extracted JavaScript Scripts -->
+        @if (extractedScripts().length > 0) {
+          <div class="extracted-box">
+            <div class="box-head">
+              <h4>Extracted JavaScript Payloads ({{ extractedScripts().length }})</h4>
+            </div>
+            <div class="scripts-stack">
+              @for (script of extractedScripts(); track $index) {
+                <div class="script-card">
+                  <div class="script-header">
+                    <span class="script-lbl">Payload #{{ $index + 1 }}</span>
+                    <button class="btn-copy" (click)="copyScript(script, $index)">
+                      {{ copiedIndex() === $index ? 'Copied' : 'Copy JS Code' }}
+                    </button>
+                  </div>
+                  <pre class="script-code"><code>{{ script }}</code></pre>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Extracted Hidden Layers -->
+        @if (extractedLayers().length > 0) {
+          <div class="extracted-box">
+            <div class="box-head">
+              <h4>Optional Content Groups / Layer Dictionaries ({{ extractedLayers().length }})</h4>
+            </div>
+            <div class="layers-grid">
+              @for (layer of extractedLayers(); track layer) {
+                <div class="layer-pill">
+                  <span class="layer-icon">🗂️</span>
+                  <span class="layer-name">{{ layer }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+

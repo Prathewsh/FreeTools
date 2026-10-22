@@ -1,0 +1,235 @@
+<div class="tool-content">
+  <div class="tool-header">
+    <div class="header-titles">
+      <div class="title-with-badge">
+        <h2>SSL/TLS Certificate Inspector</h2>
+        <span class="badge-vault">X.509 &bull; WebPKI</span>
+      </div>
+      <p class="tool-desc">
+        Audit SSL/TLS certificates. Inspect Subject, Issuer, Validity periods, Subject Alternative Names (SANs), serial numbers, and cryptographic fingerprints via live host CT queries or supplied PEM/CRT files.
+      </p>
+    </div>
+    <div class="device-badge">
+      <span class="green-dot"></span>
+      <span>CT Logs &bull; X.509 Cryptographic Audit</span>
+    </div>
+  </div>
+
+  <div class="cert-card">
+    <div class="mode-tabs">
+      <button class="mode-tab" [class.active]="mode() === 'remote'" (click)="mode.set('remote')">
+        <i class="lni lni-world"></i> Remote Hostname (CT Query)
+      </button>
+      <button class="mode-tab" [class.active]="mode() === 'paste'" (click)="mode.set('paste')">
+        <i class="lni lni-clipboard"></i> Paste PEM / CRT
+      </button>
+      <button class="mode-tab" [class.active]="mode() === 'file'" (click)="mode.set('file')">
+        <i class="lni lni-upload"></i> Upload Certificate File
+      </button>
+    </div>
+
+    <!-- Mode 1: Remote Host -->
+    @if (mode() === 'remote') {
+      <div class="input-section">
+        <div class="url-input-wrap">
+          <span class="prefix">https://</span>
+          <input
+            type="text"
+            [(ngModel)]="remoteHost"
+            placeholder="domain.com (e.g. github.com, cloudflare.com, google.com)"
+            (keyup.enter)="inspectRemote()"
+          />
+          <button class="btn-inspect" [disabled]="isLoading()" (click)="inspectRemote()">
+            @if (isLoading()) {
+              <span class="spinner"></span>
+            } @else {
+              <span>Inspect Certificate</span>
+            }
+          </button>
+        </div>
+        <div class="host-presets">
+          <span class="preset-label">Quick check:</span>
+          <button type="button" (click)="selectPreset('github.com')">github.com</button>
+          <button type="button" (click)="selectPreset('cloudflare.com')">cloudflare.com</button>
+          <button type="button" (click)="selectPreset('google.com')">google.com</button>
+          <button type="button" (click)="selectPreset('wikipedia.org')">wikipedia.org</button>
+        </div>
+      </div>
+    }
+
+    <!-- Mode 2: Paste PEM -->
+    @if (mode() === 'paste') {
+      <div class="input-section">
+        <div class="paste-header">
+          <label>X.509 PEM Certificate Block</label>
+          <button class="btn-text-action" (click)="loadSample()">Load Sample Certificate</button>
+        </div>
+        <textarea
+          class="pem-textarea"
+          [(ngModel)]="pastedPem"
+          placeholder="-----BEGIN CERTIFICATE-----&#10;MII...&#10;-----END CERTIFICATE-----"
+          rows="7"
+        ></textarea>
+        <button class="btn-inspect" [disabled]="isLoading() || !pastedPem()" (click)="inspectPem()">
+          @if (isLoading()) {
+            <span class="spinner"></span>
+          } @else {
+            <span>Parse & Inspect Certificate</span>
+          }
+        </button>
+      </div>
+    }
+
+    <!-- Mode 3: Upload File -->
+    @if (mode() === 'file') {
+      <div class="input-section">
+        <div class="file-upload-box">
+          <input type="file" id="certFile" accept=".pem,.crt,.cer,.txt" (change)="onFileSelected($event)" />
+          <label for="certFile">
+            <i class="lni lni-upload"></i>
+            <span>Drop .crt / .pem file here or click to browse</span>
+          </label>
+        </div>
+      </div>
+    }
+
+    @if (errorMessage()) {
+      <div class="alert-box error">
+        <span class="alert-icon">⚠️</span>
+        <div class="alert-text">{{ errorMessage() }}</div>
+      </div>
+    }
+
+    <!-- Results Display -->
+    @if (cert(); as c) {
+      <div class="results-dashboard">
+        <!-- Top Status Bar -->
+        <div class="status-banner" [class.expired]="c.isExpired">
+          <div class="status-left">
+            <span class="status-badge" [class.valid]="!c.isExpired" [class.expired]="c.isExpired">
+              {{ c.isExpired ? 'EXPIRED' : 'VALID' }}
+            </span>
+            <span class="primary-cn">{{ c.commonName }}</span>
+          </div>
+          <div class="validity-countdown">
+            @if (c.isExpired) {
+              <span class="days expired">Expired {{ -c.daysRemaining }} days ago</span>
+            } @else {
+              <span class="days valid">{{ c.daysRemaining }} days remaining</span>
+            }
+          </div>
+        </div>
+
+        <div class="details-grid">
+          <!-- Subject -->
+          <div class="detail-card">
+            <div class="card-head">
+              <span class="lbl">Subject (Owner)</span>
+              <button class="btn-copy" (click)="copy(c.subject, 'subj')">
+                {{ copiedField() === 'subj' ? 'Copied' : 'Copy' }}
+              </button>
+            </div>
+            <div class="val">{{ c.subject }}</div>
+          </div>
+
+          <!-- Issuer -->
+          <div class="detail-card">
+            <div class="card-head">
+              <span class="lbl">Certificate Authority (Issuer)</span>
+              <button class="btn-copy" (click)="copy(c.issuer, 'issuer')">
+                {{ copiedField() === 'issuer' ? 'Copied' : 'Copy' }}
+              </button>
+            </div>
+            <div class="val">{{ c.issuer }}</div>
+          </div>
+
+          <!-- Validity Dates -->
+          <div class="detail-card">
+            <div class="card-head">
+              <span class="lbl">Valid From (Not Before)</span>
+            </div>
+            <div class="val mono">{{ c.validFrom }}</div>
+          </div>
+
+          <div class="detail-card">
+            <div class="card-head">
+              <span class="lbl">Valid Until (Not After)</span>
+            </div>
+            <div class="val mono">{{ c.validTo }}</div>
+          </div>
+
+          <!-- Serial & Algorithm -->
+          <div class="detail-card">
+            <div class="card-head">
+              <span class="lbl">Serial Number</span>
+              <button class="btn-copy" (click)="copy(c.serialNumber, 'serial')">
+                {{ copiedField() === 'serial' ? 'Copied' : 'Copy' }}
+              </button>
+            </div>
+            <div class="val mono">{{ c.serialNumber }}</div>
+          </div>
+
+          <div class="detail-card">
+            <div class="card-head">
+              <span class="lbl">Signature & Key Type</span>
+            </div>
+            <div class="val">{{ c.signatureAlgorithm }} &bull; {{ c.keyType }}</div>
+          </div>
+
+          <!-- Fingerprint SHA-256 -->
+          <div class="detail-card full">
+            <div class="card-head">
+              <span class="lbl">SHA-256 Fingerprint / CT Record</span>
+              <button class="btn-copy" (click)="copy(c.fingerprintSha256, 'fp256')">
+                {{ copiedField() === 'fp256' ? 'Copied' : 'Copy' }}
+              </button>
+            </div>
+            <div class="val mono">{{ c.fingerprintSha256 }}</div>
+          </div>
+
+          <!-- SAN List -->
+          <div class="detail-card full">
+            <div class="card-head">
+              <span class="lbl">Subject Alternative Names (SANs) &mdash; {{ c.sanList.length }} entries</span>
+            </div>
+            <div class="san-pill-list">
+              @for (san of c.sanList; track san) {
+                <span class="san-pill">{{ san }}</span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- History Records if Remote -->
+        @if (remoteHistory().length > 1) {
+          <div class="history-section">
+            <div class="history-title">Previous Certificate Transparency Log Issuances</div>
+            <div class="history-table-wrap">
+              <table class="history-table">
+                <thead>
+                  <tr>
+                    <th>Common Name</th>
+                    <th>Issuer</th>
+                    <th>Valid Period</th>
+                    <th>Serial</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (h of remoteHistory(); track h.serialNumber) {
+                    <tr>
+                      <td class="font-bold">{{ h.commonName }}</td>
+                      <td class="text-subtle">{{ h.issuer }}</td>
+                      <td class="mono">{{ h.notBefore }} &rarr; {{ h.notAfter }}</td>
+                      <td class="mono font-xs">{{ h.serialNumber }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+

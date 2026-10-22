@@ -1,0 +1,92 @@
+<div class="simple-tool-card">
+  <div class="card-header">
+    <span class="card-title">Screenshot &amp; Annotation Studio</span>
+    <div class="device-badge">
+      <span class="green-dot"></span>
+      <span>In-browser screen grab &amp; mockups</span>
+    </div>
+  </div>
+
+  <div class="editor-layout">
+    <aside class="editor-options" aria-label="Tool options">
+      <div class="options-heading">ANNOTATION TOOLS <span>Markup</span></div>
+
+      <div class="tools-grid">
+        <button [class.active]="activeTool() === 'arrow'" (click)="activeTool.set('arrow')" title="Arrow pointer"><i class="lni lni-arrow-top-right"></i> Arrow</button>
+        <button [class.active]="activeTool() === 'rect'" (click)="activeTool.set('rect')" title="Rectangle"><i class="lni lni-frame-expand"></i> Box</button>
+        <button [class.active]="activeTool() === 'circle'" (click)="activeTool.set('circle')" title="Circle / Ellipse"><i class="lni lni-circle"></i> Circle</button>
+        <button [class.active]="activeTool() === 'step'" (click)="activeTool.set('step')" title="Numbered step badge"><i class="lni lni-target"></i> Step #</button>
+        <button [class.active]="activeTool() === 'text'" (click)="activeTool.set('text')" title="Text label"><i class="lni lni-text-format"></i> Text</button>
+        <button [class.active]="activeTool() === 'blur'" (click)="activeTool.set('blur')" title="Pixelate / Blur brush"><i class="lni lni-eye"></i> Redact</button>
+        <button [class.active]="activeTool() === 'freehand'" (click)="activeTool.set('freehand')" title="Freehand draw"><i class="lni lni-pencil"></i> Draw</button>
+      </div>
+
+      <div class="options-heading mt-3">PROPERTIES <span>Styles</span></div>
+      <div class="prop-group">
+        <label>Stroke Color:</label>
+        <div class="color-presets">
+          @for (c of ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#ffffff']; track c) {
+            <span class="color-dot" [style.background]="c" [class.selected]="strokeColor() === c" (click)="strokeColor.set(c)"></span>
+          }
+        </div>
+      </div>
+
+      <div class="prop-group">
+        <label>Stroke Width ({{ strokeWidth() }}px):</label>
+        <input type="range" min="1" max="15" [ngModel]="strokeWidth()" (ngModelChange)="strokeWidth.set($event)" />
+      </div>
+
+      <div class="options-heading mt-3">DEVICE MOCKUP <span>Frame</span></div>
+      <div class="mockup-select">
+        <button [class.active]="mockupFrame() === 'none'" (click)="mockupFrame.set('none')">None</button>
+        <button [class.active]="mockupFrame() === 'mac'" (click)="mockupFrame.set('mac')">macOS Window</button>
+        <button [class.active]="mockupFrame() === 'browser'" (click)="mockupFrame.set('browser')">Minimal Frame</button>
+      </div>
+
+      <div class="actions-stack mt-4">
+        <button class="btn-ghost-dark" (click)="undo()"><i class="lni lni-reply"></i> Undo</button>
+        <button class="btn-ghost-dark" (click)="currentStep.set(1)">Reset Step Count</button>
+      </div>
+    </aside>
+
+    <div class="editor-stage">
+      @if (!hasImage()) {
+        <div class="empty-dropzone" (click)="fileIn.click()">
+          <div class="box-arrow-icon"><i class="lni lni-camera"></i></div>
+          <h2 class="dropzone-title">Capture or Drop Screenshot</h2>
+          <p class="dropzone-sub">Grab an active browser window or upload an existing image to annotate.</p>
+          <div class="dropzone-actions" (click)="$event.stopPropagation()">
+            <button class="btn-primary-blue" (click)="captureScreen()">
+              <i class="lni lni-video"></i> Capture Screen
+            </button>
+            <button class="btn-secondary-dark" (click)="fileIn.click()">
+              <i class="lni lni-upload"></i> Browse Image
+            </button>
+          </div>
+          <input #fileIn type="file" accept="image/*" (change)="onFileSelected($event)" style="display: none;" />
+        </div>
+      }
+
+      <div class="canvas-scroll-wrapper" [class.hidden]="!hasImage()">
+        <canvas
+          #stageCanvas
+          class="annotation-canvas"
+          (mousedown)="onMouseDown($event)"
+          (mousemove)="onMouseMove($event)"
+          (mouseup)="onMouseUp()"
+        ></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-footer">
+    <div class="footer-status-text">
+      <span>Ready &bull; Tool: {{ activeTool().toUpperCase() }}</span>
+    </div>
+    <div class="footer-actions-group">
+      <button class="btn-ghost-dark" [disabled]="!hasImage()" (click)="exportImage('jpeg')">Export JPEG</button>
+      <button class="btn-primary-blue" [disabled]="!hasImage()" (click)="exportImage('png')">Export Lossless PNG</button>
+    </div>
+  </div>
+</div>
+

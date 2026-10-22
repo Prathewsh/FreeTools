@@ -1,0 +1,131 @@
+.subtool-bar {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid #303137;
+  padding: 10px 24px;
+  background: #1b1c20;
+
+  button {
+    background: transparent;
+    border: 1px solid #303137;
+    border-radius: 6px;
+    padding: 7px 14px;
+    font-size: 12px;
+    color: #9b9ea9;
+    cursor: pointer;
+
+    &.active {
+      background: #30372b;
+      border-color: #49533e;
+      color: #c1e993;
+    }
+  }
+}
+
+.hash-content-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.section-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #838794;
+  font-weight: 700;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.hash-textarea {
+  width: 100%;
+  background: #141519;
+  border: 1px solid #303137;
+  border-radius: 6px;
+  padding: 12px;
+  color: #e4e5e9;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+
+  &:focus { border-color: #c1e993; }
+}
+
+.file-drop-box {
+  background: #141519;
+  border: 1.5px dashed #3d4a34;
+  border-radius: 8px;
+  padding: 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  gap: 8px;
+
+  .file-icon { font-size: 32px; color: #c1e993; }
+  h3 { margin: 0; font-size: 14px; color: #cfd2db; }
+  .file-pill {
+    background: #30372b;
+    border: 1px solid #49533e;
+    color: #c1e993;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-family: var(--font-mono);
+  }
+}
+
+.hashes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hash-card {
+  background: #191a1f;
+  border: 1px solid #303137;
+  border-radius: 6px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .hash-hdr {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .algo-badge {
+      font-size: 11px;
+      font-weight: 700;
+      color: #c1e993;
+      letter-spacing: 0.05em;
+
+      &.legacy { color: #f59e0b; }
+    }
+
+    .btn-copy {
+      background: #141519;
+      border: 1px solid #303137;
+      color: #9ea2af;
+      padding: 3px 8px;
+      font-size: 11px;
+      border-radius: 4px;
+      cursor: pointer;
+
+      &:hover { color: #fff; background: #252830; }
+    }
+  }
+
+  .hash-val {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: #cfd2db;
+    word-break: break-all;
+    line-height: 1.5;
+  }
+}
+

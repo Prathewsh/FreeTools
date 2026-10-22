@@ -1,0 +1,124 @@
+.signals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .signal-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #141519;
+    border-radius: 6px;
+    border: 1px solid #303137;
+    font-size: 11px;
+
+    .signal-lbl { color: #838794; }
+    .signal-val {
+      font-weight: 600;
+      color: #e4e5e9;
+      &.active { color: #c1e993; }
+    }
+  }
+}
+
+.tags-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  .tags-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #838794;
+  }
+
+  .tag-card {
+    background: #141519;
+    border: 1px solid #303137;
+    border-radius: 6px;
+    padding: 10px 12px;
+
+    .tag-hdr {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+
+      strong { font-size: 11px; color: #c1e993; font-weight: 600; }
+      .tag-origin { font-size: 9px; color: #838794; background: #191a1f; padding: 1px 6px; border-radius: 4px; font-family: var(--font-mono); }
+    }
+
+    .tag-val {
+      font-size: 10px;
+      color: #cfd2db;
+      font-family: var(--font-mono);
+      word-break: break-all;
+    }
+  }
+}
+
+.inspector-stage-active {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.verdict-banner {
+  padding: 14px 20px;
+  border-radius: 8px;
+  background: #141519;
+  border: 1px solid #303137;
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+
+  &.ai-detected {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: #ef4444;
+    .verdict-title { color: #fca5a5; }
+  }
+
+  &.camera-detected {
+    background: #30372b;
+    border-color: #49533e;
+    .verdict-title { color: #c1e993; }
+  }
+
+  .verdict-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: #e4e5e9;
+  }
+
+  .verdict-desc {
+    font-size: 12px;
+    color: #838794;
+    margin-top: 4px;
+  }
+}
+
+.inspector-preview-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  img {
+    max-height: 380px;
+    max-width: 100%;
+    object-fit: contain;
+    background: #141519;
+    border: 1px solid #303137;
+    border-radius: 8px;
+  }
+
+  .file-caption {
+    font-size: 11px;
+    color: #838794;
+    font-family: var(--font-mono);
+  }
+}

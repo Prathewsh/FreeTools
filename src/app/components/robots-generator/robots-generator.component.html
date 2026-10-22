@@ -1,0 +1,72 @@
+<div class="simple-tool-card">
+  <div class="card-header">
+    <span class="card-title">Robots.txt Generator &amp; Validator</span>
+    <div class="device-badge"><span class="green-dot"></span><span>SEO crawler directives</span></div>
+  </div>
+
+  <div class="editor-layout">
+    <aside class="editor-options">
+      <div class="options-heading">GLOBAL DIRECTIVES <span>Sitemap</span></div>
+      <div class="input-block">
+        <label>Sitemap URL:</label>
+        <input type="text" [ngModel]="sitemapUrl()" (ngModelChange)="sitemapUrl.set($event)" placeholder="https://site.com/sitemap.xml" />
+      </div>
+
+      <div class="input-block mt-2">
+        <label>Canonical Host:</label>
+        <input type="text" [ngModel]="hostUrl()" (ngModelChange)="hostUrl.set($event)" placeholder="https://site.com" />
+      </div>
+
+      <div class="options-heading mt-4">RULES BUILDER <span>User agents</span></div>
+      <button class="btn-ghost-dark" (click)="addRule()">+ Add User-Agent Block</button>
+    </aside>
+
+    <div class="editor-stage rules-stage">
+      <div class="rules-list-container">
+        @for (rule of rules(); track rule.id; let idx = $index) {
+          <div class="rule-card">
+            <div class="rule-hdr">
+              <div class="ua-input-wrap">
+                <span class="lbl">User-agent:</span>
+                <input type="text" [(ngModel)]="rule.userAgent" placeholder="* or Googlebot" class="ua-in" />
+              </div>
+              <button class="btn-del" (click)="removeRule(rule.id)" title="Delete rule block">✕</button>
+            </div>
+
+            <div class="paths-grid">
+              <div class="path-col">
+                <div class="path-hdr"><span class="green">✓ Allow</span> <button (click)="addAllowPath(rule)">+ Add</button></div>
+                @for (p of rule.allowPaths; track $index; let i = $index) {
+                  <input type="text" [(ngModel)]="rule.allowPaths[i]" class="path-in" />
+                }
+              </div>
+
+              <div class="path-col">
+                <div class="path-hdr"><span class="red">✕ Disallow</span> <button (click)="addDisallowPath(rule)">+ Add</button></div>
+                @for (p of rule.disallowPaths; track $index; let i = $index) {
+                  <input type="text" [(ngModel)]="rule.disallowPaths[i]" class="path-in" />
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="output-preview-container">
+        <div class="preview-hdr">
+          <span>Live Generated robots.txt</span>
+          <button class="btn-copy" (click)="copyRobots()">Copy</button>
+        </div>
+        <pre class="robots-pre"><code>{{ generatedRobotsTxt() }}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-footer">
+    <div class="footer-status-text"><span>{{ rules().length }} User-Agent Blocks Configured</span></div>
+    <div class="footer-actions-group">
+      <button class="btn-primary-blue" (click)="downloadRobots()">Download robots.txt &rarr;</button>
+    </div>
+  </div>
+</div>
+

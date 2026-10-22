@@ -1,0 +1,168 @@
+<div class="simple-tool-card">
+  <div class="card-header">
+    <span class="card-title">PNG Color Replacer</span>
+    <div class="device-badge">
+      <span class="green-dot"></span>
+      <span>Files stay on your device</span>
+    </div>
+  </div>
+
+  <div class="editor-layout">
+    <aside class="editor-options" aria-label="Tool options">
+      <div class="sidebar-intro">
+        <span class="sidebar-kicker">COLOR REPLACER</span>
+        <strong>Swap any color</strong>
+        <span>Replace colors in your PNG instantly. Pick from the image or enter values.</span>
+      </div>
+
+      @if (!hasImage()) {
+        <p class="options-hint">Upload a PNG image to start replacing colors.</p>
+      }
+
+      @if (hasImage()) {
+        <div class="replacer-controls">
+          <!-- Source Color -->
+          <div class="color-section">
+            <div class="section-title"><span>Source color</span><small>Color to find</small></div>
+            <div class="color-pick-row">
+              <input type="color" [ngModel]="sourceColor()" (ngModelChange)="setSourceColor($event)" class="color-swatch-input" />
+              <input type="text" [ngModel]="sourceColor()" (ngModelChange)="setSourceColor($event)" class="hex-input" placeholder="#ff0000" />
+              <button class="pick-btn" [class.active]="pickMode() === 'source'" (click)="startPick('source')" title="Pick from image">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L12 6"/><path d="M12 18L12 22"/><path d="M2 12L6 12"/><path d="M18 12L22 12"/><circle cx="12" cy="12" r="4"/></svg>
+              </button>
+            </div>
+            <div class="rgb-preview">rgb({{ sourceColorRgb().r }}, {{ sourceColorRgb().g }}, {{ sourceColorRgb().b }})</div>
+          </div>
+
+          <!-- Target Color -->
+          <div class="color-section">
+            <div class="section-title"><span>Replacement color</span><small>New color</small></div>
+            <div class="color-pick-row">
+              <input type="color" [ngModel]="targetColor()" (ngModelChange)="setTargetColor($event)" class="color-swatch-input" />
+              <input type="text" [ngModel]="targetColor()" (ngModelChange)="setTargetColor($event)" class="hex-input" placeholder="#0000ff" />
+              <button class="pick-btn" [class.active]="pickMode() === 'target'" (click)="startPick('target')" title="Pick from image">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L12 6"/><path d="M12 18L12 22"/><path d="M2 12L6 12"/><path d="M18 12L22 12"/><circle cx="12" cy="12" r="4"/></svg>
+              </button>
+            </div>
+            <div class="rgb-preview">rgb({{ targetColorRgb().r }}, {{ targetColorRgb().g }}, {{ targetColorRgb().b }})</div>
+          </div>
+
+          <!-- Tolerance -->
+          <div class="slider-section">
+            <div class="section-title"><span>Color tolerance</span><small>{{ tolerance() }}%</small></div>
+            <input type="range" min="0" max="100" step="1" [ngModel]="tolerance()" (ngModelChange)="setTolerance($event)" />
+            <div class="range-hints"><span>Exact match</span><span>Wide match</span></div>
+          </div>
+
+          <!-- Edge Smoothing -->
+          <div class="slider-section">
+            <div class="section-title"><span>Edge smoothing</span><small>{{ edgeSmoothing() }}%</small></div>
+            <input type="range" min="0" max="100" step="1" [ngModel]="edgeSmoothing()" (ngModelChange)="setEdgeSmoothing($event)" />
+            <div class="range-hints"><span>Sharp</span><span>Smooth</span></div>
+          </div>
+
+          <!-- Toggle Options -->
+          <div class="toggle-options">
+            <label class="toggle-row">
+              <input type="checkbox" [ngModel]="preserveShades()" (ngModelChange)="togglePreserveShades()" />
+              <div class="toggle-info">
+                <span>Preserve color shades</span>
+                <small>Keep original lightness and gradients</small>
+              </div>
+            </label>
+            <label class="toggle-row">
+              <input type="checkbox" [ngModel]="showMask()" (ngModelChange)="toggleMask()" />
+              <div class="toggle-info">
+                <span>Preview mask</span>
+                <small>Show which pixels are matched</small>
+              </div>
+            </label>
+          </div>
+
+          <!-- Stats -->
+          <div class="match-stats">
+            <div class="stat-row">
+              <span>Matched pixels</span>
+              <strong>{{ matchedPixels().toLocaleString() }} / {{ totalPixels().toLocaleString() }}</strong>
+            </div>
+            <div class="stat-row">
+              <span>Coverage</span>
+              <strong>{{ matchPercentage() }}%</strong>
+            </div>
+          </div>
+        </div>
+      }
+    </aside>
+
+    <section class="editor-stage" aria-label="Canvas workspace">
+      <div class="inner-dropzone-container" (dragover)="$event.preventDefault()" (drop)="onDropFile($event)">
+        @if (!hasImage()) {
+          <div class="empty-dropzone" (click)="fileInput.click()">
+            <div class="box-arrow-icon">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="13.5" cy="6.5" r="2.5"/><path d="M7 13c1.33-2 3.33-3 6-3s4.67 1 6 3"/><rect x="3" y="3" width="18" height="18" rx="2"/>
+              </svg>
+            </div>
+            <h3 class="dropzone-title">Choose a PNG or drop here</h3>
+            <p class="dropzone-sub">Replace any color in your image with a new one. Pick colors directly from the image or enter hex values.</p>
+            <div class="dropzone-actions" (click)="$event.stopPropagation()">
+              <button class="btn-primary-blue" (click)="fileInput.click()">Choose image file</button>
+            </div>
+            <span class="dropzone-fine">Runs in browser memory &bull; Zero telemetry or uploads</span>
+          </div>
+        } @else {
+          <div class="active-studio-stage">
+            <div class="stage-sub-bar">
+              <div class="stage-info">
+                <span class="dim-label">{{ imageDimensions().width }} &times; {{ imageDimensions().height }} px</span>
+                @if (pickMode()) {
+                  <span class="pick-indicator">Click on the input image to pick a color</span>
+                }
+              </div>
+              <div class="stage-sub-actions">
+                <button class="btn-ghost-dark" (click)="fileInput.click()">Change image</button>
+              </div>
+            </div>
+
+            <div class="dual-canvas-view">
+              <div class="canvas-panel">
+                <div class="panel-label">Input</div>
+                <div class="canvas-viewport checkerboard-pattern" [class.pick-cursor]="pickMode()">
+                  <div class="canvas-container">
+                    <canvas #sourceCanvas class="fitted-canvas" (click)="onCanvasClick($event)"></canvas>
+                  </div>
+                </div>
+              </div>
+              <div class="canvas-panel">
+                <div class="panel-label">{{ showMask() ? 'Mask Preview' : 'Output' }}</div>
+                <div class="canvas-viewport checkerboard-pattern">
+                  <div class="canvas-container">
+                    <canvas #outputCanvas class="fitted-canvas"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+        <input #fileInput type="file" accept="image/*" (change)="onFileSelected($event)" style="display: none" />
+      </div>
+    </section>
+  </div>
+
+  <div class="card-footer">
+    <div class="footer-status-text">
+      @if (hasImage()) {
+        <span>{{ imageDimensions().width }} &times; {{ imageDimensions().height }} px &bull; {{ matchedPixels().toLocaleString() }} pixels matched</span>
+      } @else {
+        <span>Choose an image to get started.</span>
+      }
+    </div>
+    <div class="footer-actions-group">
+      <button class="btn-ghost-dark" [disabled]="!hasImage()" (click)="copyResult()">Copy Image</button>
+      <button class="btn-primary-blue" [disabled]="!hasImage() || isProcessing()" (click)="downloadResult()">
+        Download PNG &rarr;
+      </button>
+    </div>
+  </div>
+</div>
+

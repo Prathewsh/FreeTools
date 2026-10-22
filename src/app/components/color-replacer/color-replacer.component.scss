@@ -1,0 +1,251 @@
+/* Color Replacer - component styles */
+
+.replacer-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.color-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.color-pick-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.color-swatch-input {
+  width: 38px;
+  height: 38px;
+  border: 2px solid #3b3e47;
+  border-radius: 6px;
+  padding: 2px;
+  cursor: pointer;
+  background: transparent;
+
+  &::-webkit-color-swatch-wrapper { padding: 0; }
+  &::-webkit-color-swatch { border: none; border-radius: 4px; }
+}
+
+.hex-input {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 12px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pick-btn {
+  width: 38px;
+  height: 38px;
+  border: 1px solid #3b3e47;
+  border-radius: 6px;
+  background: #292b32;
+  color: #9b9ea9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &:hover { background: #343740; color: #fff; }
+  &.active { border-color: #c1e993; color: #c1e993; background: #30372b; }
+}
+
+.rgb-preview {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: #6b7280;
+  padding-left: 2px;
+}
+
+.slider-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  > span {
+    color: #d9dbe0;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  small {
+    color: #7e8491;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 400;
+  }
+}
+
+.range-hints {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #626875;
+  font-size: 8px;
+}
+
+.toggle-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #34363f;
+  border-radius: 8px;
+  background: #191a1f;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+
+  input[type="checkbox"] {
+    margin-top: 2px;
+    accent-color: #c1e993;
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+  }
+}
+
+.toggle-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  span {
+    color: #d1d3d9;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  small {
+    color: #777d8a;
+    font-size: 10px;
+  }
+}
+
+.match-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid #34363f;
+  border-radius: 8px;
+  background: #191a1f;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+
+  span { color: #858996; }
+  strong {
+    color: #c1e993;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+  }
+}
+
+/* Dual canvas layout */
+.dual-canvas-view {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: #34363f;
+  flex: 1;
+}
+
+.canvas-panel {
+  display: flex;
+  flex-direction: column;
+  background: #191a1f;
+}
+
+.panel-label {
+  padding: 6px 14px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: #7d808b;
+  text-transform: uppercase;
+  background: #1e1f24;
+  border-bottom: 1px solid #34363f;
+}
+
+.pick-cursor {
+  cursor: crosshair !important;
+  canvas { cursor: crosshair !important; }
+}
+
+.stage-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dim-label {
+  font-size: 11px;
+  color: #858996;
+  font-family: var(--font-mono);
+}
+
+.pick-indicator {
+  font-size: 11px;
+  color: #c1e993;
+  animation: pulse-pick 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse-pick {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.sidebar-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .sidebar-kicker {
+    color: #c1e993;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+  }
+
+  strong {
+    color: #f2f3f5;
+    font-size: 16px;
+    font-weight: 560;
+    letter-spacing: -0.02em;
+  }
+
+  > span:last-child {
+    color: #858996;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+}
+
+@media (max-width: 900px) {
+  .dual-canvas-view {
+    grid-template-columns: 1fr;
+  }
+}
+

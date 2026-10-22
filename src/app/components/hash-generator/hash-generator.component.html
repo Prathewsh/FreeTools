@@ -1,0 +1,72 @@
+<div class="simple-tool-card">
+  <div class="card-header">
+    <span class="card-title">Cryptographic Hash Generator</span>
+    <div class="device-badge"><span class="green-dot"></span><span>Web Crypto API &bull; 100% In-memory</span></div>
+  </div>
+
+  <div class="subtool-bar">
+    <button [class.active]="mode() === 'text'" (click)="mode.set('text')">Text Input Hash</button>
+    <button [class.active]="mode() === 'file'" (click)="mode.set('file')">Binary File Hash Checksum</button>
+  </div>
+
+  <div class="hash-content-body">
+    @if (mode() === 'text') {
+      <div class="input-panel">
+        <label class="section-label">Input Plaintext:</label>
+        <textarea rows="4" [ngModel]="inputText()" (ngModelChange)="inputText.set($event); computeTextHashes()" class="hash-textarea" placeholder="Type or paste text..."></textarea>
+      </div>
+    } @else {
+      <div class="file-drop-box" (click)="fileIn.click()">
+        <input #fileIn type="file" (change)="onFileSelected($event)" style="display: none;" />
+        <i class="lni lni-protection file-icon"></i>
+        <h3>Click or Drop any file to compute checksums</h3>
+        @if (fileName()) {
+          <div class="file-pill">{{ fileName() }} ({{ fileSize() }})</div>
+        }
+      </div>
+    }
+
+    <div class="hashes-list mt-4">
+      <div class="hash-card">
+        <div class="hash-hdr">
+          <span class="algo-badge">SHA-256</span>
+          <button class="btn-copy" (click)="copyHash('sha256', sha256Hash())">
+            {{ copiedKey() === 'sha256' ? '✓ Copied' : 'Copy' }}
+          </button>
+        </div>
+        <div class="hash-val">{{ sha256Hash() }}</div>
+      </div>
+
+      <div class="hash-card">
+        <div class="hash-hdr">
+          <span class="algo-badge">SHA-384</span>
+          <button class="btn-copy" (click)="copyHash('sha384', sha384Hash())">
+            {{ copiedKey() === 'sha384' ? '✓ Copied' : 'Copy' }}
+          </button>
+        </div>
+        <div class="hash-val">{{ sha384Hash() }}</div>
+      </div>
+
+      <div class="hash-card">
+        <div class="hash-hdr">
+          <span class="algo-badge">SHA-512</span>
+          <button class="btn-copy" (click)="copyHash('sha512', sha512Hash())">
+            {{ copiedKey() === 'sha512' ? '✓ Copied' : 'Copy' }}
+          </button>
+        </div>
+        <div class="hash-val">{{ sha512Hash() }}</div>
+      </div>
+
+      <div class="hash-card">
+        <div class="hash-hdr">
+          <span class="algo-badge legacy">SHA-1 (Legacy)</span>
+          <button class="btn-copy" (click)="copyHash('sha1', sha1Hash())">
+            {{ copiedKey() === 'sha1' ? '✓ Copied' : 'Copy' }}
+          </button>
+        </div>
+        <div class="hash-val">{{ sha1Hash() }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+

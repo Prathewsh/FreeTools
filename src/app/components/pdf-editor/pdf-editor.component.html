@@ -1,0 +1,215 @@
+<div class="simple-tool-card">
+  <div class="card-header">
+    <span class="card-title">PDF Studio &amp; Word-style Editor</span>
+  </div>
+
+  <div class="subtool-bar">
+    <button [class.active]="mode() === 'doc-editor'" (click)="mode.set('doc-editor')">Content &amp; Document Editor</button>
+    <button [class.active]="mode() === 'merge'" (click)="mode.set('merge')">Merge PDFs</button>
+    <button [class.active]="mode() === 'split'" (click)="mode.set('split')">Split / Extract Pages</button>
+    <button [class.active]="mode() === 'rotate'" (click)="mode.set('rotate')">Rotate Pages</button>
+    <button [class.active]="mode() === 'metadata'" (click)="mode.set('metadata')">Edit Metadata</button>
+  </div>
+
+  <div class="pdf-workspace-body">
+    @if (mode() === 'doc-editor') {
+      <div class="word-editor-container">
+        <!-- Import Existing PDF into Editor Dropzone -->
+        <div 
+          class="import-pdf-dropzone" 
+          (click)="uploadExistingPdfInput.click()">
+          <input #uploadExistingPdfInput type="file" accept="application/pdf" (change)="onPdfUploadToEditor($event)" style="display: none" />
+          <div class="drop-left">
+            <div class="drop-icon-box">
+              <i class="lni lni-upload"></i>
+            </div>
+            <div class="drop-texts">
+              <span class="drop-title">Open &amp; Edit Existing PDF</span>
+              <span class="import-tip">Directly extracts text, headings, and formatting into the live Word-style sheet.</span>
+            </div>
+          </div>
+          <button type="button" class="btn-browse" (click)="$event.stopPropagation(); uploadExistingPdfInput.click()">
+            Browse PDF File
+          </button>
+        </div>
+
+        <!-- Word-like Toolbar -->
+        <div class="word-ribbon">
+          <div class="ribbon-group">
+            <input type="text" class="doc-title-input" [ngModel]="docTitle()" (ngModelChange)="docTitle.set($event)" placeholder="Document Title" />
+          </div>
+
+          <div class="ribbon-divider"></div>
+
+          <div class="ribbon-group">
+            <button class="ribbon-btn" (click)="execCmd('bold')" title="Bold (Ctrl+B)"><strong>B</strong></button>
+            <button class="ribbon-btn" (click)="execCmd('italic')" title="Italic (Ctrl+I)"><em>I</em></button>
+            <button class="ribbon-btn" (click)="execCmd('underline')" title="Underline (Ctrl+U)"><u>U</u></button>
+            <button class="ribbon-btn" (click)="execCmd('strikeThrough')" title="Strikethrough"><s>S</s></button>
+          </div>
+
+          <div class="ribbon-divider"></div>
+
+          <div class="ribbon-group">
+            <button class="ribbon-btn" (click)="insertHeading('h1')" title="Heading 1">H1</button>
+            <button class="ribbon-btn" (click)="insertHeading('h2')" title="Heading 2">H2</button>
+            <button class="ribbon-btn" (click)="insertHeading('p')" title="Paragraph">¶</button>
+          </div>
+
+          <div class="ribbon-divider"></div>
+
+          <div class="ribbon-group">
+            <button class="ribbon-btn" (click)="execCmd('justifyLeft')" title="Align Left">⇤</button>
+            <button class="ribbon-btn" (click)="execCmd('justifyCenter')" title="Center">⇋</button>
+            <button class="ribbon-btn" (click)="execCmd('justifyRight')" title="Align Right">⇥</button>
+            <button class="ribbon-btn" (click)="execCmd('insertUnorderedList')" title="Bullet List">• List</button>
+            <button class="ribbon-btn" (click)="execCmd('insertOrderedList')" title="Numbered List">1. List</button>
+          </div>
+
+          <div class="ribbon-divider"></div>
+
+          <div class="ribbon-group">
+            <select [ngModel]="docFont()" (ngModelChange)="docFont.set($event)">
+              <option value="sans">Modern Sans (Arial)</option>
+              <option value="serif">Classic Serif (Georgia)</option>
+              <option value="mono">Code / Monospace</option>
+            </select>
+
+            <select [ngModel]="pageSize()" (ngModelChange)="pageSize.set($event)">
+              <option value="a4">A4 Page</option>
+              <option value="letter">US Letter</option>
+              <option value="legal">US Legal</option>
+            </select>
+          </div>
+
+          <div class="ribbon-group actions-right">
+            <button class="btn-primary-blue export-btn" [disabled]="isGeneratingPdf()" (click)="exportDocumentAsPdf()">
+              {{ isGeneratingPdf() ? 'Generating PDF...' : 'Export to Vector PDF' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Word Page Document Viewport -->
+        <div class="word-sheet-viewport">
+          <div 
+            #editorSheet
+            class="word-page-sheet" 
+            [attr.data-size]="pageSize()"
+            [attr.data-font]="docFont()"
+            contenteditable="true"
+            spellcheck="true">
+            <h1>Document Title</h1>
+            <p>Start drafting your document here, or open an existing PDF using the button above to import and edit its text directly in this sheet.</p>
+            <h2>Heading Section</h2>
+            <p>You can format headings, lists, bold text, alignment, and export back to a clean vector PDF format.</p>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- 2. Merge Multiple PDFs -->
+    @if (mode() === 'merge') {
+      <div class="multi-pdf-tool">
+        <div class="pdf-dropzone" (click)="mergeFileInput.click()">
+          <input #mergeFileInput type="file" multiple accept="application/pdf" (change)="onMergeFilesSelected($event)" style="display: none" />
+          <div class="drop-icon">📑</div>
+          <h3>Select or Drop Multiple PDF Files</h3>
+          <p>Merge multiple PDF documents into a single document</p>
+        </div>
+
+        @if (mergeList().length > 0) {
+          <div class="queue-list">
+            @for (item of mergeList(); track item.id; let i = $index) {
+              <div class="queue-card">
+                <span class="index">{{ i + 1 }}</span>
+                <span class="name">{{ item.name }}</span>
+                <span class="pages">{{ item.pageCount }} pages</span>
+                <div class="item-actions">
+                  <button [disabled]="i === 0" (click)="moveMergeItem(i, -1)">▲</button>
+                  <button [disabled]="i === mergeList().length - 1" (click)="moveMergeItem(i, 1)">▼</button>
+                  <button class="btn-del" (click)="removeMergeItem(item.id)">✕</button>
+                </div>
+              </div>
+            }
+          </div>
+          <button class="btn-primary-blue mt-3" [disabled]="isGeneratingPdf()" (click)="executeMerge()">
+            Merge {{ mergeList().length }} PDFs &rarr;
+          </button>
+        }
+      </div>
+    }
+
+    <!-- 3. Split / Extract Pages -->
+    @if (mode() === 'split') {
+      <div class="split-tool">
+        <div class="pdf-dropzone" (click)="splitFileInput.click()">
+          <input #splitFileInput type="file" accept="application/pdf" (change)="onSplitFileSelected($event)" style="display: none" />
+          <div class="drop-icon">✂️</div>
+          <h3>Select a PDF to Split</h3>
+          <p>Extract individual pages or ranges (e.g. 1-3, 5)</p>
+        </div>
+
+        @if (splitPdfItem(); as item) {
+          <div class="loaded-doc-banner">
+            <strong>{{ item.name }}</strong> ({{ item.pageCount }} pages)
+          </div>
+
+          <div class="split-controls">
+            <label>Pages to extract (comma or range):</label>
+            <input type="text" [ngModel]="splitRange()" (ngModelChange)="splitRange.set($event)" placeholder="e.g. 1-2, 4" />
+            <button class="btn-primary-blue" [disabled]="isGeneratingPdf()" (click)="executeSplit()">
+              Extract Pages &rarr;
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- 4. Rotate Pages -->
+    @if (mode() === 'rotate') {
+      <div class="rotate-tool">
+        <div class="pdf-dropzone" (click)="rotateFileInput.click()">
+          <input #rotateFileInput type="file" accept="application/pdf" (change)="onRotateFileSelected($event)" style="display: none" />
+          <div class="drop-icon">↻</div>
+          <h3>Select a PDF to Rotate</h3>
+          <p>Rotate all pages clockwise or counter-clockwise</p>
+        </div>
+
+        @if (rotatePdfItem(); as item) {
+          <div class="loaded-doc-banner">
+            <strong>{{ item.name }}</strong> ({{ item.pageCount }} pages)
+          </div>
+
+          <div class="rotate-actions">
+            <button class="btn-secondary-dark" (click)="executeRotate(90)">Rotate 90° Clockwise</button>
+            <button class="btn-secondary-dark" (click)="executeRotate(180)">Rotate 180° Flip</button>
+            <button class="btn-secondary-dark" (click)="executeRotate(270)">Rotate 90° Counter-Clockwise</button>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- 5. Edit Metadata -->
+    @if (mode() === 'metadata') {
+      <div class="metadata-tool">
+        <div class="pdf-dropzone" (click)="metaFileInput.click()">
+          <input #metaFileInput type="file" accept="application/pdf" (change)="onMetaFileSelected($event)" style="display: none" />
+          <div class="drop-icon">🏷️</div>
+          <h3>Select a PDF to Update Metadata</h3>
+        </div>
+
+        @if (metaPdfItem(); as item) {
+          <div class="metadata-form">
+            <label>Document Title: <input type="text" [ngModel]="metaTitle()" (ngModelChange)="metaTitle.set($event)" /></label>
+            <label>Author: <input type="text" [ngModel]="metaAuthor()" (ngModelChange)="metaAuthor.set($event)" /></label>
+            <label>Subject: <input type="text" [ngModel]="metaSubject()" (ngModelChange)="metaSubject.set($event)" /></label>
+            <label>Keywords (comma separated): <input type="text" [ngModel]="metaKeywords()" (ngModelChange)="metaKeywords.set($event)" /></label>
+            <button class="btn-primary-blue mt-2" [disabled]="isProcessing()" (click)="saveMetadata()">
+              Save PDF with Metadata &rarr;
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

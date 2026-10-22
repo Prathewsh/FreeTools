@@ -1,0 +1,123 @@
+.colour-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+}
+
+.header {
+  h2 { font-size: 15px; font-weight: 600; margin: 0; color: #e4e5e9; }
+  .subtitle { font-size: 12px; color: #838794; margin-top: 4px; }
+}
+
+.converter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.preview-card {
+  min-height: 380px;
+  border-radius: 8px;
+  border: 1px solid #303137;
+  display: flex;
+  align-items: flex-end;
+  padding: 20px;
+}
+
+.contrast-chips {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+
+  .chip {
+    flex: 1;
+    background: rgba(20, 21, 25, 0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid #303137;
+    border-radius: 6px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+
+    .sample { font-weight: 600; font-size: 13px; }
+    strong { font-size: 14px; color: #e4e5e9; font-family: var(--font-mono); }
+    .wcag-badge { font-size: 10px; color: #c1e993; font-weight: 700; }
+  }
+}
+
+.formats-card {
+  background: #191a1f;
+  border: 1px solid #303137;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.color-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #282a32;
+
+  input[type="color"] {
+    width: 42px;
+    height: 42px;
+    border-radius: 6px;
+    border: 1px solid #303137;
+    cursor: pointer;
+    background: none;
+  }
+  .picker-hint { font-size: 12px; color: #838794; }
+}
+
+.format-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #838794;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .input-wrap {
+    display: flex;
+    gap: 8px;
+
+    input {
+      flex: 1;
+      background: #141519;
+      border: 1px solid #303137;
+      border-radius: 6px;
+      color: #e4e5e9;
+      padding: 7px 12px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      outline: none;
+
+      &:focus { border-color: #c1e993; }
+    }
+
+    .btn-copy {
+      background: #202126;
+      border: 1px solid #303137;
+      color: #cfd2db;
+      border-radius: 6px;
+      padding: 0 12px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+
+      &:hover { background: #2a2c34; color: #fff; }
+    }
+  }
+}

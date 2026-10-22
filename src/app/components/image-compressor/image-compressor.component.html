@@ -1,0 +1,109 @@
+<div class="compressor-container">
+  <div class="compressor-header">
+    <div class="header-left">
+      <h2>Image Compressor & Optimizer</h2>
+      <p class="subtitle">Reduce image sizes instantly to speed up websites and cut hosting bandwidth. Supports JPEG, PNG, WebP, GIF, and BMP.</p>
+    </div>
+    @if (items().length > 0) {
+      <div class="header-actions">
+        <button class="btn btn-secondary" (click)="clearAll()">Clear All</button>
+        <button class="btn btn-primary" (click)="downloadAll()">Download All Optimized</button>
+      </div>
+    }
+  </div>
+
+  <!-- Settings Bar -->
+  <div class="settings-card">
+    <div class="setting-group">
+      <label>Target Format</label>
+      <select [ngModel]="targetFormat()" (ngModelChange)="targetFormat.set($event); recompressAll()">
+        <option value="image/webp">WebP (Modern & Small)</option>
+        <option value="image/jpeg">JPEG (Universal)</option>
+        <option value="image/png">PNG (Lossless / Transparent)</option>
+        <option value="image/avif">AVIF (Ultra High Efficiency)</option>
+      </select>
+    </div>
+
+    <div class="setting-group quality-group">
+      <div class="slider-header">
+        <label>Quality</label>
+        <span class="badge">{{ quality() }}%</span>
+      </div>
+      <input type="range" min="10" max="100" step="1" [ngModel]="quality()" (ngModelChange)="quality.set($event); recompressAll()" />
+    </div>
+
+    <div class="setting-group">
+      <label>Max Width (px)</label>
+      <input type="number" min="0" placeholder="e.g. 1920 (0 = original)" [ngModel]="maxWidth()" (ngModelChange)="maxWidth.set($event); recompressAll()" />
+    </div>
+
+    <div class="setting-group">
+      <label>Max Height (px)</label>
+      <input type="number" min="0" placeholder="e.g. 1080 (0 = original)" [ngModel]="maxHeight()" (ngModelChange)="maxHeight.set($event); recompressAll()" />
+    </div>
+  </div>
+
+  <!-- Drop Zone -->
+  <div 
+    class="upload-dropzone" 
+    [class.dragging]="isDragging()"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave()"
+    (drop)="onDrop($event)"
+    (click)="fileInput.click()">
+    <input #fileInput type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/bmp" (change)="onFilesSelected($event)" style="display: none;" />
+    <div class="drop-icon">⚡</div>
+    <h3>Drag & Drop images or click to browse</h3>
+    <p class="drop-hint">Compress JPEG, PNG, WebP, GIF, and BMP images directly in your browser.</p>
+  </div>
+
+  @if (items().length > 0) {
+    <!-- Global Stats Banner -->
+    <div class="summary-stats">
+      <div class="stat-col">
+        <span class="label">Total Original Size</span>
+        <span class="val">{{ formatBytes(totalOriginal()) }}</span>
+      </div>
+      <div class="stat-arrow">→</div>
+      <div class="stat-col">
+        <span class="label">Total Compressed Size</span>
+        <span class="val highlight">{{ formatBytes(totalCompressed()) }}</span>
+      </div>
+      <div class="stat-savings">
+        <span class="tag">-{{ overallSavings() }}% Saved</span>
+      </div>
+    </div>
+
+    <!-- Images List -->
+    <div class="items-grid">
+      @for (item of items(); track item.id) {
+        <div class="item-card">
+          <div class="thumb-container">
+            <img [src]="item.compressedUrl || item.originalUrl" [alt]="item.name" />
+          </div>
+          <div class="item-info">
+            <div class="item-title" [title]="item.name">{{ item.name }}</div>
+            <div class="dimensions" *ngIf="item.width > 0">{{ item.width }} × {{ item.height }} px</div>
+            <div class="size-comparison">
+              <span class="orig">{{ item.originalFormatted }}</span>
+              <span class="arrow">→</span>
+              <span class="comp">{{ item.compressedFormatted }}</span>
+              @if (item.savingsPercent > 0) {
+                <span class="percent-tag">-{{ item.savingsPercent }}%</span>
+              }
+            </div>
+          </div>
+          <div class="item-actions">
+            <button class="btn-icon download-btn" [disabled]="item.status !== 'done'" (click)="downloadItem(item)" title="Download">
+              ⬇
+            </button>
+            <button class="btn-icon delete-btn" (click)="removeItem(item.id)" title="Remove">
+              ✕
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+

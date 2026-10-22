@@ -1,0 +1,110 @@
+<div class="signer-container">
+  <div class="header">
+    <h2>PDF Signature Studio</h2>
+    <p class="subtitle">Draw, type, or upload your signature and place it anywhere onto your PDF documents locally.</p>
+  </div>
+
+  <div class="signer-grid">
+    <!-- Left: Signature creation tools -->
+    <div class="tools-sidebar">
+      <div class="mode-tabs">
+        <button [class.active]="signMode() === 'draw'" (click)="signMode.set('draw')">Draw</button>
+        <button [class.active]="signMode() === 'type'" (click)="signMode.set('type')">Type</button>
+        <button [class.active]="signMode() === 'upload'" (click)="signMode.set('upload')">Upload</button>
+      </div>
+
+      @if (signMode() === 'draw') {
+        <div class="draw-area">
+          <canvas 
+            #sigPad 
+            width="280" 
+            height="140"
+            (mousedown)="onMouseDown($event)"
+            (mousemove)="onMouseMove($event)"
+            (mouseup)="onMouseUp()"
+            (mouseleave)="onMouseUp()"></canvas>
+          <button class="btn btn-secondary btn-sm" (click)="clearSigPad()">Clear Pad</button>
+        </div>
+      }
+
+      @if (signMode() === 'type') {
+        <div class="type-area">
+          <input 
+            type="text" 
+            placeholder="Type your name..." 
+            [(ngModel)]="typedSignature" 
+            (ngModelChange)="generateSignatureImage()" />
+          <select [(ngModel)]="fontFamily" (ngModelChange)="generateSignatureImage()">
+            <option value="cursive">Classic Cursive</option>
+            <option value="Brush Script MT, cursive">Brush Script</option>
+            <option value="Dancing Script, cursive">Elegant Script</option>
+          </select>
+        </div>
+      }
+
+      @if (signMode() === 'upload') {
+        <div class="upload-sig">
+          <input type="file" accept="image/png,image/jpeg" (change)="onUploadSig($event)" />
+        </div>
+      }
+
+      @if (signatureDataUrl()) {
+        <div class="sig-preview">
+          <span class="preview-lbl">Active Signature:</span>
+          <img [src]="signatureDataUrl()" alt="Signature" />
+          <span class="hint">Drag signature onto PDF page to position it.</span>
+        </div>
+      }
+
+      <div class="divider"></div>
+
+      <div class="pdf-file-selector">
+        <button class="btn btn-secondary w-100" (click)="pdfInput.click()">
+          📄 {{ pdfLoaded() ? 'Change PDF File' : 'Upload PDF Document' }}
+        </button>
+        <input #pdfInput type="file" accept="application/pdf" (change)="onPdfUpload($event)" style="display: none;" />
+      </div>
+
+      @if (pdfLoaded() && signatureDataUrl()) {
+        <button class="btn btn-primary w-100 mt-2" (click)="downloadSignedPdf()">
+          💾 Embed & Download Signed PDF
+        </button>
+      }
+    </div>
+
+    <!-- Right: PDF Preview & Overlay canvas -->
+    <div class="pdf-viewer-stage">
+      @if (pdfLoaded()) {
+        <div class="page-controls">
+          <button class="btn btn-secondary btn-sm" [disabled]="currentPage() <= 1" (click)="prevPage()">◀ Prev</button>
+          <span>Page {{ currentPage() }} of {{ totalPages() }}</span>
+          <button class="btn btn-secondary btn-sm" [disabled]="currentPage() >= totalPages()" (click)="nextPage()">Next ▶</button>
+        </div>
+
+        <div class="canvas-viewport">
+          <canvas #pdfCanvas></canvas>
+
+          @if (signatureDataUrl()) {
+            <div 
+              class="signature-overlay-box"
+              [style.left.px]="sigX()"
+              [style.top.px]="sigY()"
+              [style.width.px]="sigWidth()"
+              [style.height.px]="sigHeight()"
+              (mousedown)="startSigDrag($event)">
+              <img [src]="signatureDataUrl()" alt="Sig" />
+              <div class="drag-handle">⠿ Drag here</div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="pdf-empty-state" (click)="pdfInput.click()">
+          <div class="empty-icon">📄</div>
+          <h3>Upload a PDF Document to Sign</h3>
+          <p>Sign forms, NDAs, contracts, and letters securely on device.</p>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+

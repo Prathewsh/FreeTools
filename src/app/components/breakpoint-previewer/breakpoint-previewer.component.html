@@ -1,0 +1,40 @@
+<div class="simple-tool-card">
+  <div class="card-header">
+    <span class="card-title">Responsive Breakpoint &amp; Viewport Previewer</span>
+    <div class="device-badge"><span class="green-dot"></span><span>Multi-device frame emulator</span></div>
+  </div>
+
+  <div class="breakpoint-toolbar">
+    <div class="url-bar">
+      <input type="text" [ngModel]="targetUrl()" (ngModelChange)="targetUrl.set($event)" (keyup.enter)="updateUrl()" placeholder="Enter URL (e.g. https://example.com)..." class="url-input" />
+      <button class="btn-primary-blue" (click)="updateUrl()">Load Site</button>
+    </div>
+
+    <div class="presets-row">
+      @for (p of presets; track p.name) {
+        <button 
+          class="preset-btn" 
+          [class.active]="viewportWidth() === p.width && viewportHeight() === p.height"
+          (click)="selectPreset(p)"
+        >
+          <i [class]="p.icon"></i> {{ p.name }} ({{ p.width }}&times;{{ p.height }})
+        </button>
+      }
+
+      <button class="orient-btn" (click)="toggleOrientation()" title="Rotate orientation">
+        <i class="lni lni-reload"></i> {{ isLandscape() ? 'Landscape' : 'Portrait' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="stage-frame-container">
+    <div class="device-mockup-wrapper" [style.width.px]="viewportWidth()" [style.height.px]="viewportHeight()">
+      <div class="device-chrome-bar">
+        <div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+        <span class="dim-label">{{ viewportWidth() }} &times; {{ viewportHeight() }} px</span>
+      </div>
+      <iframe [src]="safeUrl()" class="preview-iframe" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+    </div>
+  </div>
+</div>
+

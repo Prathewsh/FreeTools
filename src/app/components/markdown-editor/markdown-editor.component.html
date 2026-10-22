@@ -1,0 +1,49 @@
+<div class="simple-tool-card md-editor-card">
+  <div class="card-header">
+    <span class="card-title">Markdown Editor &amp; Live Preview</span>
+    <div class="device-badge"><span class="green-dot"></span><span>Real-time syntax rendering</span></div>
+  </div>
+
+  <div class="md-ribbon">
+    <div class="btn-group">
+      <button (click)="insertSnippet('bold')" title="Bold"><strong>B</strong></button>
+      <button (click)="insertSnippet('italic')" title="Italic"><em>I</em></button>
+      <button (click)="insertSnippet('heading')" title="Heading">H2</button>
+      <button (click)="insertSnippet('code')" title="Code Block">&lt;/&gt;</button>
+      <button (click)="insertSnippet('table')" title="Table">⊞ Table</button>
+      <button (click)="insertSnippet('quote')" title="Quote">” Quote</button>
+      <button (click)="insertSnippet('link')" title="Link">🔗 Link</button>
+    </div>
+
+    <div class="view-toggle">
+      <button [class.active]="viewMode() === 'edit'" (click)="viewMode.set('edit')">Code Only</button>
+      <button [class.active]="viewMode() === 'split'" (click)="viewMode.set('split')">Split View</button>
+      <button [class.active]="viewMode() === 'preview'" (click)="viewMode.set('preview')">Preview Only</button>
+    </div>
+  </div>
+
+  <div class="editor-workspace" [class.mode-split]="viewMode() === 'split'" [class.mode-edit]="viewMode() === 'edit'" [class.mode-preview]="viewMode() === 'preview'">
+    @if (viewMode() !== 'preview') {
+      <div class="editor-pane">
+        <textarea [ngModel]="markdownText()" (ngModelChange)="markdownText.set($event)" class="md-input" placeholder="Write markdown here..."></textarea>
+      </div>
+    }
+
+    @if (viewMode() !== 'edit') {
+      <div class="preview-pane">
+        <div class="markdown-body" [innerHTML]="renderedHtml()"></div>
+      </div>
+    }
+  </div>
+
+  <div class="card-footer">
+    <div class="footer-status-text">
+      <span>Words: <strong>{{ stats().words }}</strong> &bull; Characters: <strong>{{ stats().chars }}</strong> &bull; Lines: <strong>{{ stats().lines }}</strong></span>
+    </div>
+    <div class="footer-actions-group">
+      <button class="btn-ghost-dark" (click)="downloadFile('html')">Export HTML</button>
+      <button class="btn-primary-blue" (click)="downloadFile('md')">Download Markdown (.md)</button>
+    </div>
+  </div>
+</div>
+

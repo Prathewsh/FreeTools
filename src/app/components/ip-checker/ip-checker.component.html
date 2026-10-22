@@ -1,0 +1,184 @@
+<div class="tool-content">
+  <div class="tool-header">
+    <div class="header-titles">
+      <div class="title-with-badge">
+        <h2>IP Address &amp; Network Inspector</h2>
+        <span class="badge-vault">Real-time Network Diagnostics</span>
+      </div>
+      <p class="tool-desc">
+        Check your public global IPv4/IPv6 address, geolocation coordinates, Internet Service Provider (ISP), Autonomous System Number (ASN), routing subnet, and live browser link metrics.
+      </p>
+    </div>
+    <div class="device-badge">
+      <span class="green-dot"></span>
+      <span>Live Network Probe</span>
+    </div>
+  </div>
+
+  <div class="ip-card">
+    <!-- Search Bar -->
+    <div class="search-row">
+      <div class="input-wrap">
+        <i class="lni lni-world"></i>
+        <input
+          type="text"
+          [(ngModel)]="targetIp"
+          placeholder="Enter any IPv4 or IPv6 (or leave blank for your current IP)..."
+          (keyup.enter)="onSearch()"
+        />
+      </div>
+      <button class="btn-primary-blue" [disabled]="isLoading()" (click)="onSearch()">
+        @if (isLoading()) {
+          <span class="spinner"></span>
+        } @else {
+          <span>Lookup IP</span>
+        }
+      </button>
+      <button class="btn-secondary-dark" [disabled]="isLoading()" (click)="fetchMyIp()">
+        <i class="lni lni-reload"></i> My IP
+      </button>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="alert-box error">
+        <span>⚠️</span>
+        <div>{{ errorMessage() }}</div>
+      </div>
+    }
+
+    <!-- Main Results Section -->
+    @if (ipData(); as d) {
+      <!-- Big IP Display Banner -->
+      <div class="ip-banner">
+        <div class="ip-main">
+          <div class="ip-label-row">
+            <span class="tag-version">{{ d.version }}</span>
+            <span class="lbl">Public IP Address</span>
+          </div>
+          <div class="ip-value-row">
+            <h1 class="ip-address-text">{{ d.ip }}</h1>
+            <button class="btn-copy-ip" (click)="copy(d.ip, 'ip')" title="Copy IP">
+              <i class="lni lni-clipboard"></i>
+              <span>{{ copiedField() === 'ip' ? 'Copied!' : 'Copy' }}</span>
+            </button>
+          </div>
+          <div class="ip-sub-info">
+            <span class="isp-name">{{ d.org }}</span>
+            <span class="dot">&bull;</span>
+            <span class="geo-preview">{{ d.city }}, {{ d.region }}, {{ d.countryName }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detail Cards Grid -->
+      <div class="stats-grid">
+        <!-- Geolocation Card -->
+        <div class="stat-card">
+          <div class="card-head">
+            <i class="lni lni-map-marker"></i>
+            <span>Location &amp; Region</span>
+          </div>
+          <div class="field-list">
+            <div class="field-item">
+              <span class="f-lbl">City / Region</span>
+              <span class="f-val">{{ d.city }}, {{ d.region }}</span>
+            </div>
+            <div class="field-item">
+              <span class="f-lbl">Country</span>
+              <span class="f-val">{{ d.countryName }} ({{ d.country }})</span>
+            </div>
+            <div class="field-item">
+              <span class="f-lbl">Postal Code</span>
+              <span class="f-val mono">{{ d.postal }}</span>
+            </div>
+            @if (d.latitude && d.longitude) {
+              <div class="field-item">
+                <span class="f-lbl">Coordinates</span>
+                <span class="f-val mono">{{ d.latitude.toFixed(4) }}, {{ d.longitude.toFixed(4) }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- ISP & Autonomous System -->
+        <div class="stat-card">
+          <div class="card-head">
+            <i class="lni lni-server"></i>
+            <span>Network &amp; Routing</span>
+          </div>
+          <div class="field-list">
+            <div class="field-item">
+              <span class="f-lbl">ISP / Organization</span>
+              <span class="f-val font-semibold">{{ d.org }}</span>
+            </div>
+            <div class="field-item">
+              <span class="f-lbl">ASN Number</span>
+              <span class="f-val mono font-semibold">{{ d.asn }}</span>
+            </div>
+            <div class="field-item">
+              <span class="f-lbl">Subnet Prefix</span>
+              <span class="f-val mono">{{ d.network }}</span>
+            </div>
+            <div class="field-item">
+              <span class="f-lbl">Calling Code</span>
+              <span class="f-val">{{ d.callingCode || 'N/A' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timezone & System -->
+        <div class="stat-card">
+          <div class="card-head">
+            <i class="lni lni-timer"></i>
+            <span>Time &amp; Regional</span>
+          </div>
+          <div class="field-list">
+            <div class="field-item">
+              <span class="f-lbl">Local Timezone</span>
+              <span class="f-val mono font-semibold">{{ d.timezone }}</span>
+            </div>
+            <div class="field-item">
+              <span class="f-lbl">UTC Offset</span>
+              <span class="f-val mono">{{ d.utcOffset }}</span>
+            </div>
+            <div class="field-item">
+              <span class="f-lbl">Local Currency</span>
+              <span class="f-val">{{ d.currency }}</span>
+            </div>
+            <div class="field-item">
+              <span class="f-lbl">Protocol</span>
+              <span class="f-val tag-protocol">{{ d.version }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Link Metrics -->
+        <div class="stat-card">
+          <div class="card-head">
+            <i class="lni lni-pulse"></i>
+            <span>Browser Link Metrics</span>
+          </div>
+          <div class="field-list">
+            <div class="field-item">
+              <span class="f-lbl">Effective Type</span>
+              <span class="f-val">{{ connectionType() }}</span>
+            </div>
+            <div class="field-item">
+              <span class="f-lbl">Estimated Bandwidth</span>
+              <span class="f-val mono">{{ downlinkSpeed() }}</span>
+            </div>
+            <div class="field-item">
+              <span class="f-lbl">Round Trip Time (RTT)</span>
+              <span class="f-val mono">{{ rttLatency() }}</span>
+            </div>
+            <div class="field-item">
+              <span class="f-lbl">Client Online Status</span>
+              <span class="f-val status-online">Connected</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+

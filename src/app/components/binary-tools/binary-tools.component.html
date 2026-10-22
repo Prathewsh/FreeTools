@@ -1,0 +1,99 @@
+<div class="simple-tool-card binary-tool">
+  <div class="card-header">
+    <span class="card-title">Binary &amp; Number Base Tools</span>
+    <div class="device-badge"><span class="green-dot"></span><span>Runs locally in browser</span></div>
+  </div>
+
+  <div class="subtool-bar">
+    <button [class.active]="mode() === 'text-to-bin'" (click)="mode.set('text-to-bin'); convert()">Text to Binary</button>
+    <button [class.active]="mode() === 'bin-to-text'" (click)="mode.set('bin-to-text'); convert()">Binary to Text</button>
+    <button [class.active]="mode() === 'base-converter'" (click)="mode.set('base-converter')">Base Converter (2/8/10/16)</button>
+    <button [class.active]="mode() === 'bitwise'" (click)="mode.set('bitwise')">Bitwise Calculator</button>
+  </div>
+
+  @if (mode() === 'text-to-bin' || mode() === 'bin-to-text') {
+    <div class="dual-editor">
+      <div class="editor-box">
+        <div class="box-title">{{ mode() === 'text-to-bin' ? 'Input Text' : 'Input Binary' }}</div>
+        <textarea
+          [placeholder]="mode() === 'text-to-bin' ? 'Type text to convert to binary...' : 'Paste binary (e.g. 01001000 01100101)...'"
+          [ngModel]="inputText()"
+          (ngModelChange)="onInputTextChange($event)"
+        ></textarea>
+      </div>
+      <div class="editor-box">
+        <div class="box-title">
+          <span>{{ mode() === 'text-to-bin' ? 'Binary Output' : 'Decoded Text' }}</span>
+          @if (outputText()) {
+            <button class="mini-copy-btn" (click)="copy(outputText())">Copy</button>
+          }
+        </div>
+        <textarea
+          placeholder="Result will appear here..."
+          [ngModel]="outputText()"
+          readonly
+        ></textarea>
+      </div>
+    </div>
+  }
+
+  @if (mode() === 'base-converter') {
+    <div class="base-converter-card">
+      <div class="input-row">
+        <label>Input Number:
+          <input type="text" [ngModel]="inputNumber()" (ngModelChange)="inputNumber.set($event); updateBases()" />
+        </label>
+        <label>From Base:
+          <select [ngModel]="inputBase()" (ngModelChange)="inputBase.set($event); updateBases()">
+            <option [ngValue]="2">Binary (Base 2)</option>
+            <option [ngValue]="8">Octal (Base 8)</option>
+            <option [ngValue]="10">Decimal (Base 10)</option>
+            <option [ngValue]="16">Hexadecimal (Base 16)</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="bases-grid">
+        <div class="base-tile">
+          <div class="tile-label"><span>Binary (Base 2)</span><button (click)="copy(binaryVal())">Copy</button></div>
+          <div class="tile-val">{{ binaryVal() }}</div>
+        </div>
+        <div class="base-tile">
+          <div class="tile-label"><span>Octal (Base 8)</span><button (click)="copy(octalVal())">Copy</button></div>
+          <div class="tile-val">{{ octalVal() }}</div>
+        </div>
+        <div class="base-tile">
+          <div class="tile-label"><span>Decimal (Base 10)</span><button (click)="copy(decimalVal())">Copy</button></div>
+          <div class="tile-val">{{ decimalVal() }}</div>
+        </div>
+        <div class="base-tile">
+          <div class="tile-label"><span>Hexadecimal (Base 16)</span><button (click)="copy(hexVal())">Copy</button></div>
+          <div class="tile-val">{{ hexVal() }}</div>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (mode() === 'bitwise') {
+    <div class="bitwise-card">
+      <div class="operands-row">
+        <label>A (Decimal):
+          <input type="number" [ngModel]="operandA()" (ngModelChange)="operandA.set($event)" />
+        </label>
+        <label>B (Decimal):
+          <input type="number" [ngModel]="operandB()" (ngModelChange)="operandB.set($event)" />
+        </label>
+      </div>
+
+      <div class="bitwise-grid">
+        <div class="bit-row"><span>A &amp; B (AND)</span><strong>{{ bitwiseAnd() }}</strong><code>{{ bitwiseAndBin() }}</code></div>
+        <div class="bit-row"><span>A | B (OR)</span><strong>{{ bitwiseOr() }}</strong><code>{{ bitwiseOrBin() }}</code></div>
+        <div class="bit-row"><span>A ^ B (XOR)</span><strong>{{ bitwiseXor() }}</strong><code>{{ bitwiseXorBin() }}</code></div>
+        <div class="bit-row"><span>~A (NOT A)</span><strong>{{ bitwiseNotA() }}</strong><code>{{ bitwiseNotABin() }}</code></div>
+        <div class="bit-row"><span>A &lt;&lt; 1 (Shift Left)</span><strong>{{ shiftLeft() }}</strong><code>{{ shiftLeftBin() }}</code></div>
+        <div class="bit-row"><span>A &gt;&gt; 1 (Shift Right)</span><strong>{{ shiftRight() }}</strong><code>{{ shiftRightBin() }}</code></div>
+      </div>
+    </div>
+  }
+</div>
+

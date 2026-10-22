@@ -1,0 +1,89 @@
+<div class="archive-container">
+  <div class="archive-header">
+    <div class="header-left">
+      <h2>Archive Explorer</h2>
+      <p class="subtitle">Safely peek inside ZIP, JAR, and package archives without extraction. Detects disguised executables, double extensions, and hidden risks.</p>
+    </div>
+  </div>
+
+  <!-- Upload Area -->
+  <div 
+    class="upload-box" 
+    [class.dragging]="isDragging()"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave()"
+    (drop)="onDrop($event)"
+    (click)="fileInput.click()">
+    <input #fileInput type="file" accept=".zip,.jar,.war,.ear,.apk,.xpi" (change)="onFileChange($event)" style="display: none;" />
+    <div class="icon">📦</div>
+    <h3>Select or drop archive (ZIP / JAR / APK)</h3>
+    <p>Inspected entirely in-memory in your local sandbox browser.</p>
+  </div>
+
+  @if (errorMsg()) {
+    <div class="error-banner">{{ errorMsg() }}</div>
+  }
+
+  @if (entries().length > 0) {
+    <!-- Archive Stats / Toolbar -->
+    <div class="stats-card">
+      <div class="stat-info">
+        <strong>{{ fileName() }}</strong> ({{ formatBytes(fileSize()) }}) &bull; {{ entries().length }} files
+      </div>
+      <div class="filter-actions">
+        @if (suspiciousCount > 0) {
+          <button 
+            class="btn-badge danger" 
+            [class.active]="filterSuspicious()"
+            (click)="filterSuspicious.set(!filterSuspicious())">
+            ⚠️ {{ suspiciousCount }} Suspicious File{{ suspiciousCount > 1 ? 's' : '' }} Flagged
+          </button>
+        } @else {
+          <span class="btn-badge safe">✓ No Executable Disguises Detected</span>
+        }
+      </div>
+    </div>
+
+    <div class="explorer-layout">
+      <!-- File List -->
+      <div class="file-list-pane">
+        <div class="list-header">
+          <span>Name</span>
+          <span>Size</span>
+        </div>
+        <div class="list-body">
+          @for (entry of displayedEntries; track entry.name) {
+            <div 
+              class="entry-row" 
+              [class.selected]="selectedEntry()?.name === entry.name"
+              [class.suspicious-row]="entry.isSuspicious"
+              (click)="viewEntry(entry)">
+              <div class="entry-main">
+                <span class="file-icon">{{ entry.dir ? '📁' : (entry.isSuspicious ? '⚠️' : '📄') }}</span>
+                <span class="entry-name" [title]="entry.name">{{ entry.name }}</span>
+                @if (entry.isSuspicious) {
+                  <span class="danger-tag">{{ entry.riskReason }}</span>
+                }
+              </div>
+              <div class="entry-size">{{ entry.dir ? '--' : formatBytes(entry.size) }}</div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Preview Pane -->
+      <div class="preview-pane">
+        @if (selectedEntry()) {
+          <div class="preview-header">
+            <div class="title">{{ selectedEntry()?.name }}</div>
+            <button class="btn btn-secondary btn-sm" (click)="downloadEntry(selectedEntry()!)">Extract File</button>
+          </div>
+          <pre class="preview-content">{{ previewText() }}</pre>
+        } @else {
+          <div class="preview-empty">Select any file from the archive to view its contents safely.</div>
+        }
+      </div>
+    </div>
+  }
+</div>
+

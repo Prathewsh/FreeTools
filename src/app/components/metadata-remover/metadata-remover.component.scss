@@ -1,0 +1,104 @@
+.metadata-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+}
+
+.metadata-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  h2 { font-size: 15px; font-weight: 600; margin: 0; color: #e4e5e9; }
+  .subtitle { font-size: 12px; color: #838794; margin-top: 4px; }
+  .header-actions { display: flex; gap: 8px; }
+}
+
+.upload-box {
+  border: 1px dashed #34363f;
+  border-radius: 8px;
+  padding: 40px 24px;
+  text-align: center;
+  background: #191a1f;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover, &.dragging {
+    border-color: #c1e993;
+    background: #1d211a;
+  }
+
+  .icon { font-size: 28px; margin-bottom: 8px; }
+  h3 { margin: 0; font-size: 14px; font-weight: 500; color: #e4e5e9; }
+  p { margin: 6px 0 0; font-size: 12px; color: #838794; }
+}
+
+.grid-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.image-item-card {
+  background: #191a1f;
+  border: 1px solid #303137;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 6px;
+    background: #141519;
+    border: 1px solid #282a32;
+  }
+
+  .item-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .file-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: #e4e5e9;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .size-pill {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: #838794;
+      font-family: var(--font-mono);
+
+      .shield {
+        color: #c1e993;
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+
+  &.btn-sm { padding: 6px 12px; font-size: 11px; }
+  &.btn-primary { background: #c1e993; color: #172110; &:hover { background: #d1f3aa; } }
+  &.btn-secondary { background: #202126; border-color: #303137; color: #cfd2db; &:hover { background: #2a2c34; color: #fff; } }
+}

@@ -1,0 +1,339 @@
+.compressor-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+}
+
+.compressor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  h2 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
+    color: #e4e5e9;
+  }
+
+  .subtitle {
+    font-size: 12px;
+    color: #838794;
+    margin-top: 4px;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 10px;
+  }
+}
+
+.settings-card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #191a1f;
+  border: 1px solid #303137;
+  border-radius: 8px;
+  align-items: center;
+
+  .setting-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 160px;
+    flex: 1;
+
+    label {
+      font-size: 10px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: #838794;
+    }
+
+    select, input[type="number"] {
+      background: #141519;
+      border: 1px solid #303137;
+      border-radius: 6px;
+      color: #e4e5e9;
+      padding: 7px 12px;
+      font-size: 12px;
+      outline: none;
+
+      &:focus {
+        border-color: #c1e993;
+      }
+    }
+
+    &.quality-group {
+      min-width: 200px;
+      .slider-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .badge {
+          background: #30372b;
+          border: 1px solid #49533e;
+          color: #c1e993;
+          font-size: 11px;
+          padding: 2px 8px;
+          border-radius: 9999px;
+          font-weight: 600;
+          font-family: var(--font-mono);
+        }
+      }
+
+      input[type="range"] {
+        accent-color: #c1e993;
+        cursor: pointer;
+        margin-top: 4px;
+      }
+    }
+  }
+}
+
+.upload-dropzone {
+  border: 1px dashed #34363f;
+  border-radius: 8px;
+  padding: 40px 24px;
+  text-align: center;
+  background: #191a1f;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover, &.dragging {
+    border-color: #c1e993;
+    background: #1d211a;
+  }
+
+  .drop-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: #e4e5e9;
+  }
+
+  .drop-hint {
+    font-size: 12px;
+    color: #838794;
+    margin: 6px 0 0;
+  }
+}
+
+.summary-stats {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: #1a2017;
+  border: 1px solid #3d4a34;
+  border-radius: 8px;
+  padding: 12px 20px;
+  flex-wrap: wrap;
+
+  .stat-col {
+    display: flex;
+    flex-direction: column;
+
+    .label {
+      font-size: 11px;
+      color: #838794;
+    }
+    .val {
+      font-size: 15px;
+      font-weight: 700;
+      color: #e4e5e9;
+      font-family: var(--font-mono);
+
+      &.highlight {
+        color: #c1e993;
+      }
+    }
+  }
+
+  .stat-arrow {
+    font-size: 16px;
+    color: #838794;
+  }
+
+  .stat-savings {
+    margin-left: auto;
+
+    .tag {
+      background: #c1e993;
+      color: #172110;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-family: var(--font-mono);
+    }
+  }
+}
+
+.items-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.item-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #191a1f;
+  border: 1px solid #303137;
+  border-radius: 8px;
+  padding: 10px 14px;
+
+  &:hover {
+    border-color: #3b3e47;
+  }
+
+  .thumb-container {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #141519;
+    border: 1px solid #303137;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .item-info {
+    flex: 1;
+    min-width: 0;
+
+    .item-title {
+      font-weight: 500;
+      font-size: 13px;
+      color: #e4e5e9;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .dimensions {
+      font-size: 11px;
+      color: #838794;
+      margin-top: 2px;
+      font-family: var(--font-mono);
+    }
+
+    .size-comparison {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      margin-top: 4px;
+      font-family: var(--font-mono);
+
+      .orig {
+        color: #636674;
+        text-decoration: line-through;
+      }
+      .arrow {
+        color: #4b4e5b;
+      }
+      .comp {
+        color: #c1e993;
+        font-weight: 600;
+      }
+      .percent-tag {
+        background: #30372b;
+        color: #c1e993;
+        border: 1px solid #49533e;
+        font-size: 10px;
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-weight: 600;
+      }
+    }
+  }
+
+  .item-actions {
+    display: flex;
+    gap: 6px;
+
+    .btn-icon {
+      background: #202126;
+      border: 1px solid #303137;
+      color: #cfd2db;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+
+      &:hover:not(:disabled) {
+        background: #2a2c34;
+        color: #fff;
+      }
+
+      &.download-btn:hover:not(:disabled) {
+        background: #30372b;
+        border-color: #49533e;
+        color: #c1e993;
+      }
+
+      &.delete-btn:hover {
+        background: rgba(239, 68, 68, 0.2);
+        border-color: #ef4444;
+        color: #fca5a5;
+      }
+
+      &:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+.btn {
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid transparent;
+
+  &.btn-primary {
+    background: #c1e993;
+    color: #172110;
+    &:hover {
+      background: #d1f3aa;
+    }
+  }
+
+  &.btn-secondary {
+    background: #202126;
+    border-color: #303137;
+    color: #cfd2db;
+    &:hover {
+      background: #2a2c34;
+      color: #fff;
+    }
+  }
+}

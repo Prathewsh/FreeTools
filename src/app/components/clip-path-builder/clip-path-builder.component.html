@@ -1,0 +1,68 @@
+<div class="simple-tool-card" (mouseup)="onCanvasMouseUp()">
+  <div class="card-header">
+    <span class="card-title">CSS Clip-Path Shape Designer</span>
+    <div class="device-badge"><span class="green-dot"></span><span>Visual polygon &amp; vector clipping</span></div>
+  </div>
+
+  <div class="editor-layout">
+    <aside class="editor-options">
+      <div class="options-heading">PRESET GEOMETRY <span>Shapes</span></div>
+      <div class="presets-grid">
+        <button [class.active]="activePreset() === 'triangle'" (click)="applyPreset('triangle')">Triangle</button>
+        <button [class.active]="activePreset() === 'trapezoid'" (click)="applyPreset('trapezoid')">Trapezoid</button>
+        <button [class.active]="activePreset() === 'star'" (click)="applyPreset('star')">Star</button>
+        <button [class.active]="activePreset() === 'hexagon'" (click)="applyPreset('hexagon')">Hexagon</button>
+        <button [class.active]="activePreset() === 'circle'" (click)="applyPreset('circle')">Circle</button>
+        <button [class.active]="activePreset() === 'ellipse'" (click)="applyPreset('ellipse')">Ellipse</button>
+      </div>
+
+      @if (shapeType() === 'polygon') {
+        <div class="options-heading mt-4">VERTICES <span>Control</span></div>
+        <button class="btn-ghost-dark" (click)="addVertex()">+ Add Point</button>
+
+        <div class="vertex-list">
+          @for (v of vertices(); track $index; let i = $index) {
+            <div class="vertex-row">
+              <span class="v-num">P{{ i + 1 }}</span>
+              <input type="number" min="0" max="100" [(ngModel)]="v.x" />%
+              <input type="number" min="0" max="100" [(ngModel)]="v.y" />%
+              <button class="btn-del" [disabled]="vertices().length <= 3" (click)="removeVertex(i)">✕</button>
+            </div>
+          }
+        </div>
+      }
+    </aside>
+
+    <div class="editor-stage clip-stage" #stageEl (mousemove)="onCanvasMouseMove($event, stageEl)">
+      <div class="clip-canvas-box">
+        <!-- Clipped Visual Element -->
+        <div class="clipped-target-surface" [style.clip-path]="clipPathCss().replace('clip-path: ', '').replace(';', '')">
+          <div class="surface-gradient"></div>
+        </div>
+
+        <!-- Draggable Interactive Handles -->
+        @if (shapeType() === 'polygon') {
+          @for (v of vertices(); track $index; let i = $index) {
+            <div 
+              class="point-handle" 
+              [class.active]="activeVertexIndex() === i"
+              [style.left.%]="v.x" 
+              [style.top.%]="v.y"
+              (mousedown)="onCanvasMouseDown($event, i)">
+              <span>{{ i + 1 }}</span>
+            </div>
+          }
+        }
+      </div>
+
+      <div class="css-output-box mt-4">
+        <div class="css-hdr">
+          <span>Generated CSS</span>
+          <button class="btn-copy" (click)="copyCss()">{{ copied() ? '✓ Copied' : 'Copy CSS' }}</button>
+        </div>
+        <pre class="css-code"><code>{{ clipPathCss() }}</code></pre>
+      </div>
+    </div>
+  </div>
+</div>
+

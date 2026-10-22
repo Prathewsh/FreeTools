@@ -1,0 +1,85 @@
+<div class="shadow-container">
+  <div class="header">
+    <h2>CSS Box Shadow Generator</h2>
+    <p class="subtitle">Live CSS box shadow visualizer. Design layered, soft, and inset elevation shadows.</p>
+  </div>
+
+  <div class="shadow-grid">
+    <!-- Visual Preview Stage on clean light surface -->
+    <div class="stage-container">
+      <div class="preview-stage stage-light">
+        <div 
+          class="preview-box" 
+          [style.backgroundColor]="boxColor()" 
+          [style.boxShadow]="shadowCss()">
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-card">
+      <div class="control-row">
+        <div class="label-val">
+          <label>Horizontal Offset (X)</label>
+          <span>{{ xOffset() }}px</span>
+        </div>
+        <input type="range" min="-100" max="100" [ngModel]="xOffset()" (ngModelChange)="xOffset.set($event)" />
+      </div>
+
+      <div class="control-row">
+        <div class="label-val">
+          <label>Vertical Offset (Y)</label>
+          <span>{{ yOffset() }}px</span>
+        </div>
+        <input type="range" min="-100" max="100" [ngModel]="yOffset()" (ngModelChange)="yOffset.set($event)" />
+      </div>
+
+      <div class="control-row">
+        <div class="label-val">
+          <label>Blur Radius</label>
+          <span>{{ blur() }}px</span>
+        </div>
+        <input type="range" min="0" max="150" [ngModel]="blur()" (ngModelChange)="blur.set($event)" />
+      </div>
+
+      <div class="control-row">
+        <div class="label-val">
+          <label>Spread Radius</label>
+          <span>{{ spread() }}px</span>
+        </div>
+        <input type="range" min="-50" max="50" [ngModel]="spread()" (ngModelChange)="spread.set($event)" />
+      </div>
+
+      <div class="control-row">
+        <div class="label-val">
+          <label>Shadow Opacity</label>
+          <span>{{ (shadowOpacity() * 100).toFixed(0) }}%</span>
+        </div>
+        <input type="range" min="0" max="1" step="0.01" [ngModel]="shadowOpacity()" (ngModelChange)="shadowOpacity.set($event)" />
+      </div>
+
+      <div class="color-swatches-row">
+        <div class="swatch-group">
+          <label>Shadow Color</label>
+          <input type="color" [ngModel]="shadowColor()" (ngModelChange)="shadowColor.set($event)" />
+        </div>
+        <div class="swatch-group">
+          <label>Box Color</label>
+          <input type="color" [ngModel]="boxColor()" (ngModelChange)="boxColor.set($event)" />
+        </div>
+        <div class="swatch-group inset-check">
+          <label>
+            <input type="checkbox" [ngModel]="inset()" (ngModelChange)="inset.set($event)" />
+            Inset Shadow
+          </label>
+        </div>
+      </div>
+
+      <div class="code-output">
+        <code>{{ fullCode() }}</code>
+        <button class="btn btn-primary" (click)="copyCode()">{{ copied() ? '✓ Copied!' : 'Copy CSS' }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+

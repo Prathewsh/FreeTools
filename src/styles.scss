@@ -62,6 +62,10 @@ body {
   overflow-x: hidden;
 }
 
+.device-badge, .privacy-status {
+  display: none !important;
+}
+
 /* Scrollbars */
 ::-webkit-scrollbar {
   width: 7px;
@@ -346,7 +350,7 @@ button {
 @media (max-width: 1000px) {
   .studio-shell .simple-tool-card .editor-layout { grid-template-columns: 240px minmax(0, 1fr); }
   .studio-shell .simple-tool-card .editor-stage { padding: 16px; }
-  .studio-shell .simple-tool-card .device-badge { display: none; }
+  .device-badge, .privacy-status { display: none !important; }
 }
 @media (max-width: 760px) {
   .studio-shell .simple-tool-card {

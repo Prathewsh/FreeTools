@@ -1,0 +1,104 @@
+<div class="simple-tool-card json-diff-tool">
+  <div class="card-header">
+    <span class="card-title">JSON Diff &amp; Data Converter</span>
+    <div class="device-badge"><span class="green-dot"></span><span>Runs locally in browser</span></div>
+  </div>
+
+  <div class="subtool-bar">
+    <button [class.active]="mode() === 'diff'" (click)="mode.set('diff'); runDiff()">JSON Compare &amp; Diff</button>
+    <button [class.active]="mode() === 'csv'" (click)="mode.set('csv'); convertCsvToJson()">CSV to JSON</button>
+    <button [class.active]="mode() === 'yaml'" (click)="mode.set('yaml'); convertJsonToCsv()">JSON to CSV</button>
+  </div>
+
+  @if (mode() === 'diff') {
+    <div class="dual-editor">
+      <div class="editor-box">
+        <div class="box-title">Original JSON (Left)</div>
+        <textarea [ngModel]="leftJson()" (ngModelChange)="leftJson.set($event); runDiff()"></textarea>
+      </div>
+      <div class="editor-box">
+        <div class="box-title">Modified JSON (Right)</div>
+        <textarea [ngModel]="rightJson()" (ngModelChange)="rightJson.set($event); runDiff()"></textarea>
+      </div>
+    </div>
+
+    <div class="diff-summary-card">
+      <div class="diff-title">Comparison Result:</div>
+      @if (diffResults().length === 0) {
+        <div class="no-diff">Both JSON inputs must be valid objects to compare.</div>
+      } @else {
+        <div class="diff-list">
+          @for (item of diffResults(); track item.path) {
+            <div class="diff-row" [attr.data-type]="item.type">
+              <span class="diff-tag">{{ item.type.toUpperCase() }}</span>
+              <strong class="diff-key">{{ item.path }}</strong>
+              @if (item.type === 'changed') {
+                <span class="diff-from">{{ item.leftVal }}</span>
+                <span class="diff-arrow">→</span>
+                <span class="diff-to">{{ item.rightVal }}</span>
+              } @else if (item.type === 'added') {
+                <span class="diff-to">{{ item.rightVal }}</span>
+              } @else if (item.type === 'removed') {
+                <span class="diff-from">{{ item.leftVal }}</span>
+              } @else {
+                <span class="diff-same">{{ item.leftVal }}</span>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  @if (mode() === 'csv') {
+    <div class="action-bar-top">
+      <input #csvFileInput type="file" accept=".csv,text/csv" (change)="importCsvFile($event)" style="display: none" />
+      <button class="chip-btn" (click)="csvFileInput.click()">Import CSV file</button>
+      <button class="chip-btn" [disabled]="!csvInput()" (click)="downloadCsv(csvInput(), 'source.csv')">Export CSV</button>
+      <button class="chip-btn" [disabled]="!jsonFromCsv()" (click)="downloadJson(jsonFromCsv(), 'converted.json')">Export JSON</button>
+    </div>
+
+    <div class="dual-editor">
+      <div class="editor-box">
+        <div class="box-title">
+          <span>CSV Input</span>
+          @if (csvInput()) { <button class="mini-copy-btn" (click)="copy(csvInput())">Copy</button> }
+        </div>
+        <textarea [ngModel]="csvInput()" (ngModelChange)="csvInput.set($event); convertCsvToJson()" placeholder="Paste CSV data or import a .csv file..."></textarea>
+      </div>
+      <div class="editor-box">
+        <div class="box-title">
+          <span>JSON Output</span>
+          @if (jsonFromCsv()) { <button class="mini-copy-btn" (click)="copy(jsonFromCsv())">Copy</button> }
+        </div>
+        <textarea [ngModel]="jsonFromCsv()" readonly></textarea>
+      </div>
+    </div>
+  }
+
+  @if (mode() === 'yaml') {
+    <div class="action-bar-top">
+      <input #jsonFileInput type="file" accept=".json,application/json" (change)="importJsonFile($event)" style="display: none" />
+      <button class="chip-btn" (click)="jsonFileInput.click()">Import JSON file</button>
+      <button class="chip-btn" [disabled]="!csvOutput()" (click)="downloadCsv(csvOutput(), 'converted.csv')">Export CSV</button>
+      <button class="chip-btn" [disabled]="!jsonToCsvInput()" (click)="downloadJson(jsonToCsvInput(), 'source.json')">Export JSON</button>
+    </div>
+
+    <div class="dual-editor">
+      <div class="editor-box">
+        <div class="box-title">
+          <span>JSON Array Input</span>
+          @if (jsonToCsvInput()) { <button class="mini-copy-btn" (click)="copy(jsonToCsvInput())">Copy</button> }
+        </div>
+        <textarea [ngModel]="jsonToCsvInput()" (ngModelChange)="jsonToCsvInput.set($event); convertJsonToCsv()" placeholder="Paste JSON array or import a .json file..."></textarea>
+      </div>
+      <div class="editor-box">
+        <div class="box-title">
+          <span>CSV Output</span>
+          @if (csvOutput()) { <button class="mini-copy-btn" (click)="copy(csvOutput())">Copy</button> }
+        </div>
+        <textarea [ngModel]="csvOutput()" readonly></textarea>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,69 @@
+<div class="colour-container">
+  <div class="header">
+    <h2>Colour Converter & Contrast Checker</h2>
+    <p class="subtitle">Convert between HEX, RGB, HSL, and CMYK with live WCAG contrast accessibility validation.</p>
+  </div>
+
+  <div class="converter-grid">
+    <!-- Visual Display Card -->
+    <div class="preview-card" [style.backgroundColor]="hexInput()">
+      <div class="contrast-chips">
+        <div class="chip white-chip">
+          <span class="sample" style="color: #ffffff;">White text</span>
+          <strong>{{ contrastWhite() }}:1</strong>
+          <span class="wcag-badge">{{ +contrastWhite() >= 4.5 ? '✓ Pass' : 'FAIL' }}</span>
+        </div>
+        <div class="chip black-chip">
+          <span class="sample" style="color: #000000;">Dark text</span>
+          <strong>{{ contrastBlack() }}:1</strong>
+          <span class="wcag-badge">{{ +contrastBlack() >= 4.5 ? '✓ Pass' : 'FAIL' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inputs & Outputs -->
+    <div class="formats-card">
+      <div class="color-picker-row">
+        <input type="color" [ngModel]="hexInput()" (ngModelChange)="onHexChange($event)" />
+        <span class="picker-hint">Choose visually or paste values below</span>
+      </div>
+
+      <!-- HEX -->
+      <div class="format-row">
+        <label>HEX</label>
+        <div class="input-wrap">
+          <input type="text" [ngModel]="hexInput()" (ngModelChange)="onHexChange($event)" />
+          <button class="btn-copy" (click)="copyVal('hex', hexInput())">{{ copiedField() === 'hex' ? '✓' : 'Copy' }}</button>
+        </div>
+      </div>
+
+      <!-- RGB -->
+      <div class="format-row">
+        <label>RGB</label>
+        <div class="input-wrap">
+          <input type="text" [value]="'rgb(' + r() + ', ' + g() + ', ' + b() + ')'" readonly />
+          <button class="btn-copy" (click)="copyVal('rgb', 'rgb(' + r() + ', ' + g() + ', ' + b() + ')')">{{ copiedField() === 'rgb' ? '✓' : 'Copy' }}</button>
+        </div>
+      </div>
+
+      <!-- HSL -->
+      <div class="format-row">
+        <label>HSL</label>
+        <div class="input-wrap">
+          <input type="text" [value]="'hsl(' + hsl().h + ', ' + hsl().s + '%, ' + hsl().l + '%)'" readonly />
+          <button class="btn-copy" (click)="copyVal('hsl', 'hsl(' + hsl().h + ', ' + hsl().s + '%, ' + hsl().l + '%)')">{{ copiedField() === 'hsl' ? '✓' : 'Copy' }}</button>
+        </div>
+      </div>
+
+      <!-- CMYK -->
+      <div class="format-row">
+        <label>CMYK</label>
+        <div class="input-wrap">
+          <input type="text" [value]="'cmyk(' + cmyk().c + '%, ' + cmyk().m + '%, ' + cmyk().y + '%, ' + cmyk().k + '%)'" readonly />
+          <button class="btn-copy" (click)="copyVal('cmyk', 'cmyk(' + cmyk().c + '%, ' + cmyk().m + '%, ' + cmyk().y + '%, ' + cmyk().k + '%)')">{{ copiedField() === 'cmyk' ? '✓' : 'Copy' }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

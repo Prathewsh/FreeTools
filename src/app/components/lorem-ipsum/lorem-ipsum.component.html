@@ -1,0 +1,38 @@
+<div class="lorem-container">
+  <div class="header">
+    <div class="header-left">
+      <h2>Lorem Ipsum Builder</h2>
+      <p class="subtitle">Generate custom placeholder copy with structural control over paragraphs, sentences, words, and bulleted lists.</p>
+    </div>
+    <button class="btn btn-primary" (click)="copyText()">{{ copied() ? '✓ Copied Text' : 'Copy All Text' }}</button>
+  </div>
+
+  <div class="controls-bar">
+    <div class="group">
+      <label>Type</label>
+      <div class="btn-group">
+        <button [class.active]="unitType() === 'paragraphs'" (click)="unitType.set('paragraphs')">Paragraphs</button>
+        <button [class.active]="unitType() === 'sentences'" (click)="unitType.set('sentences')">Sentences</button>
+        <button [class.active]="unitType() === 'words'" (click)="unitType.set('words')">Words</button>
+        <button [class.active]="unitType() === 'lists'" (click)="unitType.set('lists')">List Items</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <label>Count</label>
+      <input type="number" min="1" max="100" [ngModel]="count()" (ngModelChange)="count.set($event)" />
+    </div>
+
+    <div class="group check-group">
+      <label>
+        <input type="checkbox" [ngModel]="startWithLorem()" (ngModelChange)="startWithLorem.set($event)" />
+        Start with "Lorem ipsum..."
+      </label>
+    </div>
+  </div>
+
+  <div class="output-card">
+    <textarea readonly [value]="generatedContent()"></textarea>
+  </div>
+</div>
+

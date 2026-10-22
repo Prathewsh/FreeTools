@@ -1,0 +1,111 @@
+<div class="tool-content">
+  <div class="tool-header">
+    <div class="header-titles">
+      <div class="title-with-badge">
+        <h2>Network Speed Test</h2>
+        <span class="badge-vault">Fast.com &bull; Low Latency Anycast</span>
+      </div>
+      <p class="tool-desc">
+        Real-time in-browser internet broadband speed test. Measures accurate download throughput, upload bandwidth, unloaded latency (ping), and jitter buffer without telemetry or external tracking.
+      </p>
+    </div>
+    <div class="device-badge">
+      <span class="green-dot"></span>
+      <span>Edge Anycast Probe</span>
+    </div>
+  </div>
+
+  <div class="speedtest-card">
+    <!-- Big Fast.com-style Meter -->
+    <div class="meter-hero">
+      <div class="progress-arc-ring" [style.--p]="progressPercent() + '%'">
+        <div class="speed-number-group">
+          <span class="speed-digits">{{ currentSpeedDisplay() }}</span>
+          <span class="speed-unit-lbl">{{ speedUnit() }}</span>
+        </div>
+      </div>
+
+      <div class="status-msg">
+        <span class="phase-indicator" [class]="phase()"></span>
+        <span>{{ statusText() }}</span>
+      </div>
+
+      <div class="action-btn-row">
+        @if (!isRunning()) {
+          <button class="btn-start-test" (click)="startSpeedTest()">
+            <i class="lni lni-play"></i>
+            <span>{{ phase() === 'complete' ? 'Run Again' : 'Start Speed Test' }}</span>
+          </button>
+        } @else {
+          <button class="btn-stop-test" (click)="cancelTest()">
+            <i class="lni lni-stop"></i>
+            <span>Stop Test</span>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Metrics Summary Cards -->
+    <div class="metrics-grid">
+      <div class="metric-card download" [class.active]="phase() === 'download'">
+        <div class="m-head">
+          <i class="lni lni-download"></i>
+          <span>Download</span>
+        </div>
+        <div class="m-body">
+          <span class="m-val">{{ downloadSpeed() > 0 ? downloadSpeed().toFixed(1) : '--' }}</span>
+          <span class="m-unit">Mbps</span>
+        </div>
+      </div>
+
+      <div class="metric-card upload" [class.active]="phase() === 'upload'">
+        <div class="m-head">
+          <i class="lni lni-upload"></i>
+          <span>Upload</span>
+        </div>
+        <div class="m-body">
+          <span class="m-val">{{ uploadSpeed() > 0 ? uploadSpeed().toFixed(1) : '--' }}</span>
+          <span class="m-unit">Mbps</span>
+        </div>
+      </div>
+
+      <div class="metric-card ping" [class.active]="phase() === 'ping'">
+        <div class="m-head">
+          <i class="lni lni-pulse"></i>
+          <span>Latency (Ping)</span>
+        </div>
+        <div class="m-body">
+          <span class="m-val">{{ pingMs() > 0 ? pingMs() : '--' }}</span>
+          <span class="m-unit">ms</span>
+        </div>
+      </div>
+
+      <div class="metric-card jitter">
+        <div class="m-head">
+          <i class="lni lni-timer"></i>
+          <span>Jitter</span>
+        </div>
+        <div class="m-body">
+          <span class="m-val">{{ jitterMs() > 0 ? jitterMs() : '--' }}</span>
+          <span class="m-unit">ms</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Server Info Footer -->
+    <div class="server-info-strip">
+      <div class="strip-item">
+        <span class="lbl">Edge Server:</span>
+        <span class="val">{{ serverLocation() }}</span>
+      </div>
+      <div class="strip-item">
+        <span class="lbl">Protocol:</span>
+        <span class="val mono">HTTP/2 &bull; TLS 1.3 Anycast</span>
+      </div>
+      <div class="strip-item">
+        <span class="lbl">Zero Ads &bull; Zero Logged Data</span>
+      </div>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,176 @@
+<div class="simple-tool-card gif-tool">
+  <div class="card-header">
+    <span class="card-title">GIF &amp; Animation Studio</span>
+  </div>
+
+  <div class="subtool-bar">
+    <button [class.active]="mode() === 'maker'" (click)="mode.set('maker')">GIF &amp; Sequence Maker</button>
+    <button [class.active]="mode() === 'spritesheet'" (click)="mode.set('spritesheet')">Sprite Sheet Generator</button>
+    <button [class.active]="mode() === 'splitter'" (click)="mode.set('splitter')">Frame Extractor</button>
+    <button [class.active]="mode() === 'reverser'" (click)="mode.set('reverser')">Speed &amp; Reverse</button>
+  </div>
+
+  <!-- GIF / Giphy URL Import Section -->
+  <div class="url-import-bar">
+    <div class="url-input-wrap">
+      <input
+        type="text"
+        placeholder="Paste full GIF link or Giphy URL (e.g. https://giphy.com/gifs/... or direct .gif link)"
+        [ngModel]="giphyUrl()"
+        (ngModelChange)="giphyUrl.set($event)"
+      />
+      <button class="btn-primary-blue" [disabled]="isProcessing()" (click)="loadFromGiphyUrl()">
+        {{ isProcessing() ? 'Loading...' : 'Load from URL' }}
+      </button>
+    </div>
+    <div class="url-hint">Accepts Giphy URLs, Imgur GIFs, or any direct .gif link.</div>
+  </div>
+
+  @if (mode() === 'maker' || mode() === 'reverser') {
+    <div class="gif-workspace">
+      <div class="controls-panel">
+        <div class="panel-section">
+          <input #multiFileInput type="file" accept="image/*" multiple (change)="onFilesSelected($event)" style="display: none" />
+          <input #singleGifUpload type="file" accept="image/gif" (change)="onSingleGifSelected($event)" style="display: none" />
+
+          <button class="btn-primary-blue" (click)="multiFileInput.click()">+ Upload frame images</button>
+          <button class="btn-secondary-dark" (click)="singleGifUpload.click()">Upload full .gif</button>
+          <button class="btn-ghost-dark" [disabled]="!frames().length && !loadedGifPreview()" (click)="clearFrames()">Clear all</button>
+        </div>
+
+        <div class="param-row">
+          <label>Frame Delay (ms):
+            <input type="number" min="20" max="2000" step="20" [ngModel]="frameDelay()" (ngModelChange)="frameDelay.set($event); isPlaying() && startPreview()" />
+          </label>
+          <label>Playback Speed:
+            <select [ngModel]="speedMultiplier()" (ngModelChange)="speedMultiplier.set($event); isPlaying() && startPreview()">
+              <option [ngValue]="0.5">0.5x (Slow)</option>
+              <option [ngValue]="1">1.0x (Normal)</option>
+              <option [ngValue]="1.5">1.5x (Fast)</option>
+              <option [ngValue]="2">2.0x (Double)</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="param-row">
+          <label>Width:
+            <input type="number" min="50" max="2000" [ngModel]="gifWidth()" (ngModelChange)="gifWidth.set($event)" />
+          </label>
+          <label>Height:
+            <input type="number" min="50" max="2000" [ngModel]="gifHeight()" (ngModelChange)="gifHeight.set($event)" />
+          </label>
+        </div>
+
+        <div class="param-row">
+          <label class="checkbox-label">
+            <input type="checkbox" [ngModel]="reversePlayback()" (ngModelChange)="reversePlayback.set($event); isPlaying() && startPreview()" /> Reverse playback
+          </label>
+        </div>
+
+        <div class="playback-controls">
+          @if (!isPlaying()) {
+            <button class="btn-secondary-dark" [disabled]="!frames().length" (click)="startPreview()">▶ Play sequence</button>
+          } @else {
+            <button class="btn-secondary-dark" (click)="stopPreview()">⏸ Pause</button>
+          }
+        </div>
+      </div>
+
+      <div class="stage-panel">
+        <div class="canvas-viewport checkerboard-pattern">
+          @if (loadedGifPreview()) {
+            <img [src]="loadedGifPreview()" alt="Loaded GIF" class="full-gif-preview" />
+          } @else {
+            <canvas #previewCanvas class="fitted-canvas"></canvas>
+          }
+
+          @if (!frames().length && !loadedGifPreview()) {
+            <div class="empty-hint">
+              <span>🎞</span>
+              <strong>No GIF or frames loaded</strong>
+              <p>Upload a .gif file, paste a Giphy URL, or add image frames to start.</p>
+            </div>
+          }
+        </div>
+
+        @if (frames().length > 0) {
+          <div class="timeline-bar">
+            <div class="timeline-title">Frames ({{ frames().length }} total):</div>
+            <div class="frames-strip">
+              @for (frame of frames(); track frame.id; let idx = $index) {
+                <div class="frame-thumb" [class.active]="currentFrameIndex() === idx">
+                  <img [src]="frame.dataUrl" alt="Frame preview" />
+                  <div class="frame-badge">#{{ idx + 1 }}</div>
+                  <div class="frame-actions">
+                    <button (click)="moveFrame(idx, 'up')" [disabled]="idx === 0">◀</button>
+                    <button (click)="removeFrame(idx)">✕</button>
+                    <button (click)="moveFrame(idx, 'down')" [disabled]="idx === frames().length - 1">▶</button>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (mode() === 'spritesheet') {
+    <div class="spritesheet-container">
+      <div class="sheet-controls">
+        <div class="param-row">
+          <label>Grid Columns:
+            <input type="number" min="1" max="50" [ngModel]="sheetColumns()" (ngModelChange)="sheetColumns.set($event)" />
+          </label>
+          <label>Tile Width (px):
+            <input type="number" min="16" max="1024" [ngModel]="sheetTileWidth()" (ngModelChange)="sheetTileWidth.set($event)" />
+          </label>
+          <label>Tile Height (px):
+            <input type="number" min="16" max="1024" [ngModel]="sheetTileHeight()" (ngModelChange)="sheetTileHeight.set($event)" />
+          </label>
+          <label>Tile Padding (px):
+            <input type="number" min="0" max="64" [ngModel]="sheetPadding()" (ngModelChange)="sheetPadding.set($event)" />
+          </label>
+        </div>
+
+        <div class="sheet-actions">
+          <button class="btn-primary-blue" [disabled]="!frames().length" (click)="generateSpriteSheet()">Generate Sprite Sheet</button>
+          <button class="btn-secondary-dark" [disabled]="!sheetDataUrl()" (click)="downloadSpriteSheet()">Download Sprite Sheet PNG</button>
+        </div>
+      </div>
+
+      <div class="sheet-preview-viewport checkerboard-pattern">
+        @if (sheetDataUrl()) {
+          <img [src]="sheetDataUrl()" alt="Generated sprite sheet" class="sheet-result-img" />
+        } @else {
+          <div class="empty-hint">
+            <span>▦</span>
+            <strong>No sprite sheet generated yet</strong>
+            <p>Load a GIF or add frames, adjust grid options, and click "Generate Sprite Sheet".</p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (mode() === 'splitter') {
+    <div class="splitter-section">
+      <div class="upload-zone">
+        <input #singleGifInput type="file" accept="image/gif,image/png,image/webp" (change)="onSingleGifSelected($event)" style="display: none" />
+        <button class="btn-primary-blue" (click)="singleGifInput.click()">Select GIF / Image file</button>
+        <p>Decomposes and extracts individual frames for download.</p>
+      </div>
+
+      @if (extractedFrames().length > 0) {
+        <div class="extracted-grid">
+          @for (f of extractedFrames(); track $index) {
+            <div class="extracted-card">
+              <img [src]="f" alt="Extracted frame" />
+              <button class="chip-btn" (click)="downloadFrame(f, $index)">Download PNG</button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

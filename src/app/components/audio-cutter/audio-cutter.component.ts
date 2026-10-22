@@ -43,6 +43,46 @@ export class AudioCutterComponent implements OnDestroy {
   selectionDuration = computed(() => Math.max(0, this.trimEnd() - this.trimStart()));
   cutOperation = signal<'trim' | 'splice'>('trim');
 
+  // Studio Subtool Tabs
+  studioTab = signal<'editor' | 'converter' | 'mixer' | 'silence' | 'loudness' | 'eq_pitch' | 'spectrogram'>('editor');
+
+  setStudioTab(tab: 'editor' | 'converter' | 'mixer' | 'silence' | 'loudness' | 'eq_pitch' | 'spectrogram') {
+    this.stopPlayback();
+    this.studioTab.set(tab);
+  }
+
+  // Format Converter Settings
+  targetFormat = signal<'wav' | 'mp3' | 'ogg' | 'flac' | 'aac'>('mp3');
+  availableFormats: ('wav' | 'mp3' | 'ogg' | 'flac' | 'aac')[] = ['mp3', 'wav', 'ogg', 'flac', 'aac'];
+
+  setTargetFormat(fmt: 'wav' | 'mp3' | 'ogg' | 'flac' | 'aac') {
+    this.targetFormat.set(fmt);
+  }
+
+  // Multi-track Mixer State
+  mixTracksList = signal<{ id: number; name: string; buffer: AudioBuffer; gain: number; offsetSec: number }[]>([]);
+
+  // Silence Remover Settings & Detected regions
+  silenceThresholdDb = signal<number>(-45);
+  silenceMinDuration = signal<number>(0.4);
+  detectedSilences = signal<{ start: number; end: number }[]>([]);
+
+  // Normalizer & Loudness State
+  loudnessInfo = signal<{ peakDb: number; rmsDb: number; recommendedGain: number } | null>(null);
+  targetNormalizeDb = signal<number>(-0.5);
+
+  // Pitch & 3-Band Equalizer
+  pitchSemitones = signal<number>(0); // -12 to +12 semitones
+  eqBass = signal<number>(0); // -15 to +15 dB
+  eqMid = signal<number>(0); // -15 to +15 dB
+  eqTreble = signal<number>(0); // -15 to +15 dB
+
+  // Visualizer / Spectrogram
+  visualizerMode = signal<'waveform' | 'frequency' | 'spectrogram'>('waveform');
+  @ViewChild('spectrogramCanvas', { static: false }) spectrogramCanvasRef!: ElementRef<HTMLCanvasElement>;
+  private analyserNode: AnalyserNode | null = null;
+  private visualizerAnimId: number | null = null;
+
   // Effects
   fadeInDuration = signal<number>(0.5); // seconds
   fadeOutDuration = signal<number>(0.8); // seconds
@@ -79,6 +119,9 @@ export class AudioCutterComponent implements OnDestroy {
     if (this.exportedUrl()) URL.revokeObjectURL(this.exportedUrl()!);
     if (this.animFrameId) {
       cancelAnimationFrame(this.animFrameId);
+    }
+    if (this.visualizerAnimId) {
+      cancelAnimationFrame(this.visualizerAnimId);
     }
   }
 
@@ -155,7 +198,192 @@ export class AudioCutterComponent implements OnDestroy {
     if (this.exportedUrl()) URL.revokeObjectURL(this.exportedUrl()!);
     this.exportedUrl.set(null);
 
-    setTimeout(() => this.drawWaveform(), 50);
+    setTimeout(() => {
+      this.drawWaveform();
+      this.updateLoudnessStats();
+      this.scanSilence();
+    }, 50);
+  }
+
+  // --- Loudness Meter & Normalizer ---
+  updateLoudnessStats() {
+    if (!this.currentBuffer) return;
+    const stats = this.audioService.calculateLoudness(this.currentBuffer);
+    this.loudnessInfo.set(stats);
+  }
+
+  applyNormalization() {
+    if (!this.currentBuffer) return;
+    this.stopPlayback();
+    const normalized = this.audioService.normalizeBuffer(this.currentBuffer, this.targetNormalizeDb());
+    this.setLoadedBuffer(normalized, `normalized_${this.audioName()}`);
+  }
+
+  // --- Silence Detector & Remover ---
+  scanSilence() {
+    if (!this.currentBuffer) return;
+    const regions = this.audioService.detectSilenceRegions(
+      this.currentBuffer,
+      this.silenceThresholdDb(),
+      this.silenceMinDuration()
+    );
+    this.detectedSilences.set(regions);
+  }
+
+  applySilenceRemoval() {
+    if (!this.currentBuffer) return;
+    this.stopPlayback();
+    const stripped = this.audioService.stripSilence(
+      this.currentBuffer,
+      this.silenceThresholdDb(),
+      this.silenceMinDuration()
+    );
+    this.setLoadedBuffer(stripped, `stripped_${this.audioName()}`);
+  }
+
+  // --- Pitch & EQ Processing ---
+  applyPitchAndEq() {
+    if (!this.currentBuffer) return;
+    this.stopPlayback();
+    const processed = this.audioService.applyEqAndPitch(
+      this.currentBuffer,
+      this.pitchSemitones(),
+      this.eqBass(),
+      this.eqMid(),
+      this.eqTreble()
+    );
+    this.setLoadedBuffer(processed, `fx_${this.audioName()}`);
+  }
+
+  // --- Multi-track Mixer ---
+  async addTrackToMixer(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+    try {
+      const buffer = await this.audioService.decodeAudio(file);
+      const newTrack = {
+        id: Date.now(),
+        name: file.name,
+        buffer,
+        gain: 1.0,
+        offsetSec: 0
+      };
+      this.mixTracksList.update(list => [...list, newTrack]);
+    } catch {
+      alert('Could not decode audio track.');
+    }
+  }
+
+  removeMixTrack(id: number) {
+    this.mixTracksList.update(list => list.filter(t => t.id !== id));
+  }
+
+  exportMixedTracks() {
+    const tracks = this.mixTracksList();
+    if (!tracks.length) return;
+    try {
+      this.stopPlayback();
+      const mixed = this.audioService.mixTracks(tracks);
+      this.setLoadedBuffer(mixed, `mixed_project_${Date.now()}.wav`);
+      this.studioTab.set('editor');
+    } catch (err: any) {
+      alert('Mixer error: ' + err.message);
+    }
+  }
+
+  // --- Format Converter Export ---
+  async exportFormattedFile() {
+    if (!this.currentBuffer) return;
+    this.stopPlayback();
+    this.isLoading.set(true);
+
+    try {
+      const format = this.targetFormat();
+      const { blob, ext } = await this.audioService.exportFormattedBlob(this.currentBuffer, format);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${this.audioName().replace(/\.[^/.]+$/, '')}.${ext}`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } catch {
+      alert('Error during conversion export.');
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  // --- Real-time Visualizer & Spectrogram ---
+  startLiveVisualizer() {
+    if (this.visualizerAnimId) cancelAnimationFrame(this.visualizerAnimId);
+
+    const render = () => {
+      if (!this.analyserNode) return;
+      const canvas = this.spectrogramCanvasRef?.nativeElement;
+      if (!canvas) {
+        this.visualizerAnimId = requestAnimationFrame(render);
+        return;
+      }
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const bufferLength = this.analyserNode.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      const width = canvas.width;
+      const height = canvas.height;
+
+      if (this.visualizerMode() === 'frequency') {
+        this.analyserNode.getByteFrequencyData(dataArray);
+        ctx.fillStyle = '#141519';
+        ctx.fillRect(0, 0, width, height);
+
+        const barWidth = (width / bufferLength) * 2.5;
+        let x = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          const barHeight = (dataArray[i] / 255) * height;
+          const hue = (i / bufferLength) * 120 + 80;
+          ctx.fillStyle = `hsl(${hue}, 80%, 65%)`;
+          ctx.fillRect(x, height - barHeight, barWidth, barHeight);
+          x += barWidth + 1;
+        }
+      } else if (this.visualizerMode() === 'waveform') {
+        this.analyserNode.getByteTimeDomainData(dataArray);
+        ctx.fillStyle = '#141519';
+        ctx.fillRect(0, 0, width, height);
+
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#c1e993';
+        ctx.beginPath();
+        const sliceWidth = width / bufferLength;
+        let x = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          const v = dataArray[i] / 128.0;
+          const y = (v * height) / 2;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+          x += sliceWidth;
+        }
+        ctx.stroke();
+      } else {
+        // Spectrogram Waterfall
+        this.analyserNode.getByteFrequencyData(dataArray);
+        const imgData = ctx.getImageData(2, 0, width - 2, height);
+        ctx.putImageData(imgData, 0, 0);
+
+        for (let i = 0; i < height; i++) {
+          const binIndex = Math.floor((1 - i / height) * (bufferLength / 2));
+          const val = dataArray[binIndex] || 0;
+          const hue = (1 - val / 255) * 240;
+          ctx.fillStyle = val > 10 ? `hsl(${hue}, 100%, ${val / 3}%)` : '#141519';
+          ctx.fillRect(width - 2, i, 2, 1);
+        }
+      }
+
+      this.visualizerAnimId = requestAnimationFrame(render);
+    };
+
+    render();
   }
 
   // --- PLAYBACK CONTROLS ---
@@ -182,6 +410,10 @@ export class AudioCutterComponent implements OnDestroy {
           this.currentPlayheadTime.set(start);
           this.drawWaveform();
         }
+      },
+      (analyser) => {
+        this.analyserNode = analyser;
+        this.startLiveVisualizer();
       }
     );
 
@@ -203,6 +435,10 @@ export class AudioCutterComponent implements OnDestroy {
         this.isPlaying.set(false);
         this.currentPlayheadTime.set(0);
         this.drawWaveform();
+      },
+      (analyser) => {
+        this.analyserNode = analyser;
+        this.startLiveVisualizer();
       }
     );
 

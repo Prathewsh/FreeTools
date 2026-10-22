@@ -1,0 +1,181 @@
+<div class="tool-content">
+  <div class="tool-header">
+    <div class="header-titles">
+      <div class="title-with-badge">
+        <h2>File Encryption & Decryption Studio</h2>
+        <span class="badge-vault">AES-256-GCM Authenticated</span>
+      </div>
+      <p class="tool-desc">
+        Military-grade in-browser cryptographic protection. Keys are derived locally with PBKDF2 (SHA-256) and files are protected with authenticated AES-GCM (128-bit integrity tag). No unencrypted payload ever touches a network.
+      </p>
+    </div>
+    <div class="device-badge">
+      <span class="green-dot"></span>
+      <span>Web Crypto API &bull; 100% Client-Side</span>
+    </div>
+  </div>
+
+  <div class="crypto-card">
+    <div class="mode-selector">
+      <button
+        class="mode-btn"
+        [class.active]="mode() === 'encrypt'"
+        (click)="mode.set('encrypt')"
+      >
+        <span class="icon">🔒</span>
+        <div class="btn-text">
+          <span class="lbl">Encrypt File</span>
+          <span class="sub">Lock with passphrase</span>
+        </div>
+      </button>
+
+      <button
+        class="mode-btn"
+        [class.active]="mode() === 'decrypt'"
+        (click)="mode.set('decrypt')"
+      >
+        <span class="icon">🔓</span>
+        <div class="btn-text">
+          <span class="lbl">Decrypt File</span>
+          <span class="sub">Restore original data</span>
+        </div>
+      </button>
+    </div>
+
+    <!-- Dropzone -->
+    <div
+      class="file-dropzone"
+      (drop)="onDrop($event)"
+      (dragover)="onDragOver($event)"
+    >
+      <input
+        type="file"
+        id="cryptoFileInput"
+        (change)="onFileSelected($event)"
+        class="hidden-file-input"
+      />
+      <label for="cryptoFileInput" class="dropzone-label">
+        <i class="lni lni-upload"></i>
+        @if (selectedFile()) {
+          <div class="selected-file-info">
+            <span class="fname">{{ fileName() }}</span>
+            <span class="fsize">{{ fileSize() }}</span>
+          </div>
+          <span class="change-hint">Click or drop another file to change</span>
+        } @else {
+          <span class="primary-prompt">Choose a file or drag & drop here</span>
+          <span class="secondary-prompt">Supports any file type (images, videos, documents, binaries)</span>
+        }
+      </label>
+    </div>
+
+    <!-- Passphrase Form -->
+    <div class="form-grid">
+      <div class="field-group full-width">
+        <div class="field-header">
+          <label>Secret Passphrase</label>
+          <button type="button" class="btn-text-action" (click)="generateStrongPassphrase()">
+            🎲 Generate Strong Passphrase
+          </button>
+        </div>
+        <div class="password-input-wrap">
+          <input
+            [type]="showPassphrase() ? 'text' : 'password'"
+            [ngModel]="passphrase()"
+            (ngModelChange)="passphrase.set($event)"
+            placeholder="Enter passphrase used for key derivation..."
+          />
+          <button
+            type="button"
+            class="toggle-eye"
+            (click)="showPassphrase.set(!showPassphrase())"
+          >
+            {{ showPassphrase() ? 'Hide' : 'Show' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Cipher Algorithm</label>
+        <div class="cipher-pill">
+          <span class="check-mark">✓</span>
+          <strong>AES-256-GCM</strong> (Authenticated Cipher + Galois Hash)
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Key Derivation (PBKDF2)</label>
+        <select [ngModel]="pbkdf2Iterations()" (ngModelChange)="pbkdf2Iterations.set(+$event)">
+          <option [value]="100000">100,000 Iterations (Fast)</option>
+          <option [value]="250000">250,000 Iterations (Recommended OWASP)</option>
+          <option [value]="600000">600,000 Iterations (Maximum Security)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Action Button -->
+    <div class="action-row">
+      <button
+        class="btn-primary-action"
+        [disabled]="isProcessing() || !selectedFile() || !passphrase()"
+        (click)="runOperation()"
+      >
+        @if (isProcessing()) {
+          <span class="spinner"></span>
+          <span>{{ progressStatus() }}</span>
+        } @else {
+          <span>{{ mode() === 'encrypt' ? '🔒 Encrypt & Lock File' : '🔓 Decrypt & Verify Payload' }}</span>
+        }
+      </button>
+    </div>
+
+    @if (errorMsg()) {
+      <div class="alert-box error">
+        <span class="alert-icon">⚠️</span>
+        <div class="alert-text">{{ errorMsg() }}</div>
+      </div>
+    }
+
+    @if (successMsg() && resultBlob()) {
+      <div class="alert-box success">
+        <span class="alert-icon">✓</span>
+        <div class="alert-text">
+          <strong>{{ successMsg() }}</strong>
+          <span class="time-stat">Completed in {{ executionTimeMs() }} ms</span>
+        </div>
+      </div>
+
+      <!-- Result Card -->
+      <div class="result-card">
+        <div class="result-meta">
+          <div class="meta-item">
+            <span class="meta-lbl">Result File</span>
+            <span class="meta-val font-bold">{{ resultFileName() }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-lbl">Output Size</span>
+            <span class="meta-val">{{ resultFileSize() }}</span>
+          </div>
+          @if (computedSaltHex()) {
+            <div class="meta-item full">
+              <span class="meta-lbl">Unique PBKDF2 Salt (128-bit)</span>
+              <span class="meta-val mono">{{ computedSaltHex() }}</span>
+            </div>
+          }
+          @if (computedIvHex()) {
+            <div class="meta-item full">
+              <span class="meta-lbl">GCM Initialization Vector (96-bit IV)</span>
+              <span class="meta-val mono">{{ computedIvHex() }}</span>
+            </div>
+          }
+        </div>
+
+        <button class="btn-download" (click)="downloadResult()">
+          <i class="lni lni-download"></i>
+          <span>Download {{ resultFileName() }}</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>
+
