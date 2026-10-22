@@ -26,6 +26,8 @@
     <div class="url-hint">Accepts Giphy URLs, Imgur GIFs, or any direct .gif link.</div>
   </div>
 
+  @if (errorMsg()) { <p role="alert" class="url-hint">{{ errorMsg() }}</p> }
+
   @if (mode() === 'maker' || mode() === 'reverser') {
     <div class="gif-workspace">
       <div class="controls-panel">
@@ -40,7 +42,7 @@
 
         <div class="param-row">
           <label>Frame Delay (ms):
-            <input type="number" min="20" max="2000" step="20" [ngModel]="frameDelay()" (ngModelChange)="frameDelay.set($event); isPlaying() && startPreview()" />
+            <input type="number" min="20" max="2000" step="20" [ngModel]="frameDelay()" (ngModelChange)="frameDelay.set($event); useOriginalTiming.set(false); isPlaying() && startPreview()" />
           </label>
           <label>Playback Speed:
             <select [ngModel]="speedMultiplier()" (ngModelChange)="speedMultiplier.set($event); isPlaying() && startPreview()">
@@ -54,10 +56,10 @@
 
         <div class="param-row">
           <label>Width:
-            <input type="number" min="50" max="2000" [ngModel]="gifWidth()" (ngModelChange)="gifWidth.set($event)" />
+            <input type="number" min="50" max="2000" [ngModel]="gifWidth()" (ngModelChange)="resizePreview('width', $event)" />
           </label>
           <label>Height:
-            <input type="number" min="50" max="2000" [ngModel]="gifHeight()" (ngModelChange)="gifHeight.set($event)" />
+            <input type="number" min="50" max="2000" [ngModel]="gifHeight()" (ngModelChange)="resizePreview('height', $event)" />
           </label>
         </div>
 
@@ -66,6 +68,8 @@
             <input type="checkbox" [ngModel]="reversePlayback()" (ngModelChange)="reversePlayback.set($event); isPlaying() && startPreview()" /> Reverse playback
           </label>
         </div>
+
+        <label class="checkbox-label"><input type="checkbox" [ngModel]="useOriginalTiming()" (ngModelChange)="useOriginalTiming.set($event); isPlaying() && startPreview()" /> Use original frame timing</label>
 
         <div class="playback-controls">
           @if (!isPlaying()) {
@@ -78,11 +82,7 @@
 
       <div class="stage-panel">
         <div class="canvas-viewport checkerboard-pattern">
-          @if (loadedGifPreview()) {
-            <img [src]="loadedGifPreview()" alt="Loaded GIF" class="full-gif-preview" />
-          } @else {
-            <canvas #previewCanvas class="fitted-canvas"></canvas>
-          }
+          <canvas #previewCanvas class="fitted-canvas"></canvas>
 
           @if (!frames().length && !loadedGifPreview()) {
             <div class="empty-hint">
@@ -156,8 +156,8 @@
   @if (mode() === 'splitter') {
     <div class="splitter-section">
       <div class="upload-zone">
-        <input #singleGifInput type="file" accept="image/gif,image/png,image/webp" (change)="onSingleGifSelected($event)" style="display: none" />
-        <button class="btn-primary-blue" (click)="singleGifInput.click()">Select GIF / Image file</button>
+        <input #singleGifInput type="file" accept="image/gif" (change)="onSingleGifSelected($event)" style="display: none" />
+        <button class="btn-primary-blue" (click)="singleGifInput.click()">Select GIF file</button>
         <p>Decomposes and extracts individual frames for download.</p>
       </div>
 

@@ -1,6 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { extractArticle } from './article-extractor';
 
 @Component({
   selector: 'app-article-to-markdown',
@@ -9,7 +10,8 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './article-to-markdown.component.html',
   styleUrl: './article-to-markdown.component.scss'
 })
-export class ArticleToMarkdownComponent {
+export class ArticleToMarkdownComponent implements OnDestroy {
+  private request: AbortController | null = null;
   url = signal<string>('');
   rawHtmlInput = signal<string>('');
   markdownOutput = signal<string>('');
@@ -19,106 +21,90 @@ export class ArticleToMarkdownComponent {
   copied = signal<boolean>(false);
   activeTab = signal<'url' | 'paste'>('url');
 
+  cancelFetch() {
+    this.request?.abort();
+    this.request = null;
+    this.isLoading.set(false);
+  }
+
+  ngOnDestroy() { this.cancelFetch(); }
+
   async fetchArticle() {
-    const targetUrl = this.url().trim();
-    if (!targetUrl) return;
-
-    this.isLoading.set(true);
+    this.cancelFetch();
     this.errorMsg.set('');
-    this.markdownOutput.set('');
-
+    let target: URL;
     try {
-      // Use AllOrigins / corsproxy client fallback for client-side web requests
-      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
-      const res = await fetch(proxyUrl);
-      const data = await res.json();
-
-      if (!data.contents) {
-        throw new Error('Could not retrieve article content. Site may block scraping or require authentication.');
-      }
-
-      this.parseHtmlToMarkdown(data.contents);
-    } catch (err: any) {
-      this.errorMsg.set(
-        'Direct URL fetching was blocked by CORS or the website. You can also paste the article HTML/Page source directly in the "Paste HTML" tab!'
-      );
+      target = new URL(this.url().trim());
+      if (!['http:', 'https:'].includes(target.protocol) || target.username || target.password) throw new Error();
+    } catch {
+      this.errorMsg.set('Enter a valid http:// or https:// article URL.');
+      return;
+    }
+    const request = new AbortController();
+    this.request = request;
+    this.isLoading.set(true);
+    this.markdownOutput.set('');
+    this.articleTitle.set('');
+    let timedOut = false;
+    const timer = setTimeout(() => { timedOut = true; request.abort(); }, 20_000);
+    const aborted = new Promise<never>((_, reject) => {
+      request.signal.addEventListener('abort', () => reject(new Error('Request cancelled')), { once: true });
+    });
+    try {
+      const result = await Promise.race([this.retrieveArticle(target, request.signal), aborted]);
+      if (this.request !== request || request.signal.aborted) return;
+      this.parseHtmlToMarkdown(result.html, target.href, result.title);
+    } catch (err: unknown) {
+      if (this.request !== request) return;
+      this.errorMsg.set(timedOut
+        ? 'The request timed out after 20 seconds. Try again or paste the article HTML instead.'
+        : `${err instanceof Error ? err.message : 'Unable to fetch this article.'} Try the Paste Article HTML tab if the site blocks access.`);
     } finally {
-      this.isLoading.set(false);
+      clearTimeout(timer);
+      if (this.request === request) {
+        this.request = null;
+        this.isLoading.set(false);
+      }
     }
   }
 
-  processPastedHtml() {
-    if (!this.rawHtmlInput().trim()) return;
-    this.parseHtmlToMarkdown(this.rawHtmlInput());
+  private async retrieveArticle(target: URL, signal: AbortSignal): Promise<{ html: string; title?: string }> {
+    const wiki = /^(?:[a-z0-9-]+\.)?(?:m\.)?wikipedia\.org$/i.test(target.hostname);
+    if (wiki) {
+      const page = target.pathname.startsWith('/wiki/') ? decodeURIComponent(target.pathname.slice(6)) : target.searchParams.get('title');
+      if (!page) throw new Error('Use a Wikipedia article URL, such as /wiki/Article_name.');
+      const api = new URL('/w/api.php', target.origin.replace('.m.wikipedia.org', '.wikipedia.org'));
+      api.search = new URLSearchParams({ action: 'parse', page, prop: 'text', redirects: '1', format: 'json', formatversion: '2', origin: '*' }).toString();
+      const res = await fetch(api.href, { signal, credentials: 'omit' });
+      if (!res.ok) throw new Error(`Wikipedia returned HTTP ${res.status}.`);
+      const data = await res.json();
+      if (data.error || typeof data.parse?.text !== 'string') throw new Error(data.error?.info || 'Wikipedia returned no article content.');
+      return { html: data.parse.text, title: data.parse.title };
+    }
+    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(target.href)}`, { signal, credentials: 'omit' });
+    if (!res.ok) throw new Error(`The article fetch service returned HTTP ${res.status}.`);
+    const data = await res.json();
+    if (data.status?.http_code >= 400) throw new Error(`The website returned HTTP ${data.status.http_code}.`);
+    if (typeof data.contents !== 'string' || !data.contents.trim()) throw new Error('No article content was returned.');
+    return { html: data.contents };
   }
 
-  parseHtmlToMarkdown(htmlString: string) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlString, 'text/html');
+  processPastedHtml() {
+    this.cancelFetch();
+    this.errorMsg.set('');
+    this.markdownOutput.set('');
+    this.articleTitle.set('');
+    try {
+      this.parseHtmlToMarkdown(this.rawHtmlInput());
+    } catch (err: unknown) {
+      this.errorMsg.set(err instanceof Error ? err.message : 'Unable to convert this HTML.');
+    }
+  }
 
-    // Extract title
-    const title = doc.querySelector('title')?.innerText || doc.querySelector('h1')?.innerText || 'Article';
-    this.articleTitle.set(title);
-
-    // Remove scripts, styles, navigations, sidebars, cookie banners, footers, svg
-    const unwantedSelectors = [
-      'script', 'style', 'noscript', 'nav', 'header', 'footer', 'aside',
-      '.cookie-banner', '#cookie-banner', '.ads', '.advertisement', '.social-share',
-      '.comments', '#comments', 'svg', 'iframe'
-    ];
-
-    unwantedSelectors.forEach(selector => {
-      doc.querySelectorAll(selector).forEach(el => el.remove());
-    });
-
-    // Locate primary content container
-    const article = doc.querySelector('article') || doc.querySelector('main') || doc.querySelector('.post-content') || doc.querySelector('.article-body') || doc.body;
-
-    let md = `# ${title}\n\n`;
-
-    // Process paragraphs, headings, lists, blockquotes, images
-    const elements = article.querySelectorAll('h1, h2, h3, h4, p, ul, ol, blockquote, pre');
-
-    elements.forEach(el => {
-      const tag = el.tagName.toLowerCase();
-      const text = el.textContent?.trim() || '';
-      if (!text) return;
-
-      switch (tag) {
-        case 'h1':
-          if (text !== title) md += `# ${text}\n\n`;
-          break;
-        case 'h2':
-          md += `## ${text}\n\n`;
-          break;
-        case 'h3':
-          md += `### ${text}\n\n`;
-          break;
-        case 'h4':
-          md += `#### ${text}\n\n`;
-          break;
-        case 'p':
-          md += `${text}\n\n`;
-          break;
-        case 'blockquote':
-          md += `> ${text}\n\n`;
-          break;
-        case 'pre':
-          md += `\`\`\`\n${text}\n\`\`\`\n\n`;
-          break;
-        case 'ul':
-        case 'ol':
-          const items = el.querySelectorAll('li');
-          items.forEach((li, idx) => {
-            const prefix = tag === 'ul' ? '- ' : `${idx + 1}. `;
-            md += `${prefix}${li.textContent?.trim()}\n`;
-          });
-          md += '\n';
-          break;
-      }
-    });
-
-    this.markdownOutput.set(md);
+  parseHtmlToMarkdown(htmlString: string, sourceUrl = '', title?: string) {
+    const result = extractArticle(htmlString, sourceUrl, title);
+    this.articleTitle.set(result.title);
+    this.markdownOutput.set(result.markdown);
   }
 
   copyMarkdown() {

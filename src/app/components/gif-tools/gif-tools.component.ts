@@ -1,6 +1,7 @@
-import { Component, signal, ElementRef, ViewChild } from '@angular/core';
+import { Component, signal, ElementRef, ViewChild, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { decodeGif } from './gif-decoder';
 
 type GifSubtool = 'maker' | 'splitter' | 'spritesheet' | 'reverser';
 
@@ -17,8 +18,17 @@ interface FrameItem {
   templateUrl: './gif-tools.component.html',
   styleUrl: './gif-tools.component.scss'
 })
-export class GifToolsComponent {
-  @ViewChild('previewCanvas') previewCanvasRef!: ElementRef<HTMLCanvasElement>;
+export class GifToolsComponent implements OnDestroy {
+  private previewCanvasRef?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('previewCanvas') set previewCanvas(ref: ElementRef<HTMLCanvasElement> | undefined) {
+    this.previewCanvasRef = ref;
+    if (ref) this.refreshPreview();
+  }
+  private loadController: AbortController | null = null;
+  private drawVersion = 0;
+  private nextFrameId = 0;
+  errorMsg = signal('');
+  useOriginalTiming = signal(false);
 
   mode = signal<GifSubtool>('maker');
 
@@ -33,7 +43,7 @@ export class GifToolsComponent {
   gifHeight = signal<number>(400);
   isPlaying = signal<boolean>(false);
   currentFrameIndex = signal<number>(0);
-  private playInterval: any = null;
+  private playInterval: ReturnType<typeof setTimeout> | null = null;
 
   // Splitter / Extractor
   sourceGifUrl = signal<string | null>(null);
@@ -52,155 +62,175 @@ export class GifToolsComponent {
   sheetGenerated = signal<boolean>(false);
   sheetDataUrl = signal<string | null>(null);
 
-  // Multi-frame file selection
-  onFilesSelected(event: Event) {
+  async onFilesSelected(event: Event) {
     const input = event.target as HTMLInputElement;
-    if (!input.files || !input.files.length) return;
-
-    const files = Array.from(input.files);
-    let loaded = 0;
-    const newFrames: FrameItem[] = [];
-
-    files.forEach((file, index) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        newFrames.push({
-          id: Date.now() + index,
-          dataUrl: e.target?.result as string,
-          delay: this.frameDelay()
-        });
-        loaded++;
-        if (loaded === files.length) {
-          this.frames.update(current => [...current, ...newFrames]);
-          if (!this.isPlaying()) this.startPreview();
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-
-  // Upload a standalone .gif file to parse & load into animation studio
-  onSingleGifSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const url = e.target?.result as string;
-        this.loadGifFromSource(url);
-      };
-      reader.readAsDataURL(file);
-    }
-  }
-
-  // Load GIF from direct URL (e.g., Giphy: media.giphy.com/media/.../giphy.gif)
-  async loadFromGiphyUrl() {
-    let url = this.giphyUrl().trim();
-    if (!url) {
-      alert('Please enter a valid GIF URL (e.g. from Giphy).');
+    const files = Array.from(input.files || []);
+    input.value = '';
+    if (!files.length) return;
+    if (files.some(file => file.type === 'image/gif' || /\.gif$/i.test(file.name))) {
+      if (files.length === 1) await this.loadGifFile(files[0]);
+      else this.errorMsg.set('Load full GIFs individually. Upload frame images accepts still images.');
       return;
     }
-
-    // Auto-resolve common Giphy page URLs to direct image URLs
-    // e.g., https://giphy.com/gifs/funny-cat-3o7btPCcdNniyf0ArS -> https://i.giphy.com/media/3o7btPCcdNniyf0ArS/giphy.gif
-    const giphyIdMatch = url.match(/giphy\.com\/(?:gifs|clips)\/(?:[\w-]+-)?([a-zA-Z0-9]+)/);
-    if (giphyIdMatch && giphyIdMatch[1]) {
-      url = `https://i.giphy.com/media/${giphyIdMatch[1]}/giphy.gif`;
-    }
-
-    this.loadGifFromSource(url);
+    this.errorMsg.set('');
+    try {
+      const newFrames = await Promise.all(files.map(file => new Promise<FrameItem>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve({ id: ++this.nextFrameId, dataUrl: reader.result as string, delay: this.frameDelay() });
+        reader.onerror = () => reject(new Error(`Could not read ${file.name}.`));
+        reader.readAsDataURL(file);
+      })));
+      this.frames.update(current => [...current, ...newFrames]);
+      this.invalidateSheet();
+      this.startPreview();
+    } catch (error) { this.errorMsg.set(error instanceof Error ? error.message : 'Could not load images.'); }
   }
 
-  loadGifFromSource(url: string) {
-    this.isProcessing.set(true);
-    this.sourceGifUrl.set(url);
-    this.loadedGifPreview.set(url);
+  async onSingleGifSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (file) await this.loadGifFile(file);
+  }
 
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      this.gifWidth.set(img.width || 400);
-      this.gifHeight.set(img.height || 400);
+  private async loadGifFile(file: File) {
+    const url = URL.createObjectURL(file);
+    try { await this.loadGifFromSource(url); }
+    finally { URL.revokeObjectURL(url); }
+  }
 
-      // Create snapshot frames to initialize sequence
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width || 400;
-      canvas.height = img.height || 400;
-      const ctx = canvas.getContext('2d')!;
-      ctx.drawImage(img, 0, 0);
-
-      const frameUrl = canvas.toDataURL('image/png');
-      this.extractedFrames.set([frameUrl]);
-
-      // If no frames yet in studio, add the base frame
-      if (this.frames().length === 0) {
-        this.frames.set([
-          { id: Date.now(), dataUrl: frameUrl, delay: this.frameDelay() }
-        ]);
-        this.startPreview();
+  async loadFromGiphyUrl() {
+    try {
+      const source = new URL(this.giphyUrl().trim());
+      if (!['http:', 'https:'].includes(source.protocol)) throw new Error();
+      let url = source.href;
+      if (/(^|\.)giphy\.com$/.test(source.hostname) && /^\/(gifs|clips)\//.test(source.pathname)) {
+        const id = source.pathname.split('/').filter(Boolean).at(-1)?.split('-').at(-1);
+        if (!id || !/^[a-zA-Z0-9]+$/.test(id)) throw new Error();
+        url = `https://i.giphy.com/media/${id}/giphy.gif`;
       }
+      await this.loadGifFromSource(url);
+    } catch { this.errorMsg.set('Enter a valid Giphy page URL or direct http(s) GIF URL.'); }
+  }
 
-      this.isProcessing.set(false);
-    };
-
-    img.onerror = () => {
-      // Direct load fallback
-      this.extractedFrames.set([url]);
-      this.isProcessing.set(false);
-    };
-
-    img.src = url;
+  async loadGifFromSource(url: string) {
+    this.loadController?.abort();
+    const controller = new AbortController();
+    this.loadController = controller;
+    this.isProcessing.set(true);
+    this.errorMsg.set('');
+    const timeout = setTimeout(() => controller.abort(), 20_000);
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+      if (!response.ok) throw new Error(`GIF download failed (HTTP ${response.status}).`);
+      const decoded = await decodeGif(await response.arrayBuffer(), controller.signal);
+      if (this.loadController !== controller) return;
+      this.stopPreview();
+      this.frames.set(decoded.frames.map(frame => ({ ...frame, id: ++this.nextFrameId })));
+      this.extractedFrames.set(decoded.frames.map(frame => frame.dataUrl));
+      this.gifWidth.set(decoded.width);
+      this.gifHeight.set(decoded.height);
+      this.useOriginalTiming.set(true);
+      this.currentFrameIndex.set(this.reversePlayback() ? decoded.frames.length - 1 : 0);
+      this.sourceGifUrl.set(url);
+      this.loadedGifPreview.set(null);
+      this.invalidateSheet();
+      this.startPreview();
+    } catch (error) {
+      if (this.loadController === controller) this.errorMsg.set(controller.signal.aborted
+        ? 'GIF loading timed out. Try uploading the file instead.'
+        : `${error instanceof Error ? error.message : 'Could not load GIF.'} If the host blocks access, download the GIF and upload it here.`);
+    } finally {
+      clearTimeout(timeout);
+      if (this.loadController === controller) { this.loadController = null; this.isProcessing.set(false); }
+    }
   }
 
   startPreview() {
-    if (this.playInterval) clearInterval(this.playInterval);
+    this.stopPreview();
     if (!this.frames().length) return;
-
     this.isPlaying.set(true);
-    let idx = 0;
+    this.tick();
+  }
 
-    const loop = () => {
-      const framesList = this.reversePlayback() ? [...this.frames()].reverse() : this.frames();
-      if (!framesList.length) return;
-
-      const f = framesList[idx % framesList.length];
-      this.currentFrameIndex.set(idx % framesList.length);
-      this.drawFrame(f.dataUrl);
-
-      idx++;
-      const currentDelay = Math.max(20, Math.round(this.frameDelay() / this.speedMultiplier()));
-      this.playInterval = setTimeout(loop, currentDelay);
-    };
-
-    loop();
+  private tick() {
+    if (!this.isPlaying() || !this.frames().length) return;
+    const index = Math.min(this.currentFrameIndex(), this.frames().length - 1);
+    this.currentFrameIndex.set(index);
+    const frame = this.frames()[index];
+    this.drawFrame(frame.dataUrl);
+    const baseDelay = this.useOriginalTiming() ? frame.delay : this.frameDelay();
+    const delay = Math.max(20, (Number(baseDelay) || 200) / (Number(this.speedMultiplier()) || 1));
+    this.playInterval = setTimeout(() => {
+      const count = this.frames().length;
+      if (!count) return;
+      this.currentFrameIndex.set((index + (this.reversePlayback() ? -1 : 1) + count) % count);
+      this.tick();
+    }, delay);
   }
 
   stopPreview() {
     this.isPlaying.set(false);
-    if (this.playInterval) clearTimeout(this.playInterval);
+    if (this.playInterval !== null) clearTimeout(this.playInterval);
+    this.playInterval = null;
+  }
+
+  refreshPreview() {
+    const frame = this.frames()[Math.min(this.currentFrameIndex(), this.frames().length - 1)];
+    if (frame) this.drawFrame(frame.dataUrl);
+  }
+
+  resizePreview(axis: 'width' | 'height', value: number) {
+    const size = Math.min(2000, Math.max(1, Math.round(Number(value)) || 1));
+    if (axis === 'width') this.gifWidth.set(size); else this.gifHeight.set(size);
+    this.refreshPreview();
   }
 
   drawFrame(dataUrl: string) {
     if (!this.previewCanvasRef) return;
     const canvas = this.previewCanvasRef.nativeElement;
-    const ctx = canvas.getContext('2d')!;
+    const version = ++this.drawVersion;
     const img = new Image();
     img.onload = () => {
+      if (version !== this.drawVersion || this.previewCanvasRef?.nativeElement !== canvas) return;
       canvas.width = this.gifWidth();
       canvas.height = this.gifHeight();
+      const ctx = canvas.getContext('2d')!;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     };
     img.src = dataUrl;
   }
 
+  private invalidateSheet() { this.sheetDataUrl.set(null); this.sheetGenerated.set(false); }
+
+  ngOnDestroy() {
+    this.stopPreview();
+    this.loadController?.abort();
+    this.loadController = null;
+    this.drawVersion++;
+  }
+
   removeFrame(index: number) {
     this.frames.update(f => f.filter((_, i) => i !== index));
-    if (!this.frames().length) this.stopPreview();
+    this.currentFrameIndex.set(Math.max(0, Math.min(this.currentFrameIndex(), this.frames().length - 1)));
+    this.invalidateSheet();
+    if (!this.frames().length) this.clearFrames();
+    else this.refreshPreview();
   }
 
   clearFrames() {
     this.stopPreview();
+    this.loadController?.abort();
+    this.loadController = null;
+    this.isProcessing.set(false);
+    this.drawVersion++;
+    this.extractedFrames.set([]);
+    this.sourceGifUrl.set(null);
+    this.currentFrameIndex.set(0);
+    this.invalidateSheet();
+    const canvas = this.previewCanvasRef?.nativeElement;
+    if (canvas) canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
     this.frames.set([]);
     this.loadedGifPreview.set(null);
   }
@@ -213,6 +243,8 @@ export class GifToolsComponent {
     list[index] = list[target];
     list[target] = temp;
     this.frames.set(list);
+    this.invalidateSheet();
+    this.refreshPreview();
   }
 
   // --- Sprite Sheet Generator ---

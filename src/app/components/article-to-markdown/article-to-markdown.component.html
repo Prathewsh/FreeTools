@@ -14,7 +14,7 @@
 
   <div class="tabs">
     <button class="tab-btn" [class.active]="activeTab() === 'url'" (click)="activeTab.set('url')">Fetch URL</button>
-    <button class="tab-btn" [class.active]="activeTab() === 'paste'" (click)="activeTab.set('paste')">Paste Article HTML</button>
+    <button class="tab-btn" [class.active]="activeTab() === 'paste'" (click)="cancelFetch(); activeTab.set('paste')">Paste Article HTML</button>
   </div>
 
   @if (activeTab() === 'url') {
@@ -28,7 +28,9 @@
         <button class="btn btn-primary" [disabled]="isLoading()" (click)="fetchArticle()">
           {{ isLoading() ? 'Extracting...' : 'Extract Clean Markdown' }}
         </button>
+        @if (isLoading()) { <button class="btn btn-secondary" (click)="cancelFetch()">Cancel</button> }
       </div>
+      <p class="subtitle">Requests stop after 20 seconds. Wikipedia is fetched directly; other URLs use the AllOrigins proxy.</p>
       @if (errorMsg()) {
         <div class="warning-box">{{ errorMsg() }}</div>
       }
@@ -39,6 +41,7 @@
         class="html-area" 
         placeholder="Paste article page HTML source or text here..." 
         [(ngModel)]="rawHtmlInput"></textarea>
+      @if (errorMsg()) { <div class="warning-box">{{ errorMsg() }}</div> }
       <button class="btn btn-primary mt-2" (click)="processPastedHtml()">Convert to Clean Markdown</button>
     </div>
   }
