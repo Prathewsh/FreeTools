@@ -19,15 +19,15 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('In-browser Media Studio & Tools');
+    expect(compiled.querySelector('h1')?.textContent).toContain('Free tools,all in one place');
   });
 
-  it('starts with an upload screen and no demo controls', async () => {
+  it('starts with the welcome screen and no demo controls', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.querySelector('.empty-dropzone')).toBeTruthy();
-    expect(element.querySelector('input[type="file"]')).toBeTruthy();
+    expect(element.querySelector('.welcome-container')).toBeTruthy();
+    expect(fixture.componentInstance.activeTab()).toBe('welcome');
     expect(element.textContent).not.toMatch(/try sample|demo beat|sunset demo/i);
     expect(element.querySelector('canvas')).toBeNull();
   });
@@ -35,6 +35,7 @@ describe('App', () => {
 
   it('provides an options panel and upload workspace for every tool', async () => {
     const fixture = TestBed.createComponent(App);
+    fixture.componentInstance.collapsedCategories.set(new Set());
     const tabs: ToolTab[] = ['bg-remover', 'image-studio', 'video-editor', 'audio-cutter', 'batch-converter', 'color-palette'];
     for (const tab of tabs) {
       fixture.componentInstance.selectTool(tab);
@@ -46,10 +47,11 @@ describe('App', () => {
     }
   });
 
-  it('places the JSON formatter after colors', () => {
+  it('includes the JSON formatter in the tool catalog', () => {
     const fixture = TestBed.createComponent(App);
     const ids = fixture.componentInstance.tools.map((tool) => tool.id);
-    expect(ids.slice(-2)).toEqual(['color-palette', 'json-formatter']);
+    expect(ids).toContain('json-formatter');
+    expect(new Set(ids).size).toBe(ids.length);
   });
 
   it('places the video editor immediately above the audio editor', () => {

@@ -14,6 +14,7 @@ export class AudioService {
   private audioCtx: AudioContext | null = null;
   private currentSource: AudioBufferSourceNode | null = null;
   private gainNode: GainNode | null = null;
+  private analyserNode: AnalyserNode | null = null;
   private startTimeOffset = 0;
   private playbackStartedAt = 0;
   private isCurrentlyPlaying = false;
@@ -82,16 +83,13 @@ export class AudioService {
     this.gainNode.gain.value = volume;
 
     const analyser = ctx.createAnalyser();
+    this.analyserNode = analyser;
     analyser.fftSize = 256;
     if (analyserOut) analyserOut(analyser);
 
     this.currentSource.connect(this.gainNode);
     this.gainNode.connect(analyser);
     analyser.connect(ctx.destination);
-    this.gainNode.gain.value = volume;
-
-    this.currentSource.connect(this.gainNode);
-    this.gainNode.connect(ctx.destination);
 
     this.startTimeOffset = startSec;
     this.playbackStartedAt = ctx.currentTime;
@@ -128,6 +126,8 @@ export class AudioService {
     }
     this.gainNode?.disconnect();
     this.gainNode = null;
+    this.analyserNode?.disconnect();
+    this.analyserNode = null;
     this.isCurrentlyPlaying = false;
   }
 

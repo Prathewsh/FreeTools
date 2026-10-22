@@ -57,16 +57,52 @@ export class JsonDiffComponent {
 
   convertCsvToJson() {
     try {
-      const lines = this.csvInput().trim().split('\n').map(l => l.trim()).filter(Boolean);
-      if (!lines.length) return;
-      const headers = lines[0].split(',').map(h => h.trim());
-      const rows = lines.slice(1).map(line => {
-        const values = line.split(',').map(v => v.trim());
-        const obj: any = {};
-        headers.forEach((h, i) => {
-          obj[h] = values[i] !== undefined ? values[i] : '';
-        });
-        return obj;
+      const input = this.csvInput().replace(/^\uFEFF/, '');
+      if (!input.trim()) {
+        this.jsonFromCsv.set('');
+        return;
+      }
+      const records: string[][] = [];
+      let row: string[] = [];
+      let field = '';
+      let quoted = false;
+      let closedQuote = false;
+      const finishField = () => {
+        row.push(field);
+        field = '';
+        closedQuote = false;
+      };
+      for (let i = 0; i < input.length; i++) {
+        const char = input[i];
+        if (quoted) {
+          if (char === '"') {
+            if (input[i + 1] === '"') { field += '"'; i++; }
+            else { quoted = false; closedQuote = true; }
+          } else field += char;
+        } else if (char === ',') {
+          finishField();
+        } else if (char === '\n' || char === '\r') {
+          finishField();
+          records.push(row);
+          row = [];
+          if (char === '\r' && input[i + 1] === '\n') i++;
+        } else if (char === '"' && !field && !closedQuote) {
+          quoted = true;
+        } else {
+          if (closedQuote || char === '"') throw new Error('Invalid CSV quoting');
+          field += char;
+        }
+      }
+      if (quoted) throw new Error('Unclosed CSV quote');
+      if (field || row.length || closedQuote) {
+        finishField();
+        records.push(row);
+      }
+      const headers = records[0];
+      if (new Set(headers).size !== headers.length) throw new Error('Duplicate headers');
+      const rows = records.slice(1).map(values => {
+        if (values.length !== headers.length) throw new Error('Column count mismatch');
+        return Object.fromEntries(headers.map((header, i) => [header, values[i]]));
       });
       this.jsonFromCsv.set(JSON.stringify(rows, null, 2));
     } catch {
@@ -77,14 +113,18 @@ export class JsonDiffComponent {
   convertJsonToCsv() {
     try {
       const arr = JSON.parse(this.jsonToCsvInput());
-      if (!Array.isArray(arr) || !arr.length) {
+      if (!Array.isArray(arr) || !arr.length || arr.some(row => row === null || typeof row !== 'object' || Array.isArray(row))) {
         this.csvOutput.set('Input must be a JSON array of objects');
         return;
       }
-      const headers = Object.keys(arr[0]);
+      const headers = Array.from(new Set<string>(arr.flatMap(row => Object.keys(row))));
+      const escapeField = (value: unknown): string => {
+        const text = value == null ? '' : typeof value === 'object' ? JSON.stringify(value) : String(value);
+        return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+      };
       const csvLines = [
-        headers.join(','),
-        ...arr.map(row => headers.map(h => JSON.stringify(row[h] !== undefined ? row[h] : '')).join(','))
+        headers.map(escapeField).join(','),
+        ...arr.map(row => headers.map(h => escapeField(Object.hasOwn(row, h) ? row[h] : '')).join(','))
       ];
       this.csvOutput.set(csvLines.join('\n'));
     } catch {

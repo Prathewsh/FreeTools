@@ -20,13 +20,17 @@ it('does not invent full-volume waveform peaks after a short clip', () => {
 it('stopping playback detaches the callback that could restart a loop', () => {
   const source = { connect: vi.fn(), disconnect: vi.fn(), stop: vi.fn(), start: vi.fn(), playbackRate: { value: 1 }, onended: null as (() => void) | null };
   const gain = { connect: vi.fn(), disconnect: vi.fn(), gain: { value: 1 } };
+  const analyser = { connect: vi.fn(), disconnect: vi.fn() };
   const audio = new AudioService();
-  vi.spyOn(audio, 'getAudioContext').mockReturnValue({ createBufferSource: () => source, createGain: () => gain, currentTime: 0 } as unknown as AudioContext);
+  vi.spyOn(audio, 'getAudioContext').mockReturnValue({ createBufferSource: () => source, createGain: () => gain, createAnalyser: () => analyser, currentTime: 0 } as unknown as AudioContext);
   audio.playBuffer(buffer([1]), 0, 1, 1, 1, vi.fn());
   expect(source.onended).toBeTypeOf('function');
+  expect(gain.connect).toHaveBeenCalledExactlyOnceWith(analyser);
+  expect(source.connect).toHaveBeenCalledExactlyOnceWith(gain);
   audio.stopPlayback();
   expect(source.onended).toBeNull();
   expect(gain.disconnect).toHaveBeenCalled();
+  expect(analyser.disconnect).toHaveBeenCalled();
 });
 
 it('returns valid hex colors for bright pixels', () => {
