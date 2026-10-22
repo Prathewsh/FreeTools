@@ -47,6 +47,7 @@ export class GifToolsComponent implements OnDestroy {
 
   // Splitter / Extractor
   sourceGifUrl = signal<string | null>(null);
+  originalGif = signal<Blob | null>(null);
   extractedFrames = signal<string[]>([]);
   isProcessing = signal<boolean>(false);
 
@@ -123,7 +124,8 @@ export class GifToolsComponent implements OnDestroy {
     try {
       const response = await fetch(url, { signal: controller.signal });
       if (!response.ok) throw new Error(`GIF download failed (HTTP ${response.status}).`);
-      const decoded = await decodeGif(await response.arrayBuffer(), controller.signal);
+      const bytes = await response.arrayBuffer();
+      const decoded = await decodeGif(bytes, controller.signal);
       if (this.loadController !== controller) return;
       this.stopPreview();
       this.frames.set(decoded.frames.map(frame => ({ ...frame, id: ++this.nextFrameId })));
@@ -133,6 +135,7 @@ export class GifToolsComponent implements OnDestroy {
       this.useOriginalTiming.set(true);
       this.currentFrameIndex.set(this.reversePlayback() ? decoded.frames.length - 1 : 0);
       this.sourceGifUrl.set(url);
+      this.originalGif.set(new Blob([bytes], { type: 'image/gif' }));
       this.loadedGifPreview.set(null);
       this.invalidateSheet();
       this.startPreview();
@@ -227,6 +230,7 @@ export class GifToolsComponent implements OnDestroy {
     this.drawVersion++;
     this.extractedFrames.set([]);
     this.sourceGifUrl.set(null);
+    this.originalGif.set(null);
     this.currentFrameIndex.set(0);
     this.invalidateSheet();
     const canvas = this.previewCanvasRef?.nativeElement;
@@ -292,6 +296,17 @@ export class GifToolsComponent implements OnDestroy {
       img.src = frame.dataUrl;
       images.push(img);
     });
+  }
+
+  downloadOriginalGif() {
+    const gif = this.originalGif();
+    if (!gif || this.isProcessing()) return;
+    const url = URL.createObjectURL(gif);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'original-animation.gif';
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   downloadSpriteSheet() {

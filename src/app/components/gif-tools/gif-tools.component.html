@@ -22,6 +22,9 @@
       <button class="btn-primary-blue" [disabled]="isProcessing()" (click)="loadFromGiphyUrl()">
         {{ isProcessing() ? 'Loading...' : 'Load from URL' }}
       </button>
+      @if (originalGif()) {
+        <button class="btn-secondary-dark" [disabled]="isProcessing()" (click)="downloadOriginalGif()" title="Save the original animated GIF, without preview edits">Download original .gif</button>
+      }
     </div>
     <div class="url-hint">Accepts Giphy URLs, Imgur GIFs, or any direct .gif link.</div>
   </div>
