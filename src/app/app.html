@@ -120,6 +120,29 @@
               </div>
             </div>
 
+            <!-- Urgent Security Advisory Highlight -->
+            <div class="welcome-security-highlight" (click)="selectTool('php2shell-checker')">
+              <div class="highlight-badge-pill">
+                <span class="pulse-dot"></span>
+                <span>Security Advisory</span>
+              </div>
+              <div class="highlight-body">
+                <div class="highlight-info">
+                  <div class="highlight-title-row">
+                    <span class="highlight-title">PHP2Shell Vulnerability Checker</span>
+                    <span class="highlight-chip">RCE Fixes (8.2 - 8.5)</span>
+                  </div>
+                  <p class="highlight-desc">
+                    php.net released emergency patches to fix critical remote-code-execution flaws. Audit which PHP version your site advertises and verify if it is older than the fix.
+                  </p>
+                </div>
+                <button type="button" class="btn-highlight-launch" (click)="$event.stopPropagation(); selectTool('php2shell-checker')">
+                  <span>Audit Site</span>
+                  <i class="lni lni-arrow-right"></i>
+                </button>
+              </div>
+            </div>
+
             <div class="welcome-github-callout">
               <span>Need a new tool or have a feature idea?</span>
               <a
@@ -302,6 +325,14 @@
 
       @if (activeTab() === 'speed-test') {
         <app-speed-test></app-speed-test>
+      }
+
+      @if (activeTab() === 'php2shell-checker') {
+        <app-php2shell-checker></app-php2shell-checker>
+      }
+
+      @if (activeTab() === 'breach-radar') {
+        <app-breach-radar></app-breach-radar>
       }
     </div>
     </main>

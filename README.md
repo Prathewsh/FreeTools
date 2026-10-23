@@ -1,12 +1,12 @@
 # FreeTools - In Browser Media Studio & Tool Repo
 
-A high-performance, privacy-first local media processing suite and developer toolkit built with Angular. All image, audio, video, PDF, document, and data operations execute 100% directly inside browser memory via Canvas, Web Audio, MediaRecorder, and WebAssembly / WASM APIs. No files, metadata, or telemetry are transmitted to external servers.
+A high-performance, privacy-first local media processing suite and developer toolkit built with Angular. All image, audio, video, PDF, document, and data operations execute 100% directly inside browser memory via Canvas, Web Audio, MediaRecorder, and WebAssembly / WASM APIs. Local file processing does not upload your files. Network tools make direct requests to the selected website or public data provider; see the security tools below.
 
 ### The Story Behind This
 
 I got tired of searching for simple tools online only to deal with the same frustrating pattern every single time: websites forcing you to create an account, locking basic downloads behind paywalls, slapping watermarks across your files, or giving you nothing more than a tiny preview.
 
-So I decided to build the toolkit I actually wanted and give it away for free. No signups, no subscriptions, no tracking, and no server uploads, everything executes directly in your browser.
+So I decided to build the toolkit I actually wanted and give it away for free. No signups, no subscriptions, no tracking, and no file uploads. Processing runs in your browser; live lookup tools use public network services.
 
 This is just the beginning. I'll keep building and adding more tools to replace every bloated, paywalled utility out there.
 
@@ -189,6 +189,18 @@ Modern Geometric ( MGE ) is my team btw for those who are wondering about that. 
 
 ### 10. Security & Privacy
 
+- **PHP2Shell Checker**:
+  - Inspect a site URL, paste HTTP response headers, or check a PHP version / `php -v` banner locally.
+  - Recognizes PHP and `mod_php` banners, `X-PHP-Version`, session-cookie hints, and possible Windows server signatures. Shows detection evidence, handles redirect header chains, and flags conflicting versions.
+  - Compares versions against the PHP2Shell advisories for [CVE-2026-109618](https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w) and [CVE-2026-109619](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp): fixes in 8.2.35, 8.3.36, 8.4.27 and 8.5.12. Invalid, incomplete, prerelease and unlisted versions remain unverified.
+  - URL mode requests headers directly from the entered target, with a GET fallback if HEAD is unsupported. Browser CORS restrictions can hide or block headers; a quoted cURL helper lets you collect headers yourself and paste them locally.
+  - Passive version assessment only: it does not execute exploit payloads. PHP2Shell affects web-serving PHP across platforms, including FPM, mod_php, CGI, FrankenPHP and LiteSpeed. Vendor backports may retain older version banners; verify the installed package and restart PHP workers. PHP 7.4, 8.0 and 8.1 have source backports rather than new upstream releases. This tool cannot determine whether a site was already compromised. A matching baseline is not a general security certification; use a current supported release.
+  - Includes the [23 October session upload progress follow-up](https://www.php.net/archive/2026.php): keep `session.upload_progress.enabled=0` until the applicable fix; meeting the PHP2Shell version baseline does not certify all configurations as safe.
+- **Breach Radar (Major Breaches & CVE Radar)**:
+  - Browse curated historical breach records and notable CVEs, filter by category or keyword, and inspect incident details and remediation notes.
+  - Look up a CVE ID and refresh recent CVE disclosures through the [CIRCL Vulnerability-Lookup API](https://vulnerability.circl.lu/api/).
+  - Displays available descriptions, CVSS scores, publication dates, weakness information and advisory links, with timeout and retry feedback.
+  - The historical catalog is bundled locally. Opening the tool loads the recent feed; live searches send the entered CVE ID to CIRCL. Public APIs and target sites receive ordinary request metadata, including your IP address. No breach-account or email lookup is performed.
 - **File Crypto Studio**:
   - Encrypt and decrypt any file (images, documents, archives, videos) 100% in-browser via Web Crypto SubtleCrypto.
   - Authenticated encryption using AES-256-GCM with a 128-bit integrity authentication tag and random 96-bit initialization vectors.
@@ -260,7 +272,7 @@ Modern Geometric ( MGE ) is my team btw for those who are wondering about that. 
 - **Audio Processing**: Web Audio API (`AudioContext`, `AudioBuffer`, custom WAV PCM encoder)
 - **Image Processing**: HTML5 Canvas 2D API (`OffscreenCanvas`, pixel manipulation, convolution matrices)
 - **Video Processing**: MediaStream / MediaRecorder API, HTML5 Canvas 2D frame manipulation
-- **Zero Server Dependencies**: All tools run strictly inside browser memory.
+- **Browser-Based Processing**: Local tools run in browser memory; live certificate and vulnerability lookups depend on public APIs.
 
 ---
 
@@ -321,7 +333,7 @@ Contributions and community-built tools are welcome. Please read our [Contributi
 4. Push to the branch (`git push origin feature/my-new-tool`).
 5. Open a Pull Request.
 
-> **Note**: All tools must preserve the core philosophy—100% client-side in-browser execution with zero external server dependencies, uploads, or telemetry.
+> **Note**: All tools must preserve the core philosophy—client-side processing without file uploads or telemetry. Clearly document any public API dependencies and what live lookup requests send.
 
 ---
 

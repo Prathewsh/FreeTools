@@ -44,6 +44,8 @@ import { CertInspectorComponent } from './components/cert-inspector/cert-inspect
 import { PdfInspectorComponent } from './components/pdf-inspector/pdf-inspector.component';
 import { IpCheckerComponent } from './components/ip-checker/ip-checker.component';
 import { SpeedTestComponent } from './components/speed-test/speed-test.component';
+import { Php2shellCheckerComponent } from './components/php2shell-checker/php2shell-checker.component';
+import { BreachRadarComponent } from './components/breach-radar/breach-radar.component';
 
 export type ToolTab =
   | 'welcome'
@@ -88,7 +90,9 @@ export type ToolTab =
   | 'colour-converter'
   | 'clip-path-builder'
   | 'ip-checker'
-  | 'speed-test';
+  | 'speed-test'
+  | 'php2shell-checker'
+  | 'breach-radar';
 
 interface ToolItem {
   id: ToolTab;
@@ -159,7 +163,9 @@ interface ToolCategory {
     CertInspectorComponent,
     PdfInspectorComponent,
     IpCheckerComponent,
-    SpeedTestComponent
+    SpeedTestComponent,
+    Php2shellCheckerComponent,
+    BreachRadarComponent
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss'
@@ -525,6 +531,20 @@ export class App {
       category: 'Security & Privacy',
       description: 'Generate SHA-256, SHA-384, SHA-512 cryptographic hashes for text & files.',
       icon: '#️⃣'
+    },
+    {
+      id: 'php2shell-checker',
+      title: 'PHP2Shell Checker',
+      category: 'Security & Privacy',
+      description: 'Check which PHP version your site advertises and whether it is older than fixes 8.2.35, 8.3.36, 8.4.27, 8.5.12.',
+      icon: '🐘'
+    },
+    {
+      id: 'breach-radar',
+      title: 'Breaches & CVE Radar',
+      category: 'Security & Privacy',
+      description: 'Explore the largest historic data breaches and notorious CVEs, backed by live CIRCL open-source API lookups.',
+      icon: '🚨'
     },
 
     // AI Tools

@@ -1,0 +1,325 @@
+<div class="tool-content">
+  <div class="tool-header">
+    <div class="header-titles">
+      <div class="title-with-badge">
+        <h2>PHP2Shell &amp; RCE Vulnerability Checker</h2>
+        <span class="badge-vault">Security Audit &bull; CVE-2026-109618 / CVE-2026-109619</span>
+      </div>
+      <p class="tool-desc">
+        Check PHP2Shell: <a href="https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w" target="_blank" rel="noopener noreferrer">CVE-2026-109618</a> (out-of-memory corruption) and <a href="https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp" target="_blank" rel="noopener noreferrer">CVE-2026-109619</a> (stale global state). Fixed in PHP 8.2.35, 8.3.36, 8.4.27 and 8.5.12. Web-serving PHP is at risk across platforms and server interfaces; a version check cannot establish whether a site has been hacked.
+      </p>
+    </div>
+    <div class="device-badge">
+      <span class="green-dot"></span>
+      <span>Client-Side Inspector &bull; Zero Server Footprint</span>
+    </div>
+  </div>
+
+  <!-- Main Checker Card -->
+  <div class="checker-card">
+    <!-- Mode Tabs -->
+    <div class="mode-tabs">
+      <button
+        type="button"
+        class="mode-tab"
+        [class.active]="mode() === 'url'"
+        (click)="switchMode('url')"
+      >
+        <i class="lni lni-world"></i>
+        <span>Inspect Site URL</span>
+      </button>
+      <button
+        type="button"
+        class="mode-tab"
+        [class.active]="mode() === 'headers'"
+        (click)="switchMode('headers')"
+      >
+        <i class="lni lni-code-alt"></i>
+        <span>Paste Response Headers</span>
+      </button>
+      <button
+        type="button"
+        class="mode-tab"
+        [class.active]="mode() === 'version'"
+        (click)="switchMode('version')"
+      >
+        <i class="lni lni-cog"></i>
+        <span>Direct Version Check</span>
+      </button>
+    </div>
+
+    <!-- Mode 1: URL Inspector -->
+    @if (mode() === 'url') {
+      <div class="input-section">
+        <div class="url-input-wrap">
+          <span class="prefix">URL</span>
+          <input
+            type="text"
+            placeholder="domain.com (e.g. your-site.com)"
+            [ngModel]="targetUrl()"
+            (ngModelChange)="onUrlInput($event)"
+            (keyup.enter)="checkSiteUrl()"
+          />
+          <button
+            type="button"
+            class="btn-inspect"
+            [disabled]="isLoading()"
+            (click)="checkSiteUrl()"
+          >
+            @if (isLoading()) {
+              <span class="spinner"></span>
+            } @else {
+              <span>Check Headers</span>
+            }
+          </button>
+        </div>
+
+        <div class="curl-helper">
+          <div class="curl-info">
+            <i class="lni lni-information"></i>
+            <span>If cross-origin browser requests (CORS) are restricted on your host, run via terminal:</span>
+          </div>
+          <div class="code-copy-row">
+            <code>{{ getCurlCommand() }}</code>
+            <button
+              type="button"
+              class="btn-copy"
+              (click)="copySnippet(getCurlCommand(), 'curl')"
+            >
+              {{ copiedCode() === 'curl' ? 'Copied!' : 'Copy cURL' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Mode 2: Response Headers Inspector -->
+    @if (mode() === 'headers') {
+      <div class="input-section">
+        <div class="paste-header">
+          <label>Raw HTTP Response Headers / Server Banner</label>
+        </div>
+        <textarea
+          class="headers-textarea"
+          rows="6"
+          placeholder="HTTP/1.1 200 OK&#10;Server: Apache/2.4.52 (Ubuntu)&#10;X-Powered-By: PHP/8.2.14&#10;Content-Type: text/html"
+          [ngModel]="rawHeaders()"
+          (ngModelChange)="rawHeaders.set($event)"
+        ></textarea>
+        <div class="action-footer">
+          <span class="hint-text">Parses PHP banners, X-PHP-Version, session hints and final redirect response headers.</span>
+          <button type="button" class="btn-inspect" (click)="checkHeaders()">
+            <span>Evaluate Headers</span>
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Mode 3: Direct Version Check -->
+    @if (mode() === 'version') {
+      <div class="input-section">
+        <div class="url-input-wrap">
+          <span class="prefix">PHP</span>
+          <input
+            type="text"
+            placeholder="e.g. 8.2.14, 8.3.36, 8.4.26, 8.1.28"
+            [ngModel]="manualVersion()"
+            (ngModelChange)="manualVersion.set($event)"
+            (keyup.enter)="checkManualVersion()"
+          />
+          <button type="button" class="btn-inspect" (click)="checkManualVersion()">
+            <span>Evaluate Version</span>
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Messages -->
+    @if (errorMessage()) {
+      <div class="alert alert-danger">
+        <i class="lni lni-warning alert-icon"></i>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    @if (infoMessage()) {
+      <div class="alert alert-info">
+        <i class="lni lni-information alert-icon"></i>
+        <span>{{ infoMessage() }}</span>
+      </div>
+    }
+
+    <!-- Assessment Results -->
+    @if (assessment(); as res) {
+      <div class="results-container">
+        <div
+          class="verdict-banner"
+          [class.banner-danger]="res.status === 'vulnerable' || res.status === 'eol_vulnerable'"
+          [class.banner-warning]="(res.status === 'no_header' || res.status === 'unknown')"
+          [class.banner-success]="res.status === 'safe'"
+        >
+          <div class="verdict-main">
+            <div class="status-icon-wrapper">
+              @if (res.status === 'vulnerable' || res.status === 'eol_vulnerable') {
+                <i class="lni lni-warning"></i>
+              } @else if (res.status === 'no_header' || res.status === 'unknown') {
+                <i class="lni lni-information"></i>
+              } @else {
+                <i class="lni lni-checkmark-circle"></i>
+              }
+            </div>
+            <div class="verdict-texts">
+              <h3 class="verdict-title">{{ res.verdictTitle }}</h3>
+              <p class="verdict-desc">{{ res.verdictDescription }}</p>
+            </div>
+          </div>
+          <div class="verdict-pill">
+            @if (res.status === 'vulnerable') {
+              <span class="pill-danger">Potentially affected</span>
+            } @else if (res.status === 'eol_vulnerable') {
+              <span class="pill-critical">Critical: EOL</span>
+            } @else if (res.status === 'safe') {
+              <span class="pill-success">Version baseline met</span>
+            } @else {
+              <span class="pill-warning">Version Unverified</span>
+            }
+          </div>
+        </div>
+
+        <!-- Inline Verification for Hidden Headers -->
+        @if (res.status === 'no_header' || res.status === 'unknown') {
+          <div class="verify-inline-box">
+            <div class="verify-inline-header">
+              <i class="lni lni-cog"></i>
+              <span>Know your server's PHP version (e.g. from <code>php -v</code>)? Verify vulnerability status:</span>
+            </div>
+            <div class="verify-inline-row">
+              <input
+                type="text"
+                class="inline-ver-input"
+                placeholder="Enter version (e.g. 8.2.14, 8.3.20, 8.1.28, 7.4.33)"
+                [ngModel]="manualVersion()"
+                (ngModelChange)="manualVersion.set($event)"
+                (keyup.enter)="checkManualVersion()"
+              />
+              <button type="button" class="btn-verify-inline" (click)="checkManualVersion()">
+                <span>Check This Version</span>
+              </button>
+            </div>
+          </div>
+        }
+
+        @if (res.evidence?.length) {
+          <div class="remediation-section">
+            <h4>Observed evidence</h4>
+            <ul class="recommendation-list">
+              @for (item of res.evidence; track $index) { <li>{{ item }}</li> }
+            </ul>
+            <p>Advertised headers are not proof of the installed binary or exploitability.</p>
+          </div>
+        }
+
+        <!-- Metrics Cards -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <span class="metric-title">Advertised Version</span>
+            <span class="metric-value" [class.highlight-red]="res.isOlderThanFix" [class.highlight-green]="res.status === 'safe'" [class.highlight-yellow]="!res.detectedVersion">
+              {{ res.detectedVersion ? 'PHP ' + res.detectedVersion : 'Not observed' }}
+            </span>
+            <span class="metric-subtitle">
+              {{ res.advertisedHeader || 'No version header observed' }}
+            </span>
+          </div>
+
+          <div class="metric-card">
+            <span class="metric-title">Required Fix Threshold</span>
+            <span class="metric-value highlight-green">
+              {{ res.minFixedVersion || 'See advisory' }}
+            </span>
+            <span class="metric-subtitle">CVE-2026-109618 / CVE-2026-109619 version baseline</span>
+          </div>
+
+          <div class="metric-card">
+            <span class="metric-title">Header Exposure Status</span>
+            <span class="metric-value" [class.highlight-yellow]="res.advertisedHeader && res.status !== 'no_header'" [class.highlight-green]="!res.advertisedHeader || (res.status === 'no_header' || res.status === 'unknown')">
+              {{ res.detectedVersion ? 'Exposed (Version Leak)' : 'Not observed' }}
+            </span>
+            <span class="metric-subtitle">
+              {{ res.detectedVersion ? 'Reveals runtime stack to scanners' : 'Headers hidden, but runtime version must be verified' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Remediation and Fix Instructions -->
+        <div class="remediation-section">
+          <div class="section-heading">
+            <i class="lni lni-shield"></i>
+            <h4>Remediation &amp; Hardening Steps</h4>
+          </div>
+
+          <ul class="recommendation-list">
+            @for (rec of res.recommendations; track rec) {
+              <li class="rec-item">
+                <i class="lni lni-checkmark"></i>
+                <span>{{ rec }}</span>
+              </li>
+            }
+          </ul>
+
+          <!-- Hardening Config Snippets -->
+          <div class="config-tabs-container">
+            <h5 class="snippets-title">Recommended Hardening Configurations:</h5>
+
+            <div class="snippet-block">
+              <div class="snippet-header">
+                <span>1. Disable version leak in <strong>php.ini</strong></span>
+                <button
+                  type="button"
+                  class="btn-copy-small"
+                  (click)="copySnippet('expose_php = Off', 'phpini')"
+                >
+                  {{ copiedCode() === 'phpini' ? 'Copied!' : 'Copy' }}
+                </button>
+              </div>
+              <pre><code>; Hide PHP version in HTTP response headers (X-Powered-By)
+expose_php = Off</code></pre>
+            </div>
+
+            <div class="snippet-block">
+              <div class="snippet-header">
+                <span>2. Strip header in <strong>Nginx</strong> configuration</span>
+                <button
+                  type="button"
+                  class="btn-copy-small"
+                  (click)="copySnippet('fastcgi_hide_header X-Powered-By;\nproxy_hide_header X-Powered-By;\nserver_tokens off;', 'nginx')"
+                >
+                  {{ copiedCode() === 'nginx' ? 'Copied!' : 'Copy' }}
+                </button>
+              </div>
+              <pre><code># Inside server or http block
+server_tokens off;
+fastcgi_hide_header X-Powered-By;
+proxy_hide_header X-Powered-By;</code></pre>
+            </div>
+
+            <div class="snippet-block">
+              <div class="snippet-header">
+                <span>3. Strip header in <strong>Apache</strong> (.htaccess / httpd.conf)</span>
+                <button
+                  type="button"
+                  class="btn-copy-small"
+                  (click)="copySnippet('Header unset X-Powered-By\nServerTokens Prod\nServerSignature Off', 'apache')"
+                >
+                  {{ copiedCode() === 'apache' ? 'Copied!' : 'Copy' }}
+                </button>
+              </div>
+              <pre><code>Header unset X-Powered-By
+ServerTokens Prod
+ServerSignature Off</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

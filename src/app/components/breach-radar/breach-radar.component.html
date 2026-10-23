@@ -1,0 +1,448 @@
+<div class="tool-content">
+  <div class="tool-header">
+    <div class="header-titles">
+      <div class="title-with-badge">
+        <h2>Major Breaches &amp; CVE Radar</h2>
+        <span class="badge-vault">Threat Intelligence &bull; CIRCL Open API</span>
+      </div>
+      <p class="tool-desc">
+        Comprehensive registry of the largest historic data breaches and notorious CVEs in cybersecurity history, backed by live querying against the CIRCL open-source vulnerability database.
+      </p>
+    </div>
+    <div class="device-badge">
+      <span class="green-dot"></span>
+      <span>Public CVE lookup via CIRCL</span>
+    </div>
+  </div>
+
+  <div class="radar-card">
+    <!-- View Switcher Tabs -->
+    <div class="mode-tabs">
+      <button
+        type="button"
+        class="mode-tab"
+        [class.active]="activeTab() === 'breaches'"
+        (click)="activeTab.set('breaches')"
+      >
+        <i class="lni lni-database"></i>
+        <span>Major Data Breaches</span>
+      </button>
+      <button
+        type="button"
+        class="mode-tab"
+        [class.active]="activeTab() === 'cves'"
+        (click)="activeTab.set('cves')"
+      >
+        <i class="lni lni-shield"></i>
+        <span>Iconic CVEs &amp; Exploits</span>
+      </button>
+      <button
+        type="button"
+        class="mode-tab"
+        [class.active]="activeTab() === 'live'"
+        (click)="activeTab.set('live')"
+      >
+        <i class="lni lni-pulse"></i>
+        <span>Live CIRCL API Search</span>
+      </button>
+    </div>
+
+    <!-- Filter & Search Toolbar (for Breaches & CVEs) -->
+    @if (activeTab() !== 'live') {
+      <div class="toolbar-row">
+        <div class="search-input-wrap">
+          <i class="lni lni-search-alt search-icon"></i>
+          <input
+            type="text"
+            class="filter-search-input"
+            [placeholder]="activeTab() === 'breaches' ? 'Search breaches by name, domain, or data types...' : 'Search CVEs by ID, software name, or vector...'"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+          />
+        </div>
+
+        @if (activeTab() === 'breaches') {
+          <div class="category-filters">
+            <button
+              type="button"
+              class="cat-chip"
+              [class.active]="selectedCategory() === 'ALL'"
+              (click)="selectedCategory.set('ALL')"
+            >
+              All ({{ MAJOR_BREACHES.length }})
+            </button>
+            <button
+              type="button"
+              class="cat-chip"
+              [class.active]="selectedCategory() === 'Tech'"
+              (click)="selectedCategory.set('Tech')"
+            >
+              Tech
+            </button>
+            <button
+              type="button"
+              class="cat-chip"
+              [class.active]="selectedCategory() === 'Social'"
+              (click)="selectedCategory.set('Social')"
+            >
+              Social
+            </button>
+            <button
+              type="button"
+              class="cat-chip"
+              [class.active]="selectedCategory() === 'Finance'"
+              (click)="selectedCategory.set('Finance')"
+            >
+              Finance
+            </button>
+            <button
+              type="button"
+              class="cat-chip"
+              [class.active]="selectedCategory() === 'Retail'"
+              (click)="selectedCategory.set('Retail')"
+            >
+              Retail
+            </button>
+            <button type="button" class="cat-chip" [class.active]="selectedCategory() === 'Government'" (click)="selectedCategory.set('Government')">Government</button>
+            <button
+              type="button"
+              class="cat-chip"
+              [class.active]="selectedCategory() === 'Healthcare'"
+              (click)="selectedCategory.set('Healthcare')"
+            >
+              Healthcare
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Tab 1: Major Breaches Grid -->
+    @if (activeTab() === 'breaches') {
+      <div class="items-grid">
+        @for (b of filteredBreaches(); track b.id) {
+          <div class="incident-card" (click)="selectBreachDetail(b)">
+            <div class="card-top">
+              <div class="title-group">
+                <span class="incident-name">{{ b.name }}</span>
+                <span class="incident-domain">{{ b.domain }}</span>
+              </div>
+              <span class="year-pill">{{ b.year }}</span>
+            </div>
+
+            <div class="records-banner">
+              <span class="records-number">{{ b.recordsFormatted }}</span>
+              <span class="records-caption">Accounts / Records Exposed</span>
+            </div>
+
+            <p class="incident-desc">{{ b.description }}</p>
+
+            <div class="compromised-tags">
+              @for (tag of b.dataCompromised.slice(0, 3); track tag) {
+                <span class="data-tag">{{ tag }}</span>
+              }
+              @if (b.dataCompromised.length > 3) {
+                <span class="data-tag more">+{{ b.dataCompromised.length - 3 }} more</span>
+              }
+            </div>
+
+            <div class="card-footer">
+              <span class="cat-label">{{ b.category }}</span>
+              <span class="view-btn">Inspect Details &rarr;</span>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    @if (activeTab() === 'breaches' && filteredBreaches().length === 0) { <p>No breaches match your filters.</p> }
+    @if (activeTab() === 'cves' && filteredCves().length === 0) { <p>No CVEs match your search.</p> }
+
+    <!-- Tab 2: Iconic CVEs Grid -->
+    @if (activeTab() === 'cves') {
+      <div class="items-grid">
+        @for (c of filteredCves(); track c.cveId) {
+          <div class="incident-card cve-card" (click)="selectCveDetail(c)">
+            <div class="card-top">
+              <span class="cve-id-badge">{{ c.cveId }}</span>
+              <span
+                class="cvss-badge"
+                [class.critical]="c.cvss >= 9.0"
+                [class.high]="c.cvss >= 7.0 && c.cvss < 9.0"
+              >
+                CVSS {{ c.cvss.toFixed(1) }} &bull; {{ c.severity }}
+              </span>
+            </div>
+
+            <div class="cve-main-title">
+              <span class="cve-name">{{ c.name }}</span>
+              <span class="cve-year">{{ c.year }}</span>
+            </div>
+
+            <div class="affected-row">
+              <span class="meta-label">Affected:</span>
+              <span class="meta-val">{{ c.affectedSoftware }}</span>
+            </div>
+
+            <p class="incident-desc">{{ c.summary }}</p>
+
+            <div class="vector-tag-row">
+              <span class="vector-pill">
+                <i class="lni lni-bolt"></i>
+                {{ c.attackVector }}
+              </span>
+            </div>
+
+            <div class="card-footer">
+              <span class="view-btn">Remediation Guide &rarr;</span>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Tab 3: Live CIRCL Open-Source CVE Search -->
+    @if (activeTab() === 'live') {
+      <div class="live-search-container">
+        <div class="live-input-box">
+          <label class="live-label">Query CIRCL Open-Source Vulnerability Database</label>
+          <div class="live-input-wrap">
+            <span class="live-prefix">CVE</span>
+            <input
+              type="text"
+              class="live-input"
+              placeholder="e.g. CVE-2021-44228 or CVE-2024-4577"
+              [ngModel]="liveCveQuery()"
+              (ngModelChange)="liveCveQuery.set($event)"
+              (keyup.enter)="searchLiveCve()"
+            />
+            <button
+              type="button"
+              class="btn-live-search"
+              [disabled]="isLoadingLive()"
+              (click)="searchLiveCve()"
+            >
+              @if (isLoadingLive()) {
+                <span class="spinner"></span>
+              } @else {
+                <i class="lni lni-search-alt"></i>
+                <span>Fetch Live CVE</span>
+              }
+            </button>
+          </div>
+          <span class="live-subtext">Direct real-time query against the free CIRCL Computer Incident Response Center Luxembourg API.</span>
+        </div>
+
+        @if (liveError()) {
+          <div class="alert alert-danger">
+            <i class="lni lni-warning"></i>
+            <span>{{ liveError() }}</span>
+          </div>
+        }
+
+        <!-- Single Live Search Result -->
+        @if (liveCveResult(); as res) {
+          <div class="live-result-card">
+            <div class="res-header">
+              <div class="res-title-row">
+                <span class="res-cve-id">{{ res.id }}</span>
+                @if (res.cvss !== undefined) {
+                  <span
+                    class="cvss-badge"
+                    [class.critical]="res.cvss >= 9.0"
+                    [class.high]="res.cvss >= 7.0 && res.cvss < 9.0"
+                  >
+                    CVSS {{ res.cvss }}
+                  </span>
+                }
+              </div>
+              @if (res.published) {
+                <span class="res-date">Published: {{ res.published }}</span>
+              }
+            </div>
+
+            <div class="res-body">
+              <p class="res-summary">{{ res.summary }}</p>
+              @if (res.cwe) {
+                <div class="res-cwe">
+                  <strong>Vulnerability Classification:</strong> {{ res.cwe }}
+                </div>
+              }
+            </div>
+
+            @if (res.references && res.references.length > 0) {
+              <div class="res-references">
+                <span class="ref-title">Advisories &amp; External References:</span>
+                <div class="ref-links">
+                  @for (ref of res.references; track ref) {
+                    <a [href]="ref" target="_blank" rel="noopener noreferrer" class="ref-link">
+                      <i class="lni lni-link"></i>
+                      <span>{{ ref }}</span>
+                    </a>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Recent Real-Time CVE Feed -->
+        <div class="recent-feed-section">
+          <div class="feed-header">
+            <div class="feed-title">
+              <i class="lni lni-pulse"></i>
+              <span>Recent Disclosures via CIRCL Live Feed</span>
+            </div>
+            <button
+              type="button"
+              class="btn-refresh"
+              [disabled]="isLoadingFeed()"
+              (click)="fetchRecentLiveCves()"
+            >
+              <i class="lni lni-reload"></i>
+              <span>Refresh Feed</span>
+            </button>
+          </div>
+
+          @if (feedError()) { <div class="alert alert-danger" role="alert">{{ feedError() }}</div> }
+          @if (isLoadingFeed()) { <p role="status">Loading recent CVEs…</p> }
+          @if (!isLoadingFeed() && !feedError() && recentCveList().length === 0) { <p>No recent CVEs available.</p> }
+          <div class="feed-list">
+            @for (item of recentCveList(); track item.id) {
+              <div class="feed-item" (click)="liveCveQuery.set(item.id); searchLiveCve()">
+                <div class="feed-meta">
+                  <span class="feed-cve">{{ item.id }}</span>
+                  @if (item.cvss !== undefined) {
+                    <span class="feed-cvss">CVSS {{ item.cvss }}</span>
+                  }
+                  @if (item.published) {
+                    <span class="feed-date">{{ item.published }}</span>
+                  }
+                </div>
+                <p class="feed-summary">{{ item.summary }}</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Detail Modal for Breaches -->
+  @if (selectedBreach(); as b) {
+    <div class="modal-backdrop" (click)="closeModal()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <h3>{{ b.name }} ({{ b.year }})</h3>
+            <span class="modal-domain">{{ b.domain }}</span>
+          </div>
+          <button type="button" class="btn-close" (click)="closeModal()">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="modal-stat-row">
+            <div class="stat-box">
+              <span class="stat-label">Total Records Stolen</span>
+              <span class="stat-val highlight-green">{{ b.recordsFormatted }}</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Category</span>
+              <span class="stat-val">{{ b.category }}</span>
+            </div>
+          </div>
+
+          <div class="modal-section">
+            <h4>Breach Narrative &amp; Attack Vector</h4>
+            <p>{{ b.description }}</p>
+          </div>
+
+          <div class="modal-section">
+            <h4>Compromised Data Types</h4>
+            <div class="tags-wrap">
+              @for (tag of b.dataCompromised; track tag) {
+                <span class="data-tag-lg">{{ tag }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="modal-section">
+            <h4>Industry &amp; Regulatory Impact</h4>
+            <p class="impact-text">{{ b.impact }}</p>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-primary-close" (click)="closeModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Detail Modal for CVEs -->
+  @if (selectedCve(); as c) {
+    <div class="modal-backdrop" (click)="closeModal()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <span class="cve-id-badge">{{ c.cveId }}</span>
+            <h3>{{ c.name }}</h3>
+          </div>
+          <button type="button" class="btn-close" (click)="closeModal()">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="modal-stat-row">
+            <div class="stat-box">
+              <span class="stat-label">CVSS Severity</span>
+              <span
+                class="stat-val"
+                [class.highlight-red]="c.cvss >= 9.0"
+                [class.highlight-yellow]="c.cvss < 9.0"
+              >
+                {{ c.cvss.toFixed(1) }} ({{ c.severity }})
+              </span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Disclosed Year</span>
+              <span class="stat-val">{{ c.year }}</span>
+            </div>
+          </div>
+
+          <div class="modal-section">
+            <h4>Vulnerability Summary</h4>
+            <p>{{ c.summary }}</p>
+          </div>
+
+          <div class="modal-section">
+            <h4>Target / Affected Component</h4>
+            <p class="meta-code-val">{{ c.affectedSoftware }}</p>
+          </div>
+
+          <div class="modal-section">
+            <h4>Attack Vector</h4>
+            <p>{{ c.attackVector }}</p>
+          </div>
+
+          <div class="modal-section">
+            <h4>Historical Impact</h4>
+            <p class="impact-text">{{ c.historicalImpact }}</p>
+          </div>
+
+          <div class="modal-section">
+            <h4>Remediation Guidance</h4>
+            <div class="remediation-box">
+              <i class="lni lni-checkmark"></i>
+              <span>{{ c.remediation }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-primary-close" (click)="closeModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
