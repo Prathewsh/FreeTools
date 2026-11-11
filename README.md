@@ -19,90 +19,7 @@ Modern Geometric ( MGE ) is my team btw for those who are wondering about that. 
 ## Tool Suite Overview
 
 
-### 1. PDF Tools
-
-- **PDF Studio & Merger**:
-  - **Word-Style Document Editor**: Live rich-text drafting canvas with bold, italic, headings, lists, typography selection (Sans, Serif, Monospace), and direct vector PDF export.
-  - **PDF Import**: Open existing PDF documents directly into the editor sheet with automatic layout extraction.
-  - **Merge PDFs**: Select multiple PDF documents, re-order pages, and merge into a single consolidated file.
-  - **Split & Extract**: Extract specific page ranges (e.g. `1-3, 5`) with instant single or multi-page export.
-  - **Rotate Pages**: 90°, 180°, and 270° orientation corrections across all pages.
-  - **Metadata Editor**: View and update PDF title, author, subject, and keywords without altering document contents.
-- **PDF Signature Studio**:
-  - Draw handwritten signatures with variable stroke width.
-  - Type stylized signatures or upload signature images.
-  - Interactive drag-and-drop placement, scaling, and rotation on any page of loaded PDF documents.
-
----
-
-### 2. Image Tools
-
-- **Background Remover**:
-  - **Auto Smart AI**: Border-connected flood-fill matting isolating subjects while preserving hair and translucent borders.
-  - **Color-Key Eyedropper**: Sample custom background colors directly on canvas.
-  - **Controls**: Interactive split comparison slider, tolerance threshold (5% - 80%), edge feathering, despill filtering, touchup keep/erase brush.
-  - **Backdrops**: Transparent alpha cutout, solid studio colors, DSLR bokeh depth blur, cyberpunk gradient, custom image backdrop compositing.
-  - **Export & Transfer**: Instant PNG download, direct clipboard copy, and one-click transfer into the Image Studio.
-- **Screenshot Studio**:
-  - Capture browser-visible windows (`getDisplayMedia`) or drop screenshots.
-  - Markup annotations: arrows, boxes, circles, freehand draw, and numbered step badges.
-  - Redaction tool: pixelate and blur sensitive credentials or private text.
-  - Device mockup wrapper: macOS window frame and minimal browser border.
-- **Image Studio**:
-  - **Crop & Aspect Ratio**: Freeform and fixed aspect ratio presets (1:1, 16:9, 4:3, 9:16, 3:2, circle avatar).
-  - **Resize**: Proportional aspect ratio lock, resolution presets (1080p, 720p, 512×512), percentage scaling.
-  - **Rotate & Flip**: 90-degree rotations, horizontal/vertical flipping with non-destructive live preview.
-  - **Filters & Effects**: Presets (Noir B&W, Cyberpunk, Vintage, Dramatic, Warm, Cold), sliders for brightness, contrast, saturation, unsharp mask.
-  - **Watermark**: Custom text, typography, color, corner/center positioning, and opacity controls.
-  - **Export**: WebP, JPEG, and PNG with dynamic compression quality and live file size estimation.
-- **Image Compressor**:
-  - In-browser bulk image compression for JPEG, PNG, WebP, GIF, and BMP.
-  - Real-time compression savings comparison with target size control.
-- **Color Replacer**:
-  - Select and replace any target color across an entire PNG or graphic with adjustable delta-E color tolerance.
-- **Animation Studio (GIF Tools)**:
-  - Create animated GIF loops and sprite sheets from multi-frame image sequences.
-  - Control frame rate (FPS), reverse sequences, and loop parameters.
-- **Color Palette Generator**:
-  - Extracts dominant palette schemes and swatches from graphics using quantization.
-  - Interactive canvas pixel eyedropper with one-click HEX/RGB copying.
-
----
-
-### 3. Video & Audio
-
-- **Video Editor**:
-  - Interactive start and end trim sliders with live timestamp markers.
-  - Variable preview playback speed (0.5×, 1×, 1.5×, 2×).
-  - Volume control with track muting for export.
-  - 90-degree incremental rotation and horizontal/vertical flipping.
-  - Instant full-resolution video frame capture saved locally as PNG.
-  - Client-side WebM rendering via HTML5 Canvas and MediaRecorder APIs.
-- **Audio Studio & Converter**:
-  - **Format Converter**: Encode and cross-convert between MP3, WAV, OGG, FLAC, and AAC.
-  - **Track Mixer**: Multi-track project combiner with per-track volume sliders and second-accurate delay offsets.
-  - **Silence Remover**: Silence detector with configurable dB threshold and duration, one-click silent gap stripping.
-  - **Normalizer & Meter**: Peak dBFS, RMS energy analysis, and studio normalization ($-0.1$, $-0.5$, $-1.0$, $-2.0\text{ dBFS}$).
-  - **Pitch & Equalizer**: Semitone pitch shifting and 3-band digital EQ (Bass, Mids, Treble).
-  - **Live Visualizer & Spectrogram**: Real-time oscilloscope, frequency bars, and waterfall spectrogram.
-  - **Waveform Cutter**: Trim, slice, delete & splice, fade in/out curves, and lossless 16-bit PCM WAV export.
-
----
-
-### 4. File Converters
-
-- **Batch Converter**:
-  - Multi-file drag-and-drop queue for bulk image conversions.
-  - Cross-conversion between WebP, JPEG, and PNG.
-  - Maximum dimension downscaling (e.g., 1920px max width).
-  - Bulk ZIP download or individual file saves.
-- **Base64 Tool**:
-  - Encode & decode text strings and raw binary files / images to Base64 data URLs.
-  - Live data URL preview with instant copy.
-
----
-
-### 5. Text & Writing Tools
+### 1. Text & Writing Tools
 
 - **ASCII Art Generator**:
   - Convert images or short text banners into ASCII art locally in the browser.
@@ -121,7 +38,22 @@ Modern Geometric ( MGE ) is my team btw for those who are wondering about that. 
 
 ---
 
-### 6. Developer Tools
+### 2. File Converters
+
+- **Batch Converter**:
+  - Multi-file drag-and-drop queue for bulk image conversions.
+  - Cross-conversion between WebP, JPEG, and PNG.
+  - Maximum dimension downscaling (e.g., 1920px max width).
+  - Bulk ZIP download or individual file saves.
+
+- **Web Page to PDF & Markdown**:
+  - Save fetched web pages or pasted HTML as a readable PDF through the browser print dialog (select **Save as PDF**), preserving headings, tables, links, and images in a clean layout rather than the original site styling.
+  - Converts raw web articles, blog posts, and HTML into clean, sanitized Markdown format.
+  - Strips advertisement junk, tracker scripts, and navigation clutter.
+
+---
+
+### 3. Developer Tools
 
 - **Punycode Converter**:
   - Encode and decode Unicode strings or domain labels with `xn--` handling, reversible conversion, and one-click copying. Runs locally; does not perform full IDNA validation.
@@ -147,55 +79,14 @@ Modern Geometric ( MGE ) is my team btw for those who are wondering about that. 
 - **Unicode & Symbols**:
   - Character code point and HTML entity inspector (`&#...;`, `\u...`).
   - Categorized palette of 250+ technical, mathematical, and typography symbols with instant copy.
-- **QR Code Generator**:
-  - High-resolution client-side QR code generator with adjustable error correction levels (L, M, Q, H).
-  - Custom foreground and background colors with direct PNG export.
+
+- **Base64 Tool**:
+  - Encode & decode text strings and raw binary files / images to Base64 data URLs.
+  - Live data URL preview with instant copy.
 
 ---
 
-### 7. Calculators & Finance
-
-- **Math & Statistics**:
-  - **Dynamic Matrix Calculator**: Custom arbitrary dimension matrix operations ($2\times 2$, $3\times 3$, $4\times 4$, $6\times 6$, up to $10\times 10$ and non-square sizes like $7\times 9$).
-    - Matrix multiplication ($A \times B$), addition, subtraction, scalar multiplication, and transpose ($A^T$).
-    - $N\times N$ Determinant ($|A|$) and Matrix Inverse ($A^{-1}$) via Gaussian elimination and Gauss-Jordan solvers.
-    - Quick presets, Identity fill, Random number fill (-9 to 9), and Zero fill.
-  - **Scientific Expression Evaluator**: Real-time parser supporting trigonometric functions (`sin`, `cos`, `tan`, `asin`, `acos`, `atan`), logarithms (`log`, `ln`), square/cube roots, powers (`^`), and mathematical constants ($\pi$, $e$).
-  - **Descriptive Statistics**: Instant calculation of Mean, Median, Min, Max, Range, Sample Variance ($s^2$), and Standard Deviation ($s$).
-  - **Fractions & Ratios**: Addition, subtraction, multiplication, and division with automated GCD reduction and decimal approximations.
-  - **Primes & Number Theory**: Primality testing, prime factorization tree, Greatest Common Divisor (GCD), and Least Common Multiple (LCM).
-  - **Geometry & Volume**: 2D/3D area, circumference, perimeter, and volume calculators for circles, rectangles, triangles, spheres, and cylinders.
-  - **Percentage Tools**: Instant percentage calculation and percentage difference / percentage change tracker.
-- **Time & Clocks**:
-  - Unix epoch timestamp converter (seconds and milliseconds to human datetime and vice versa).
-  - World time zone converter.
-  - High-precision split stopwatch and custom countdown timer with hours, minutes, and seconds, pause/resume, reset, and a completion indicator.
-  - Date difference duration calculator.
-
----
-
-### 8. Pickers & Utilities
-
-- **Wheel of Chance**:
-  - Interactive canvas prize wheel with custom segments, labels, and colors.
-  - Physics-based spin deceleration.
-  - Automatic elimination mode for fair sweepstakes, team draws, and raffle giveaways.
-
----
-
-### 9. SEO Tools
-
-- **Robots.txt Generator**:
-  - Visual builder for crawler directives by User-agent (`*`, Googlebot, Bingbot, etc.).
-  - Configure Allow and Disallow paths, Crawl-delay, Host, and Sitemap links with live syntax generation and download.
-- **Web Page to PDF & Markdown**:
-  - Save fetched web pages or pasted HTML as a readable PDF through the browser print dialog (select **Save as PDF**), preserving headings, tables, links, and images in a clean layout rather than the original site styling.
-  - Converts raw web articles, blog posts, and HTML into clean, sanitized Markdown format.
-  - Strips advertisement junk, tracker scripts, and navigation clutter.
-
----
-
-### 10. Security & Privacy
+### 4. Security & Privacy
 
 - **PHP2Shell Checker**:
   - Inspect a site URL, paste HTTP response headers, or check a PHP version / `php -v` banner locally.
@@ -223,27 +114,14 @@ Modern Geometric ( MGE ) is my team btw for those who are wondering about that. 
   - Computes SHA-256, SHA-384, SHA-512, and SHA-1 checksums for raw text and binary files via the Web Crypto API.
 - **Metadata Remover**:
   - Strips EXIF metadata, camera serial numbers, GPS geo-coordinates, author names, and timestamps from images before sharing.
-- **Archive Explorer**:
-  - Client-side ZIP, RAR, TAR, TAR.GZ, and TGZ archive inspector.
-  - Inspect file listings, directory hierarchies, and file sizes directly in the browser, with text previews and individual file downloads.
-  - Security warning heuristics detecting disguised executables (e.g. `.exe` disguised inside archives).
+
 - **Password Studio**:
   - Cryptographically secure pseudorandom password and passphrase generator (`crypto.getRandomValues`).
   - Brute-force entropy analyzer estimating crack time against offline and online attack speeds.
 
 ---
 
-### 11. AI Tools
-
-- **Verifiable AI & Metadata Inspector**:
-  - Verifies embedded Content Credentials (C2PA) manifests and JUMBF cryptographic boxes.
-  - Scans raw image chunks for Stable Diffusion / ComfyUI / Automatic1111 prompts, negative prompts, CFG scales, and sampler parameters.
-  - Detects Midjourney, OpenAI DALL-E, and Adobe Firefly metadata tags.
-  - Verifies authentic camera hardware EXIF without relying on inaccurate generative heuristics.
-
----
-
-### 12. Design & Color Tools
+### 5. Design & Color Tools
 
 - **CSS Cursor Explorer**:
   - Preview all 36 CSS cursor types in hover cards with descriptions and one-click CSS copying.
@@ -258,10 +136,13 @@ Modern Geometric ( MGE ) is my team btw for those who are wondering about that. 
 - **Colour Converter**:
   - Real-time conversion across HEX, RGB, HSL, and CMYK color spaces.
   - Built-in WCAG 2.1 contrast ratio checker for accessibility compliance.
+- **Color Palette Generator**:
+  - Extracts dominant palette schemes and swatches from graphics using quantization.
+  - Interactive canvas pixel eyedropper with one-click HEX/RGB copying.
 
 ---
 
-### 13. Networking
+### 6. Networking
 
 - **IP Address Checker**:
   - Check your global IPv4 and IPv6 address, Autonomous System Number (ASN), ISP organization, and routing subnet.
@@ -270,6 +151,128 @@ Modern Geometric ( MGE ) is my team btw for those who are wondering about that. 
 - **Network Speed Test**:
   - Real-time in-browser internet broadband speed test inspired by fast.com.
   - Measures live download throughput, upload bandwidth, unloaded latency (ping), and jitter buffer without telemetry or external tracking.
+
+---
+
+### 7. SEO Tools
+
+- **Robots.txt Generator**:
+  - Visual builder for crawler directives by User-agent (`*`, Googlebot, Bingbot, etc.).
+  - Configure Allow and Disallow paths, Crawl-delay, Host, and Sitemap links with live syntax generation and download.
+
+---
+
+### 8. Image Tools
+
+- **Background Remover**:
+  - **Auto Smart AI**: Border-connected flood-fill matting isolating subjects while preserving hair and translucent borders.
+  - **Color-Key Eyedropper**: Sample custom background colors directly on canvas.
+  - **Controls**: Interactive split comparison slider, tolerance threshold (5% - 80%), edge feathering, despill filtering, touchup keep/erase brush.
+  - **Backdrops**: Transparent alpha cutout, solid studio colors, DSLR bokeh depth blur, cyberpunk gradient, custom image backdrop compositing.
+  - **Export & Transfer**: Instant PNG download, direct clipboard copy, and one-click transfer into the Image Studio.
+- **Screenshot Studio**:
+  - Capture browser-visible windows (`getDisplayMedia`) or drop screenshots.
+  - Markup annotations: arrows, boxes, circles, freehand draw, and numbered step badges.
+  - Redaction tool: pixelate and blur sensitive credentials or private text.
+  - Device mockup wrapper: macOS window frame and minimal browser border.
+- **Image Studio**:
+  - **Crop & Aspect Ratio**: Freeform and fixed aspect ratio presets (1:1, 16:9, 4:3, 9:16, 3:2, circle avatar).
+  - **Resize**: Proportional aspect ratio lock, resolution presets (1080p, 720p, 512×512), percentage scaling.
+  - **Rotate & Flip**: 90-degree rotations, horizontal/vertical flipping with non-destructive live preview.
+  - **Filters & Effects**: Presets (Noir B&W, Cyberpunk, Vintage, Dramatic, Warm, Cold), sliders for brightness, contrast, saturation, unsharp mask.
+  - **Watermark**: Custom text, typography, color, corner/center positioning, and opacity controls.
+  - **Export**: WebP, JPEG, and PNG with dynamic compression quality and live file size estimation.
+- **Image Compressor**:
+  - In-browser bulk image compression for JPEG, PNG, WebP, GIF, and BMP.
+  - Real-time compression savings comparison with target size control.
+- **Color Replacer**:
+  - Select and replace any target color across an entire PNG or graphic with adjustable delta-E color tolerance.
+- **Animation Studio (GIF Tools)**:
+  - Create animated GIF loops and sprite sheets from multi-frame image sequences.
+  - Control frame rate (FPS), reverse sequences, and loop parameters.
+
+---
+
+### 9. Video & Audio
+
+- **Video Editor**:
+  - Interactive start and end trim sliders with live timestamp markers.
+  - Variable preview playback speed (0.5×, 1×, 1.5×, 2×).
+  - Volume control with track muting for export.
+  - 90-degree incremental rotation and horizontal/vertical flipping.
+  - Instant full-resolution video frame capture saved locally as PNG.
+  - Client-side WebM rendering via HTML5 Canvas and MediaRecorder APIs.
+- **Audio Studio & Converter**:
+  - **Format Converter**: Encode and cross-convert between MP3, WAV, OGG, FLAC, and AAC.
+  - **Track Mixer**: Multi-track project combiner with per-track volume sliders and second-accurate delay offsets.
+  - **Silence Remover**: Silence detector with configurable dB threshold and duration, one-click silent gap stripping.
+  - **Normalizer & Meter**: Peak dBFS, RMS energy analysis, and studio normalization ($-0.1$, $-0.5$, $-1.0$, $-2.0\text{ dBFS}$).
+  - **Pitch & Equalizer**: Semitone pitch shifting and 3-band digital EQ (Bass, Mids, Treble).
+  - **Live Visualizer & Spectrogram**: Real-time oscilloscope, frequency bars, and waterfall spectrogram.
+  - **Waveform Cutter**: Trim, slice, delete & splice, fade in/out curves, and lossless 16-bit PCM WAV export.
+
+---
+
+### 10. PDF Tools
+
+- **PDF Studio & Merger**:
+  - **Word-Style Document Editor**: Live rich-text drafting canvas with bold, italic, headings, lists, typography selection (Sans, Serif, Monospace), and direct vector PDF export.
+  - **PDF Import**: Open existing PDF documents directly into the editor sheet with automatic layout extraction.
+  - **Merge PDFs**: Select multiple PDF documents, re-order pages, and merge into a single consolidated file.
+  - **Split & Extract**: Extract specific page ranges (e.g. `1-3, 5`) with instant single or multi-page export.
+  - **Rotate Pages**: 90°, 180°, and 270° orientation corrections across all pages.
+  - **Metadata Editor**: View and update PDF title, author, subject, and keywords without altering document contents.
+- **PDF Signature Studio**:
+  - Draw handwritten signatures with variable stroke width.
+  - Type stylized signatures or upload signature images.
+  - Interactive drag-and-drop placement, scaling, and rotation on any page of loaded PDF documents.
+
+---
+
+### 11. Calculators & Finance
+
+- **Math & Statistics**:
+  - **Dynamic Matrix Calculator**: Custom arbitrary dimension matrix operations ($2\times 2$, $3\times 3$, $4\times 4$, $6\times 6$, up to $10\times 10$ and non-square sizes like $7\times 9$).
+    - Matrix multiplication ($A \times B$), addition, subtraction, scalar multiplication, and transpose ($A^T$).
+    - $N\times N$ Determinant ($|A|$) and Matrix Inverse ($A^{-1}$) via Gaussian elimination and Gauss-Jordan solvers.
+    - Quick presets, Identity fill, Random number fill (-9 to 9), and Zero fill.
+  - **Scientific Expression Evaluator**: Real-time parser supporting trigonometric functions (`sin`, `cos`, `tan`, `asin`, `acos`, `atan`), logarithms (`log`, `ln`), square/cube roots, powers (`^`), and mathematical constants ($\pi$, $e$).
+  - **Descriptive Statistics**: Instant calculation of Mean, Median, Min, Max, Range, Sample Variance ($s^2$), and Standard Deviation ($s$).
+  - **Fractions & Ratios**: Addition, subtraction, multiplication, and division with automated GCD reduction and decimal approximations.
+  - **Primes & Number Theory**: Primality testing, prime factorization tree, Greatest Common Divisor (GCD), and Least Common Multiple (LCM).
+  - **Geometry & Volume**: 2D/3D area, circumference, perimeter, and volume calculators for circles, rectangles, triangles, spheres, and cylinders.
+  - **Percentage Tools**: Instant percentage calculation and percentage difference / percentage change tracker.
+
+---
+
+### 12. AI Tools
+
+- **Verifiable AI & Metadata Inspector**:
+  - Verifies embedded Content Credentials (C2PA) manifests and JUMBF cryptographic boxes.
+  - Scans raw image chunks for Stable Diffusion / ComfyUI / Automatic1111 prompts, negative prompts, CFG scales, and sampler parameters.
+  - Detects Midjourney, OpenAI DALL-E, and Adobe Firefly metadata tags.
+  - Verifies authentic camera hardware EXIF without relying on inaccurate generative heuristics.
+
+---
+
+### 13. Pickers & Utilities
+
+- **Wheel of Chance**:
+  - Interactive canvas prize wheel with custom segments, labels, and colors.
+  - Physics-based spin deceleration.
+  - Automatic elimination mode for fair sweepstakes, team draws, and raffle giveaways.
+- **QR Code Generator**:
+  - High-resolution client-side QR code generator with adjustable error correction levels (L, M, Q, H).
+  - Custom foreground and background colors with direct PNG export.
+- **Time & Clocks**:
+  - Unix epoch timestamp converter (seconds and milliseconds to human datetime and vice versa).
+  - World time zone converter.
+  - High-precision split stopwatch and custom countdown timer with hours, minutes, and seconds, pause/resume, reset, and a completion indicator.
+  - Date difference duration calculator.
+- **Archive Explorer**:
+  - Client-side ZIP, RAR, TAR, TAR.GZ, and TGZ archive inspector.
+  - Inspect file listings, directory hierarchies, and file sizes directly in the browser, with text previews and individual file downloads.
+  - Security warning heuristics detecting disguised executables (e.g. `.exe` disguised inside archives).
 
 ---
 

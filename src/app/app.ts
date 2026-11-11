@@ -277,105 +277,6 @@ export class App {
   ];
 
   tools: ToolItem[] = [
-    // PDF Tools
-    {
-      id: 'pdf-editor',
-      title: 'PDF Studio & Merger',
-      category: 'PDF Tools',
-      description: 'Merge multiple PDFs, extract pages, rotate, and Word-style editor.',
-      icon: '📄'
-    },
-    {
-      id: 'pdf-signer',
-      title: 'PDF Signature Studio',
-      category: 'PDF Tools',
-      description: 'Draw, type, or upload signatures and place anywhere on PDFs.',
-      icon: '✍️'
-    },
-
-    // Image Tools
-    {
-      id: 'bg-remover',
-      title: 'Background Remover',
-      category: 'Image Tools',
-      description: 'Isolate subjects and swap backgrounds in 1-click.',
-      icon: '✦'
-    },
-    {
-      id: 'screenshot-studio',
-      title: 'Screenshot Studio',
-      category: 'Image Tools',
-      description: 'Capture browser screen, add arrows/rects/steps, blur text, device mockups.',
-      icon: '📷'
-    },
-    {
-      id: 'image-studio',
-      title: 'Image Studio',
-      category: 'Image Tools',
-      description: 'Crop, resize, rotate, filter adjustments, watermarks.',
-      icon: '▧'
-    },
-    {
-      id: 'image-compressor',
-      title: 'Image Compressor',
-      category: 'Image Tools',
-      description: 'Reduce JPEG, PNG, WebP, GIF, BMP file sizes instantly.',
-      icon: '⚡'
-    },
-    {
-      id: 'color-replacer',
-      title: 'Color Replacer',
-      category: 'Image Tools',
-      description: 'Replace any color in PNG with a new one.',
-      icon: '◑'
-    },
-    {
-      id: 'gif-tools',
-      title: 'Animation Studio',
-      category: 'Image Tools',
-      description: 'Create animated GIF sequences, sprite sheets, speed and reverse.',
-      icon: '🎞'
-    },
-    {
-      id: 'color-palette',
-      title: 'Color Palette',
-      category: 'Image Tools',
-      description: 'Extract dominant color schemes from any graphic.',
-      icon: '◉'
-    },
-
-    // Video & Audio
-    {
-      id: 'video-editor',
-      title: 'Video Editor',
-      category: 'Video & Audio',
-      description: 'Trim, rotate, flip, preview, and export video locally.',
-      icon: '▶'
-    },
-    {
-      id: 'audio-cutter',
-      title: 'Audio Studio & Converter',
-      category: 'Video & Audio',
-      description: 'Format converter (MP3/WAV/OGG/FLAC/AAC), mixer, silence remover, normalizer, pitch/EQ, spectrogram.',
-      icon: '≋'
-    },
-
-    // File Converters
-    {
-      id: 'batch-converter',
-      title: 'Batch Converter',
-      category: 'File Converters',
-      description: 'Convert and compress dozens of images at once.',
-      icon: '▱'
-    },
-    {
-      id: 'base64-tool',
-      title: 'Base64 Tool',
-      category: 'File Converters',
-      description: 'Encode & decode text and binary files/images to Base64 data URLs.',
-      icon: '🔤'
-    },
-
     // Text & Writing Tools
     {
       id: 'ascii-art',
@@ -406,7 +307,30 @@ export class App {
       icon: '¶'
     },
 
+    // File Converters
+    {
+      id: 'batch-converter',
+      title: 'Batch Converter',
+      category: 'File Converters',
+      description: 'Convert and compress dozens of images at once.',
+      icon: '▱'
+    },
+    {
+      id: 'article-to-markdown',
+      title: 'Web Page to PDF & Markdown',
+      category: 'File Converters',
+      description: 'Convert a web page URL or pasted HTML to a readable PDF or clean Markdown.',
+      icon: '📑'
+    },
+
     // Developer Tools
+    {
+      id: 'base64-tool',
+      title: 'Base64 Tool',
+      category: 'Developer Tools',
+      description: 'Encode & decode text and binary files/images to Base64 data URLs.',
+      icon: '🔤'
+    },
     {
       id: 'punycode',
       title: 'Punycode Converter',
@@ -443,13 +367,6 @@ export class App {
       icon: '⇄'
     },
     {
-      id: 'qr-code-generator',
-      title: 'QR Code Generator',
-      category: 'Developer Tools',
-      description: 'Generate high-res PNG QR codes with colors and error correction.',
-      icon: '🏁'
-    },
-    {
       id: 'data-faker',
       title: 'Data Faker',
       category: 'Developer Tools',
@@ -462,47 +379,6 @@ export class App {
       category: 'Developer Tools',
       description: 'Preview websites at common viewport sizes and custom resolutions.',
       icon: '📱'
-    },
-
-    // Calculators & Finance
-    {
-      id: 'math-tools',
-      title: 'Math & Statistics',
-      category: 'Calculators & Finance',
-      description: 'Expression evaluator, statistics (mean/median), percentages.',
-      icon: '∑'
-    },
-    {
-      id: 'time-tools',
-      title: 'Time & Clocks',
-      category: 'Calculators & Finance',
-      description: 'Unix epoch timestamp converter, world clocks, stopwatch, custom countdown timer, date diff.',
-      icon: '⏱'
-    },
-
-    // Pickers & Utilities
-    {
-      id: 'wheel-chance',
-      title: 'Wheel of Chance',
-      category: 'Pickers & Utilities',
-      description: 'Spin a custom prize wheel with automatic winner elimination.',
-      icon: '🎡'
-    },
-
-    // SEO Tools
-    {
-      id: 'article-to-markdown',
-      title: 'Web Page to PDF & Markdown',
-      category: 'SEO Tools',
-      description: 'Convert a web page URL or pasted HTML to a readable PDF or clean Markdown.',
-      icon: '📑'
-    },
-    {
-      id: 'robots-generator',
-      title: 'Robots.txt Generator',
-      category: 'SEO Tools',
-      description: 'Build robots.txt crawler rules with syntax validation & sitemap directives.',
-      icon: '🤖'
     },
 
     // Security & Privacy
@@ -535,13 +411,6 @@ export class App {
       icon: '🧹'
     },
     {
-      id: 'archive-explorer',
-      title: 'Archive Explorer',
-      category: 'Security & Privacy',
-      description: 'Peek inside ZIP, JAR, and packages; detect disguised executables.',
-      icon: '📦'
-    },
-    {
       id: 'password-tool',
       title: 'Password Studio',
       category: 'Security & Privacy',
@@ -570,16 +439,14 @@ export class App {
       icon: '🚨'
     },
 
-    // AI Tools
-    {
-      id: 'ai-image-inspector',
-      title: 'AI & Metadata Inspector',
-      category: 'AI Tools',
-      description: 'Verifiable C2PA credentials, Stable Diffusion prompts, camera EXIF.',
-      icon: '🔬'
-    },
-
     // Design & Color Tools
+    {
+      id: 'color-palette',
+      title: 'Color Palette',
+      category: 'Design & Color Tools',
+      description: 'Extract dominant color schemes from any graphic.',
+      icon: '◉'
+    },
     {
       id: 'cursor-explorer',
       title: 'CSS Cursor Explorer',
@@ -630,6 +497,139 @@ export class App {
       category: 'Networking',
       description: 'Test broadband download, upload, ping latency, and jitter buffer in real-time.',
       icon: '⚡'
+    },
+
+    // SEO Tools
+    {
+      id: 'robots-generator',
+      title: 'Robots.txt Generator',
+      category: 'SEO Tools',
+      description: 'Build robots.txt crawler rules with syntax validation & sitemap directives.',
+      icon: '🤖'
+    },
+
+    // Image Tools
+    {
+      id: 'bg-remover',
+      title: 'Background Remover',
+      category: 'Image Tools',
+      description: 'Isolate subjects and swap backgrounds in 1-click.',
+      icon: '✦'
+    },
+    {
+      id: 'screenshot-studio',
+      title: 'Screenshot Studio',
+      category: 'Image Tools',
+      description: 'Capture browser screen, add arrows/rects/steps, blur text, device mockups.',
+      icon: '📷'
+    },
+    {
+      id: 'image-studio',
+      title: 'Image Studio',
+      category: 'Image Tools',
+      description: 'Crop, resize, rotate, filter adjustments, watermarks.',
+      icon: '▧'
+    },
+    {
+      id: 'image-compressor',
+      title: 'Image Compressor',
+      category: 'Image Tools',
+      description: 'Reduce JPEG, PNG, WebP, GIF, BMP file sizes instantly.',
+      icon: '⚡'
+    },
+    {
+      id: 'color-replacer',
+      title: 'Color Replacer',
+      category: 'Image Tools',
+      description: 'Replace any color in PNG with a new one.',
+      icon: '◑'
+    },
+    {
+      id: 'gif-tools',
+      title: 'Animation Studio',
+      category: 'Image Tools',
+      description: 'Create animated GIF sequences, sprite sheets, speed and reverse.',
+      icon: '🎞'
+    },
+
+    // Video & Audio
+    {
+      id: 'video-editor',
+      title: 'Video Editor',
+      category: 'Video & Audio',
+      description: 'Trim, rotate, flip, preview, and export video locally.',
+      icon: '▶'
+    },
+    {
+      id: 'audio-cutter',
+      title: 'Audio Studio & Converter',
+      category: 'Video & Audio',
+      description: 'Format converter (MP3/WAV/OGG/FLAC/AAC), mixer, silence remover, normalizer, pitch/EQ, spectrogram.',
+      icon: '≋'
+    },
+
+    // PDF Tools
+    {
+      id: 'pdf-editor',
+      title: 'PDF Studio & Merger',
+      category: 'PDF Tools',
+      description: 'Merge multiple PDFs, extract pages, rotate, and Word-style editor.',
+      icon: '📄'
+    },
+    {
+      id: 'pdf-signer',
+      title: 'PDF Signature Studio',
+      category: 'PDF Tools',
+      description: 'Draw, type, or upload signatures and place anywhere on PDFs.',
+      icon: '✍️'
+    },
+
+    // Calculators & Finance
+    {
+      id: 'math-tools',
+      title: 'Math & Statistics',
+      category: 'Calculators & Finance',
+      description: 'Expression evaluator, statistics (mean/median), percentages.',
+      icon: '∑'
+    },
+
+    // AI Tools
+    {
+      id: 'ai-image-inspector',
+      title: 'AI & Metadata Inspector',
+      category: 'AI Tools',
+      description: 'Verifiable C2PA credentials, Stable Diffusion prompts, camera EXIF.',
+      icon: '🔬'
+    },
+
+    // Pickers & Utilities
+    {
+      id: 'qr-code-generator',
+      title: 'QR Code Generator',
+      category: 'Pickers & Utilities',
+      description: 'Generate high-res PNG QR codes with colors and error correction.',
+      icon: '🏁'
+    },
+    {
+      id: 'time-tools',
+      title: 'Time & Clocks',
+      category: 'Pickers & Utilities',
+      description: 'Unix epoch timestamp converter, world clocks, stopwatch, custom countdown timer, date diff.',
+      icon: '⏱'
+    },
+    {
+      id: 'wheel-chance',
+      title: 'Wheel of Chance',
+      category: 'Pickers & Utilities',
+      description: 'Spin a custom prize wheel with automatic winner elimination.',
+      icon: '🎡'
+    },
+    {
+      id: 'archive-explorer',
+      title: 'Archive Explorer',
+      category: 'Pickers & Utilities',
+      description: 'Peek inside ZIP, JAR, and packages; detect disguised executables.',
+      icon: '📦'
     }
   ];
 
