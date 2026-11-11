@@ -1,0 +1,29 @@
+name: TruffleHog secret scan
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 3 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      # The action selects the commit range for pushes and pull requests.
+      # Scheduled and manual runs scan the available repository history.
+      - name: Scan for verified secrets
+        uses: trufflesecurity/trufflehog@v3.96.0
+        with:
+          version: '3.96.0'
+          extra_args: --results=verified
