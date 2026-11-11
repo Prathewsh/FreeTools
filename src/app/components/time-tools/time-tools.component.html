@@ -8,6 +8,7 @@
     <button [class.active]="activeSubtool() === 'epoch'" (click)="activeSubtool.set('epoch')">Unix Timestamp / Epoch</button>
     <button [class.active]="activeSubtool() === 'world'" (click)="activeSubtool.set('world')">World Clocks</button>
     <button [class.active]="activeSubtool() === 'stopwatch'" (click)="activeSubtool.set('stopwatch')">Stopwatch &amp; Laps</button>
+    <button [class.active]="activeSubtool() === 'timer'" (click)="activeSubtool.set('timer')">Countdown Timer</button>
     <button [class.active]="activeSubtool() === 'diff'" (click)="activeSubtool.set('diff')">Date Difference</button>
   </div>
 
@@ -158,6 +159,42 @@
           </table>
         </div>
       }
+    </div>
+  }
+
+  @if (activeSubtool() === 'timer') {
+    <div class="stopwatch-container countdown-container">
+      <div class="timer-inputs">
+        <label>Hours
+          <input type="number" min="0" max="99" step="1" [disabled]="timerStarted()" [ngModel]="timerHours()" (ngModelChange)="timerHours.set($event)" />
+        </label>
+        <label>Minutes
+          <input type="number" min="0" max="59" step="1" [disabled]="timerStarted()" [ngModel]="timerMinutes()" (ngModelChange)="timerMinutes.set($event)" />
+        </label>
+        <label>Seconds
+          <input type="number" min="0" max="59" step="1" [disabled]="timerStarted()" [ngModel]="timerSeconds()" (ngModelChange)="timerSeconds.set($event)" />
+        </label>
+      </div>
+      <div class="stopwatch-digits timer-digits" role="timer" aria-label="Time remaining">{{ timerDisplay() }}</div>
+      <p class="timer-status" role="status">
+        @if (timerFinished()) {
+          Time’s up!
+        } @else if (timerRunning()) {
+          Counting down…
+        } @else if (timerStarted()) {
+          Paused. Resume or reset to change the duration.
+        } @else {
+          Set a duration using whole hours (0–99), minutes (0–59), and seconds (0–59).
+        }
+      </p>
+      <div class="stopwatch-actions">
+        @if (timerRunning()) {
+          <button class="btn-secondary-dark" (click)="pauseTimer()">Pause</button>
+        } @else {
+          <button class="btn-primary-blue" [disabled]="timerDuration() <= 0" (click)="startTimer()">{{ timerFinished() ? 'Restart' : timerStarted() ? 'Resume' : 'Start' }}</button>
+        }
+        <button class="btn-ghost-dark" (click)="resetTimer()">Reset</button>
+      </div>
     </div>
   }
 

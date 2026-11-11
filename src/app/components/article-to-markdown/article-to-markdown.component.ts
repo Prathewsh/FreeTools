@@ -2,6 +2,7 @@ import { Component, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { extractArticle } from './article-extractor';
+import { buildPrintablePage } from './webpage-print';
 
 @Component({
   selector: 'app-article-to-markdown',
@@ -12,6 +13,9 @@ import { extractArticle } from './article-extractor';
 })
 export class ArticleToMarkdownComponent implements OnDestroy {
   private request: AbortController | null = null;
+  private printFrame: HTMLIFrameElement | null = null;
+  printablePage = signal('');
+  outputFormat = signal<'markdown' | 'pdf'>('pdf');
   url = signal<string>('');
   rawHtmlInput = signal<string>('');
   markdownOutput = signal<string>('');
@@ -27,7 +31,7 @@ export class ArticleToMarkdownComponent implements OnDestroy {
     this.isLoading.set(false);
   }
 
-  ngOnDestroy() { this.cancelFetch(); }
+  ngOnDestroy() { this.cancelFetch(); this.printFrame?.remove(); }
 
   async fetchArticle() {
     this.cancelFetch();
@@ -44,6 +48,7 @@ export class ArticleToMarkdownComponent implements OnDestroy {
     this.request = request;
     this.isLoading.set(true);
     this.markdownOutput.set('');
+    this.printablePage.set('');
     this.articleTitle.set('');
     let timedOut = false;
     const timer = setTimeout(() => { timedOut = true; request.abort(); }, 20_000);
@@ -93,6 +98,7 @@ export class ArticleToMarkdownComponent implements OnDestroy {
     this.cancelFetch();
     this.errorMsg.set('');
     this.markdownOutput.set('');
+    this.printablePage.set('');
     this.articleTitle.set('');
     try {
       this.parseHtmlToMarkdown(this.rawHtmlInput());
@@ -105,6 +111,29 @@ export class ArticleToMarkdownComponent implements OnDestroy {
     const result = extractArticle(htmlString, sourceUrl, title);
     this.articleTitle.set(result.title);
     this.markdownOutput.set(result.markdown);
+    this.printablePage.set(buildPrintablePage(htmlString, result.title, sourceUrl));
+  }
+
+  savePdf() {
+    if (!this.printablePage()) return;
+    this.printFrame?.remove();
+    const frame = document.createElement('iframe');
+    frame.title = 'Web page PDF print preview';
+    frame.setAttribute('sandbox', 'allow-same-origin allow-modals');
+    frame.style.cssText = 'position:fixed;width:1px;height:1px;left:-10000px;border:0;';
+    frame.onload = () => {
+      const view = frame.contentWindow;
+      if (!view) return;
+      view.addEventListener('afterprint', () => {
+        frame.remove();
+        if (this.printFrame === frame) this.printFrame = null;
+      }, { once: true });
+      view.focus();
+      view.print();
+    };
+    frame.srcdoc = this.printablePage();
+    this.printFrame = frame;
+    document.body.appendChild(frame);
   }
 
   copyMarkdown() {

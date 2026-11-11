@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import JSZip from 'jszip';
 import { gunzipSync } from 'fflate';
+import type { UnarchiveExtractEvent, UnarchiveErrorEvent } from '@codedread/bitjs';
 
 interface ArchiveEntry {
   name: string;
@@ -31,7 +32,7 @@ export class ArchiveExplorerComponent {
   isDragging = signal<boolean>(false);
   selectedEntry = signal<ArchiveEntry | null>(null);
   zipInstance: JSZip | null = null;
-  tarEntries = new Map<string, Uint8Array>();
+  rawEntries = new Map<string, Uint8Array>();
   previewText = signal<string>('');
   errorMsg = signal<string>('');
 
@@ -71,7 +72,7 @@ export class ArchiveExplorerComponent {
     this.selectedEntry.set(null);
     this.previewText.set('');
     this.zipInstance = null;
-    this.tarEntries.clear();
+    this.rawEntries.clear();
 
     try {
       const buffer = await file.arrayBuffer();
@@ -79,11 +80,13 @@ export class ArchiveExplorerComponent {
 
       if (lowerName.endsWith('.tar.gz') || lowerName.endsWith('.tgz') || lowerName.endsWith('.tar')) {
         await this.loadTarArchive(buffer, lowerName.endsWith('.tar.gz') || lowerName.endsWith('.tgz'));
+      } else if (lowerName.endsWith('.rar')) {
+        await this.loadRarArchive(buffer);
       } else {
         await this.loadZipArchive(buffer);
       }
     } catch (err: any) {
-      this.errorMsg.set('Unable to parse archive. Make sure it is a valid ZIP, TAR, TAR.GZ, or unencrypted archive.');
+      this.errorMsg.set('Unable to parse archive. Make sure it is a valid ZIP, RAR, TAR, TAR.GZ, or unencrypted archive.');
     } finally {
       this.isLoading.set(false);
     }
@@ -117,6 +120,59 @@ export class ArchiveExplorerComponent {
     });
 
     this.entries.set(list);
+  }
+
+  private async loadRarArchive(buffer: ArrayBuffer) {
+    // Serve BitJS as native modules so its workers retain their relative module paths.
+    const bitjsUrl = new URL('vendor/bitjs/index.js', document.baseURI).href;
+    const { Unrarrer, UnarchiveEventType } = await import(/* @vite-ignore */ bitjsUrl) as typeof import('@codedread/bitjs');
+    return new Promise<void>((resolve, reject) => {
+      try {
+        const unrarrer = new Unrarrer(buffer);
+        const list: ArchiveEntry[] = [];
+
+        unrarrer.addEventListener(UnarchiveEventType.EXTRACT, (e: any) => {
+          const evt = e as UnarchiveExtractEvent;
+          const unarchived = evt.unarchivedFile;
+          if (!unarchived) return;
+
+          const isDir = unarchived.filename.endsWith('/') || (unarchived as any).header?.flags?.directory === true;
+          const data = unarchived.fileData || new Uint8Array(0);
+          this.rawEntries.set(unarchived.filename, data);
+
+          const risk = this.analyzeEntryRisk(unarchived.filename, isDir);
+          const size = data.length || (unarchived as any).header?.unpackedSize || 0;
+          const compressedSize = (unarchived as any).header?.packSize || size;
+          const fileTime = (unarchived as any).header?.fileTime;
+          const date = typeof fileTime === 'number' ? new Date(fileTime * 1000) : new Date();
+
+          list.push({
+            name: unarchived.filename,
+            size,
+            compressedSize,
+            dir: isDir,
+            date,
+            isExecutable: risk.isExecutable,
+            isSuspicious: risk.isSuspicious,
+            riskReason: risk.riskReason
+          });
+        });
+
+        unrarrer.addEventListener(UnarchiveEventType.FINISH, () => {
+          this.entries.set(list);
+          resolve();
+        });
+
+        unrarrer.addEventListener(UnarchiveEventType.ERROR, (e: any) => {
+          const errEvt = e as UnarchiveErrorEvent;
+          reject(new Error(errEvt.msg || 'RAR extraction failed'));
+        });
+
+        unrarrer.start();
+      } catch (err) {
+        reject(err);
+      }
+    });
   }
 
   private async loadTarArchive(buffer: ArrayBuffer, isGzipped: boolean) {
@@ -188,7 +244,7 @@ export class ArchiveExplorerComponent {
 
       if (name && name !== '.' && !name.includes('PaxHeader/')) {
         const risk = this.analyzeEntryRisk(name, isDir);
-        this.tarEntries.set(name, isDir ? new Uint8Array(0) : fileData);
+        this.rawEntries.set(name, isDir ? new Uint8Array(0) : fileData);
 
         list.push({
           name,
@@ -241,8 +297,8 @@ export class ArchiveExplorerComponent {
       const textExts = ['txt', 'json', 'md', 'xml', 'html', 'css', 'js', 'ts', 'yaml', 'yml', 'ini', 'cfg', 'properties', 'env'];
       const isTextFile = textExts.includes(ext || '') || entry.size < 50000;
 
-      if (this.tarEntries.has(entry.name)) {
-        const data = this.tarEntries.get(entry.name)!;
+      if (this.rawEntries.has(entry.name)) {
+        const data = this.rawEntries.get(entry.name)!;
         if (isTextFile) {
           const text = new TextDecoder().decode(data.subarray(0, 10000));
           this.previewText.set(text);
@@ -275,8 +331,8 @@ export class ArchiveExplorerComponent {
     if (entry.dir) return;
 
     let blob: Blob | null = null;
-    if (this.tarEntries.has(entry.name)) {
-      const data = this.tarEntries.get(entry.name)!;
+    if (this.rawEntries.has(entry.name)) {
+      const data = this.rawEntries.get(entry.name)!;
       blob = new Blob([data as unknown as BlobPart]);
     } else if (this.zipInstance) {
       const file = this.zipInstance.file(entry.name);

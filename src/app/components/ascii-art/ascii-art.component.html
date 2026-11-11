@@ -1,0 +1,53 @@
+<div class="ascii-tool">
+  <header><div><h2>ASCII Art Generator</h2><p>Turn an image or a short message into character art. Everything runs locally in your browser.</p></div><span class="local-badge">No uploads</span></header>
+  <div class="mode-bar" aria-label="Source type">
+    <button type="button" [class.active]="mode() === 'text'" [attr.aria-pressed]="mode() === 'text'" (click)="mode.set('text')">Text to ASCII</button>
+    <button type="button" [class.active]="mode() === 'image'" [attr.aria-pressed]="mode() === 'image'" (click)="mode.set('image')">Image to ASCII</button>
+  </div>
+  <div class="workspace">
+    <section class="controls-card">
+      <h3>Source &amp; settings</h3>
+      @if (mode() === 'text') {
+        <label>Banner text<textarea rows="4" maxlength="640" placeholder="Type your message…" [ngModel]="text()" (ngModelChange)="text.set($event)"></textarea></label>
+        <p class="hint">Renders up to 8 lines, 80 characters per line. Short messages work best.</p>
+      } @else {
+        <label class="drop-zone" (dragover)="$event.preventDefault()" (drop)="onDrop($event)">
+          <input class="file-input" type="file" aria-label="Choose an image for ASCII art" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif" (change)="onFileChange($event)" />
+          <span class="upload-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m-4 4 4-4 4 4M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" /></svg></span>
+          <strong>Drop your image here</strong>
+          <span class="upload-hint">or browse files on your device</span>
+          <span class="choose-file">{{ image() ? 'Replace image' : 'Choose image' }}</span>
+          <span class="file-types">PNG, JPEG, WebP, GIF, BMP, AVIF<br />Up to 20 MB</span>
+        </label>
+        @if (loading()) { <p role="status" class="hint">Reading image…</p> }
+        @if (image(); as source) { <p class="file-info">{{ fileName() }} · {{ source.naturalWidth }} × {{ source.naturalHeight }} px</p> }
+        @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+        <p class="hint">Transparent areas use a white background. Animated files produce a still image.</p>
+      }
+      <label>Output width <span>{{ columns() }} characters</span><input type="range" min="40" max="240" step="1" [ngModel]="columns()" (ngModelChange)="columns.set(+$event)" /></label>
+      <label>Character set<select [ngModel]="preset()" (ngModelChange)="preset.set($event)">
+        @for (item of presets; track item.id) { <option [value]="item.id">{{ item.label }}</option> }
+        <option value="custom">Custom</option>
+      </select></label>
+      @if (preset() === 'custom') {
+        <label>Characters (dense → light)<input type="text" maxlength="100" spellcheck="false" [ngModel]="customCharacters()" (ngModelChange)="customCharacters.set($event)" /></label>
+        <p class="hint">Add a space at the end for the lightest areas.</p>
+      }
+      <label>Contrast <span>{{ contrast().toFixed(1) }}×</span><input type="range" min="0.5" max="3" step="0.1" [ngModel]="contrast()" (ngModelChange)="contrast.set(+$event)" /></label>
+      <label class="check-label"><input type="checkbox" [ngModel]="inverted()" (ngModelChange)="inverted.set($event)" /> Invert character density</label>
+      <label>Preview font size <span>{{ fontSize() }} px</span><input type="range" min="5" max="18" step="1" [ngModel]="fontSize()" (ngModelChange)="fontSize.set(+$event)" /></label>
+      <p class="hint">The preview uses monospace characters. Keep a monospace font when pasting the art elsewhere. Very tall images are limited to 300 rows.</p>
+    </section>
+    <section class="output-card">
+      <div class="output-header"><h3>ASCII preview</h3><div class="actions"><button type="button" (click)="copy()" [disabled]="!rendered().text">Copy</button><button type="button" class="primary" (click)="download()" [disabled]="!rendered().text">Download .txt</button></div></div>
+      <p class="copy-status" role="status">{{ copyStatus() }}</p>
+      @if (rendered().error) { <p class="error" role="alert">{{ rendered().error }}</p> }
+      @if (rendered().text) {
+        <div class="preview-scroll" tabindex="0" role="region" aria-label="ASCII art preview"><pre [style.font-size.px]="fontSize()">{{ rendered().text }}</pre></div>
+        <p class="dimensions">{{ rendered().columns }} columns × {{ rendered().rows }} rows</p>
+      } @else {
+        <div class="empty-preview"><span aria-hidden="true">[ ASCII ]</span><p>{{ mode() === 'image' ? 'Choose an image to generate ASCII art.' : 'Enter text to generate an ASCII banner.' }}</p></div>
+      }
+    </section>
+  </div>
+</div>

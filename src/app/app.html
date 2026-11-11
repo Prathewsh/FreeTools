@@ -255,6 +255,14 @@
         <app-text-tools></app-text-tools>
       }
 
+      @if (activeTab() === 'punycode') {
+        <app-punycode></app-punycode>
+      }
+
+      @if (activeTab() === 'ascii-art') {
+        <app-ascii-art></app-ascii-art>
+      }
+
       @if (activeTab() === 'binary-tools') {
         <app-binary-tools></app-binary-tools>
       }
@@ -305,6 +313,10 @@
 
       @if (activeTab() === 'clip-path-builder') {
         <app-clip-path-builder></app-clip-path-builder>
+      }
+
+      @if (activeTab() === 'cursor-explorer') {
+        <app-cursor-explorer></app-cursor-explorer>
       }
 
       @if (activeTab() === 'file-crypto') {

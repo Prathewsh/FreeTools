@@ -29,6 +29,11 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*.js",
+                "input": "node_modules/@codedread/bitjs",
+                "output": "vendor/bitjs"
               }
             ],
             "styles": [

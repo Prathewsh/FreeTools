@@ -1,16 +1,25 @@
 <div class="article-container">
   <div class="header">
     <div class="header-left">
-      <h2>Article to Clean Markdown</h2>
-      <p class="subtitle">Extract clean readable Markdown from articles and blog URLs — strips out navigation, cookie banners, sidebars, and ads.</p>
+      <h2>Web Page to PDF &amp; Markdown</h2>
+      <p class="subtitle">Save a web page as a readable PDF or extract clean Markdown from a URL or pasted HTML.</p>
     </div>
     @if (markdownOutput()) {
       <div class="header-actions">
+        <button class="btn btn-primary" (click)="savePdf()">Save as PDF</button>
         <button class="btn btn-secondary" (click)="copyMarkdown()">{{ copied() ? '✓ Copied' : 'Copy MD' }}</button>
         <button class="btn btn-primary" (click)="downloadMarkdown()">Download .md</button>
       </div>
     }
   </div>
+
+  <div class="tabs" aria-label="Output format">
+    <button class="tab-btn" [class.active]="outputFormat() === 'pdf'" (click)="outputFormat.set('pdf')">PDF</button>
+    <button class="tab-btn" [class.active]="outputFormat() === 'markdown'" (click)="outputFormat.set('markdown')">Markdown</button>
+  </div>
+  @if (outputFormat() === 'pdf') {
+    <p class="subtitle">Convert the page, then choose Save as PDF in the print dialog. PDFs use a readable layout with headings, tables, links, and images; original styling and interactive content are not preserved. Image URLs load directly from their hosts.</p>
+  }
 
   <div class="tabs">
     <button class="tab-btn" [class.active]="activeTab() === 'url'" (click)="activeTab.set('url')">Fetch URL</button>
@@ -26,7 +35,7 @@
           [(ngModel)]="url" 
           (keyup.enter)="fetchArticle()" />
         <button class="btn btn-primary" [disabled]="isLoading()" (click)="fetchArticle()">
-          {{ isLoading() ? 'Extracting...' : 'Extract Clean Markdown' }}
+          {{ isLoading() ? 'Converting...' : outputFormat() === 'pdf' ? 'Prepare PDF' : 'Extract Clean Markdown' }}
         </button>
         @if (isLoading()) { <button class="btn btn-secondary" (click)="cancelFetch()">Cancel</button> }
       </div>
@@ -42,11 +51,19 @@
         placeholder="Paste article page HTML source or text here..." 
         [(ngModel)]="rawHtmlInput"></textarea>
       @if (errorMsg()) { <div class="warning-box">{{ errorMsg() }}</div> }
-      <button class="btn btn-primary mt-2" (click)="processPastedHtml()">Convert to Clean Markdown</button>
+      <button class="btn btn-primary mt-2" (click)="processPastedHtml()">{{ outputFormat() === 'pdf' ? 'Prepare PDF' : 'Convert to Clean Markdown' }}</button>
     </div>
   }
 
-  @if (markdownOutput()) {
+  @if (markdownOutput() && outputFormat() === 'pdf') {
+    <div class="input-card">
+      <h3>{{ articleTitle() }}</h3>
+      <p class="subtitle">Your page is ready. Open the print preview and select Save as PDF as the destination. Pages requiring login or JavaScript may need pasted HTML.</p>
+      <button class="btn btn-primary" (click)="savePdf()">Save as PDF</button>
+    </div>
+  }
+
+  @if (markdownOutput() && outputFormat() === 'markdown') {
     <div class="markdown-preview-card">
       <div class="preview-header">
         <strong>Extracted Markdown: {{ articleTitle() }}</strong>

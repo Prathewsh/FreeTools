@@ -437,6 +437,38 @@
   gap: 12px;
 }
 
+.timer-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: #9b9ea9;
+    font-size: 12px;
+  }
+
+  input {
+    box-sizing: border-box;
+    width: 90px;
+    padding: 10px;
+    background: #1e2026;
+    border: 1px solid #34363f;
+    border-radius: 6px;
+    color: #fff;
+    font: inherit;
+
+    &:disabled { opacity: 0.6; }
+  }
+}
+
+.timer-digits { font-size: clamp(28px, 7vw, 54px); }
+.timer-status { margin: 0; text-align: center; color: #9b9ea9; font-size: 13px; }
+.countdown-container button:disabled { opacity: 0.5; cursor: not-allowed; }
+
 .laps-table-wrapper {
   width: 100%;
   max-width: 400px;

@@ -1,6 +1,42 @@
+import '@angular/compiler';
 import { vi } from 'vitest';
 import { ArticleToMarkdownComponent } from './article-to-markdown.component';
 import { extractArticle } from './article-extractor';
+import { buildPrintablePage } from './webpage-print';
+
+describe('Web page PDF content', () => {
+  it('preserves page structure and resolves links and images', () => {
+    const html = buildPrintablePage('<h1>Page</h1><table><tr><td colspan="2">Cell</td></tr></table><a href="/next">Next</a><img src="/photo.jpg">', 'Page', 'https://example.com/story');
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    expect(doc.title).toBe('Page');
+    expect(doc.querySelector('td')?.getAttribute('colspan')).toBe('2');
+    expect(doc.querySelector('a')?.getAttribute('href')).toBe('https://example.com/next');
+    expect(doc.querySelector('img')?.getAttribute('src')).toBe('https://example.com/photo.jpg');
+  });
+
+  it('removes scripts, event handlers, embedded documents and unsafe URLs', () => {
+    const html = buildPrintablePage('<script>alert(1)</script><iframe src="https://example.com"></iframe><img src="javascript:alert(1)" onerror="alert(1)"><a href="javascript:alert(1)">Safe text</a><p style="background:url(https://tracker)">Content</p>', '<Title>');
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    expect(doc.querySelector('script,iframe,[onerror],[style]')).toBeNull();
+    expect(doc.querySelector('a')?.hasAttribute('href')).toBe(false);
+    expect(doc.querySelector('img')?.hasAttribute('src')).toBe(false);
+    expect(doc.title).toBe('<Title>');
+    expect(doc.body.textContent).toContain('Content');
+  });
+
+  it('prepares PDF content from pasted HTML and removes print frames on destruction', () => {
+    const component = new ArticleToMarkdownComponent();
+    component.rawHtmlInput.set('<h1>My page</h1><p>Printable text.</p>');
+    component.processPastedHtml();
+    expect(component.printablePage()).toContain('Printable text.');
+    component.savePdf();
+    const frame = document.querySelector('iframe[title="Web page PDF print preview"]');
+    expect(frame?.getAttribute('sandbox')).not.toContain('allow-scripts');
+    expect(frame?.getAttribute('srcdoc')).toContain('Printable text.');
+    component.ngOnDestroy();
+    expect(frame?.isConnected).toBe(false);
+  });
+});
 
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 

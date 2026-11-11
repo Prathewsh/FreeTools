@@ -1,0 +1,16 @@
+<div class="punycode-tool">
+  <header><h2>Punycode Converter</h2><p>Convert Unicode strings to Punycode and decode them back. Runs locally in your browser.</p></header>
+  <div class="controls conversion-controls">
+    <button [class.active]="direction() === 'encode'" (click)="direction.set('encode'); status.set('')">Unicode → Punycode</button>
+    <button [class.active]="direction() === 'decode'" (click)="direction.set('decode'); status.set('')">Punycode → Unicode</button>
+    <label>Input type<select [ngModel]="domain()" (ngModelChange)="domain.set($event); status.set('')"><option [ngValue]="false">Raw string</option><option [ngValue]="true">Domain name (xn--)</option></select></label>
+  </div>
+  <p class="hint">{{ domain() ? 'Converts each domain label separately and handles the xn-- prefix. This is Punycode conversion, not domain registration or full IDNA validation.' : 'Encodes the entire string without an xn-- prefix. Plain ASCII strings gain a trailing hyphen when encoded.' }}</p>
+  <div class="editors">
+    <label>Input<textarea rows="8" maxlength="10000" spellcheck="false" [ngModel]="input()" (ngModelChange)="input.set($event); status.set('')" placeholder="Enter text to convert…"></textarea></label>
+    <label>Output<textarea rows="8" readonly spellcheck="false" [value]="result().value" placeholder="Converted result…"></textarea></label>
+  </div>
+  @if (result().error) { <p class="error" role="alert">{{ result().error }}</p> }
+  <div class="controls"><button (click)="copy()" [disabled]="!result().value">Copy result</button><button (click)="swap()" [disabled]="!result().value">Swap &amp; reverse</button><button (click)="example()">Load example</button><button (click)="input.set(''); status.set('')">Clear</button></div>
+  <p role="status" class="status">{{ status() }}</p>
+</div>

@@ -1,0 +1,14 @@
+.punycode-tool { padding: 24px; display: flex; flex-direction: column; gap: 18px; color: #e4e5e9; }
+h2 { margin: 0 0 8px; font-size: 18px; } header p, .hint { margin: 0; color: #9b9ea9; font-size: 13px; line-height: 1.6; }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.conversion-controls { align-items: flex-end; }
+.conversion-controls button, .conversion-controls select { box-sizing: border-box; height: 40px; }
+.conversion-controls label { min-width: 165px; }
+button, select { border: 1px solid #3a3d47; background: #24262d; color: #ddd; padding: 10px 14px; border-radius: 6px; font-size: 12px; }
+button { cursor: pointer; } button.active { color: #c1e993; background: #30372b; border-color: #49533e; } button:disabled { opacity: .5; cursor: not-allowed; }
+label { display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #b4b7c0; }
+.editors { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+textarea { box-sizing: border-box; width: 100%; padding: 14px; border: 1px solid #34363f; border-radius: 8px; background: #141519; color: #e4e5e9; font: 14px/1.7 monospace; resize: vertical; }
+.error { color: #ffb0a6; font-size: 13px; } .status { color: #c1e993; min-height: 20px; font-size: 12px; margin: 0; }
+:focus-visible { outline: 2px solid #c1e993; outline-offset: 3px; }
+@media(max-width: 650px) { .editors { grid-template-columns: 1fr; } .punycode-tool { padding: 16px; } }

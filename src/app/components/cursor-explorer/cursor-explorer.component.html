@@ -1,0 +1,22 @@
+<div class="cursor-explorer">
+  <header>
+    <div><h2>CSS Cursor Explorer</h2><p>Preview all 36 CSS cursor types by hovering, then copy the CSS with one click.</p></div>
+    <span class="count">{{ cursors.length }} cursor types</span>
+  </header>
+  <p class="hint">Use a mouse or trackpad to preview. Cursor appearance varies by browser and operating system; some types may look alike.</p>
+  <p class="copy-status" role="status" aria-live="polite">{{ message() }}</p>
+  <div class="cursor-grid">
+    @for (cursor of cursors; track cursor.name) {
+      <article class="cursor-card">
+        <h3>{{ cursor.name }}</h3>
+        <div class="hover-area" [style.cursor]="cursor.name">Hover your mouse here</div>
+        <p class="description">{{ cursor.description }}</p>
+        <code>cursor: {{ cursor.name }};</code>
+        <button type="button" (click)="copyCode(cursor.name)" [attr.aria-label]="'Copy cursor: ' + cursor.name + ';'" [class.copied]="copied() === cursor.name">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>
+          {{ copied() === cursor.name ? 'Copied!' : 'Copy' }}
+        </button>
+      </article>
+    }
+  </div>
+</div>

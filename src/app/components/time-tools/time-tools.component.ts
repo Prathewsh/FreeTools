@@ -2,7 +2,7 @@ import { Component, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-type TimeSubtool = 'epoch' | 'world' | 'stopwatch' | 'diff';
+type TimeSubtool = 'epoch' | 'world' | 'stopwatch' | 'timer' | 'diff';
 
 interface WorldClock {
   city: string;
@@ -114,6 +114,27 @@ export class TimeToolsComponent implements OnInit, OnDestroy {
   laps = signal<number[]>([]);
   private stopwatchInterval: any = null;
 
+  timerHours = signal(0);
+  timerMinutes = signal(5);
+  timerSeconds = signal(0);
+  timerRunning = signal(false);
+  timerStarted = signal(false);
+  timerFinished = signal(false);
+  timerRemaining = signal(0);
+  timerDuration = computed(() => {
+    const values = [this.timerHours(), this.timerMinutes(), this.timerSeconds()];
+    if (values.some(value => !Number.isInteger(value) || value < 0) ||
+        values[0] > 99 || values[1] > 59 || values[2] > 59) return 0;
+    return (values[0] * 3600 + values[1] * 60 + values[2]) * 1000;
+  });
+  timerDisplay = computed(() => {
+    const seconds = Math.ceil((this.timerStarted() ? this.timerRemaining() : this.timerDuration()) / 1000);
+    return [Math.floor(seconds / 3600), Math.floor(seconds / 60) % 60, seconds % 60]
+      .map(value => String(value).padStart(2, '0')).join(':');
+  });
+  private timerDeadline = 0;
+  private timerInterval: ReturnType<typeof setInterval> | null = null;
+
   // Date Diff
   startDate = signal(new Date().toISOString().slice(0, 10));
   endDate = signal(new Date(Date.now() + 86400000 * 30).toISOString().slice(0, 10));
@@ -145,6 +166,7 @@ export class TimeToolsComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this.clockInterval) clearInterval(this.clockInterval);
     if (this.stopwatchInterval) clearInterval(this.stopwatchInterval);
+    this.clearTimerInterval();
   }
 
   private initAllTimezones() {
@@ -288,6 +310,49 @@ export class TimeToolsComponent implements OnInit, OnDestroy {
   }
 
   // Stopwatch actions
+  startTimer() {
+    if (this.timerRunning() || this.timerDuration() <= 0) return;
+    if (!this.timerStarted() || this.timerFinished()) {
+      this.timerRemaining.set(this.timerDuration());
+    }
+    this.timerStarted.set(true);
+    this.timerFinished.set(false);
+    this.timerRunning.set(true);
+    this.timerDeadline = Date.now() + this.timerRemaining();
+    // Recalculate from the deadline so delayed background callbacks do not accumulate drift.
+    this.timerInterval = setInterval(() => this.updateTimer(), 100);
+  }
+
+  pauseTimer() {
+    if (!this.timerRunning()) return;
+    this.updateTimer();
+    this.clearTimerInterval();
+    this.timerRunning.set(false);
+  }
+
+  resetTimer() {
+    this.clearTimerInterval();
+    this.timerRunning.set(false);
+    this.timerStarted.set(false);
+    this.timerFinished.set(false);
+    this.timerRemaining.set(0);
+  }
+
+  private updateTimer() {
+    const remaining = Math.max(0, this.timerDeadline - Date.now());
+    this.timerRemaining.set(remaining);
+    if (remaining === 0) {
+      this.clearTimerInterval();
+      this.timerRunning.set(false);
+      this.timerFinished.set(true);
+    }
+  }
+
+  private clearTimerInterval() {
+    if (this.timerInterval !== null) clearInterval(this.timerInterval);
+    this.timerInterval = null;
+  }
+
   startStopwatch() {
     if (this.stopwatchRunning()) return;
     this.stopwatchRunning.set(true);

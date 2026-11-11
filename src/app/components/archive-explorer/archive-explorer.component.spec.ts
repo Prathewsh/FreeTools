@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ArchiveExplorerComponent } from './archive-explorer.component';
 import { gzipSync } from 'fflate';
+import JSZip from 'jszip';
 
 describe('ArchiveExplorerComponent', () => {
   let component: ArchiveExplorerComponent;
@@ -18,6 +19,21 @@ describe('ArchiveExplorerComponent', () => {
 
   it('should create component', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should parse and preview .zip archives', async () => {
+    const zip = new JSZip();
+    zip.file('sample.txt', 'Hello from zip archive!');
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    const mockFile = new File([zipBlob], 'archive.zip', { type: 'application/zip' });
+
+    await component.loadFile(mockFile);
+
+    expect(component.entries().length).toBe(1);
+    expect(component.entries()[0].name).toBe('sample.txt');
+
+    await component.viewEntry(component.entries()[0]);
+    expect(component.previewText()).toBe('Hello from zip archive!');
   });
 
   it('should parse and preview .tar.gz archives', async () => {

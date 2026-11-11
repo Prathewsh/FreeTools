@@ -18,6 +18,7 @@ Modern Geometric ( MGE ) is my team btw for those who are wondering about that. 
 
 ## Tool Suite Overview
 
+
 ### 1. PDF Tools
 
 - **PDF Studio & Merger**:
@@ -103,6 +104,9 @@ Modern Geometric ( MGE ) is my team btw for those who are wondering about that. 
 
 ### 5. Text & Writing Tools
 
+- **ASCII Art Generator**:
+  - Convert images or short text banners into ASCII art locally in the browser.
+  - Adjust output width, character presets or a custom ASCII ramp, contrast, density inversion, and preview font size. Copy the result or download a `.txt` file.
 - **Text Tools & Cleaner**:
   - Case converters (UPPERCASE, lowercase, Title Case, camelCase, kebab-case, snake_case).
   - Live statistics: word count, character count, sentence count, reading time estimation.
@@ -118,6 +122,9 @@ Modern Geometric ( MGE ) is my team btw for those who are wondering about that. 
 ---
 
 ### 6. Developer Tools
+
+- **Punycode Converter**:
+  - Encode and decode Unicode strings or domain labels with `xn--` handling, reversible conversion, and one-click copying. Runs locally; does not perform full IDNA validation.
 
 - **Data Faker**:
   - Generates realistic synthetic datasets (names, emails, phone numbers, job titles, companies, cities, countries, dates, UUIDs).
@@ -162,7 +169,7 @@ Modern Geometric ( MGE ) is my team btw for those who are wondering about that. 
 - **Time & Clocks**:
   - Unix epoch timestamp converter (seconds and milliseconds to human datetime and vice versa).
   - World time zone converter.
-  - High-precision split stopwatch and countdown timer.
+  - High-precision split stopwatch and custom countdown timer with hours, minutes, and seconds, pause/resume, reset, and a completion indicator.
   - Date difference duration calculator.
 
 ---
@@ -181,7 +188,8 @@ Modern Geometric ( MGE ) is my team btw for those who are wondering about that. 
 - **Robots.txt Generator**:
   - Visual builder for crawler directives by User-agent (`*`, Googlebot, Bingbot, etc.).
   - Configure Allow and Disallow paths, Crawl-delay, Host, and Sitemap links with live syntax generation and download.
-- **Article to Markdown**:
+- **Web Page to PDF & Markdown**:
+  - Save fetched web pages or pasted HTML as a readable PDF through the browser print dialog (select **Save as PDF**), preserving headings, tables, links, and images in a clean layout rather than the original site styling.
   - Converts raw web articles, blog posts, and HTML into clean, sanitized Markdown format.
   - Strips advertisement junk, tracker scripts, and navigation clutter.
 
@@ -216,8 +224,8 @@ Modern Geometric ( MGE ) is my team btw for those who are wondering about that. 
 - **Metadata Remover**:
   - Strips EXIF metadata, camera serial numbers, GPS geo-coordinates, author names, and timestamps from images before sharing.
 - **Archive Explorer**:
-  - Client-side ZIP and archive inspector.
-  - Inspect file listings, directory hierarchies, and compressed file sizes without extraction.
+  - Client-side ZIP, RAR, TAR, TAR.GZ, and TGZ archive inspector.
+  - Inspect file listings, directory hierarchies, and file sizes directly in the browser, with text previews and individual file downloads.
   - Security warning heuristics detecting disguised executables (e.g. `.exe` disguised inside archives).
 - **Password Studio**:
   - Cryptographically secure pseudorandom password and passphrase generator (`crypto.getRandomValues`).
@@ -237,6 +245,8 @@ Modern Geometric ( MGE ) is my team btw for those who are wondering about that. 
 
 ### 12. Design & Color Tools
 
+- **CSS Cursor Explorer**:
+  - Preview all 36 CSS cursor types in hover cards with descriptions and one-click CSS copying.
 - **CSS Clip-Path Builder**:
   - Interactive polygon vertex dragger, circle/ellipse presets, star, trapezoid, and custom coordinate manipulation with live CSS code snippet generation.
 - **CSS Gradient Generator**:

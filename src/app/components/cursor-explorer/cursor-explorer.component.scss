@@ -1,0 +1,18 @@
+.cursor-explorer { padding: 24px; color: #e4e5e9; }
+header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+h2 { margin: 0 0 8px; font-size: 18px; font-weight: 600; }
+header p, .hint { margin: 0; color: #9b9ea9; font-size: 13px; line-height: 1.6; }
+.count { padding: 7px 12px; border: 1px solid #49533e; color: #c1e993; border-radius: 20px; font-size: 12px; white-space: nowrap; }
+.hint { margin-top: 12px; }
+.copy-status { min-height: 20px; margin: 8px 0; font-size: 12px; color: #c1e993; }
+.cursor-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.cursor-card { display: flex; flex-direction: column; gap: 12px; border: 1px solid #343b47; border-radius: 14px; padding: 16px; background: #191a1f; }
+h3 { margin: 0; font: 600 14px var(--font-mono, monospace); }
+.hover-area { min-height: 74px; display: flex; align-items: center; justify-content: center; padding: 10px; background: #1e242e; border: 1px dashed #43546c; border-radius: 9px; color: #9eafc6; font-size: 12px; text-align: center; }
+.description { margin: 0; color: #9b9ea9; font-size: 13px; line-height: 1.6; flex: 1; }
+code { color: #c1e993; font-size: 12px; user-select: all; overflow-wrap: anywhere; }
+button { display: flex; justify-content: center; align-items: center; gap: 6px; width: 100%; padding: 10px; border: 1px solid #3a4353; border-radius: 8px; background: transparent; color: #d4d9e2; cursor: pointer; font-size: 13px; }
+button:hover { background: #252c37; border-color: #63758f; }
+button.copied { color: #c1e993; border-color: #61764c; }
+button:focus-visible { outline: 2px solid #c1e993; outline-offset: 3px; }
+@media (max-width: 650px) { .cursor-explorer { padding: 16px; } .cursor-grid { grid-template-columns: 1fr; } }

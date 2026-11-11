@@ -11,6 +11,8 @@ import { ColorPaletteComponent } from './components/color-palette/color-palette.
 import { JsonFormatterComponent } from './components/json-formatter/json-formatter.component';
 import { ColorReplacerComponent } from './components/color-replacer/color-replacer.component';
 import { TextToolsComponent } from './components/text-tools/text-tools.component';
+import { PunycodeComponent } from './components/punycode/punycode.component';
+import { AsciiArtComponent } from './components/ascii-art/ascii-art.component';
 import { BinaryToolsComponent } from './components/binary-tools/binary-tools.component';
 import { UnicodeToolsComponent } from './components/unicode-tools/unicode-tools.component';
 import { MathToolsComponent } from './components/math-tools/math-tools.component';
@@ -39,6 +41,7 @@ import { RobotsGeneratorComponent } from './components/robots-generator/robots-g
 import { DataFakerComponent } from './components/data-faker/data-faker.component';
 import { BreakpointPreviewerComponent } from './components/breakpoint-previewer/breakpoint-previewer.component';
 import { ClipPathBuilderComponent } from './components/clip-path-builder/clip-path-builder.component';
+import { CursorExplorerComponent } from './components/cursor-explorer/cursor-explorer.component';
 import { FileCryptoComponent } from './components/file-crypto/file-crypto.component';
 import { CertInspectorComponent } from './components/cert-inspector/cert-inspector.component';
 import { PdfInspectorComponent } from './components/pdf-inspector/pdf-inspector.component';
@@ -63,6 +66,8 @@ export type ToolTab =
   | 'batch-converter'
   | 'base64-tool'
   | 'text-tools'
+  | 'punycode'
+  | 'ascii-art'
   | 'markdown-editor'
   | 'lorem-ipsum'
   | 'binary-tools'
@@ -89,6 +94,7 @@ export type ToolTab =
   | 'box-shadow-generator'
   | 'colour-converter'
   | 'clip-path-builder'
+  | 'cursor-explorer'
   | 'ip-checker'
   | 'speed-test'
   | 'php2shell-checker'
@@ -131,6 +137,8 @@ interface ToolCategory {
     JsonFormatterComponent,
     ColorReplacerComponent,
     TextToolsComponent,
+    PunycodeComponent,
+    AsciiArtComponent,
     BinaryToolsComponent,
     UnicodeToolsComponent,
     MathToolsComponent,
@@ -159,6 +167,7 @@ interface ToolCategory {
     DataFakerComponent,
     BreakpointPreviewerComponent,
     ClipPathBuilderComponent,
+    CursorExplorerComponent,
     FileCryptoComponent,
     CertInspectorComponent,
     PdfInspectorComponent,
@@ -369,6 +378,13 @@ export class App {
 
     // Text & Writing Tools
     {
+      id: 'ascii-art',
+      title: 'ASCII Art Generator',
+      category: 'Text & Writing Tools',
+      description: 'Turn images or text into ASCII art with custom character sets, contrast, and text export.',
+      icon: '▧'
+    },
+    {
       id: 'text-tools',
       title: 'Text Tools & Cleaner',
       category: 'Text & Writing Tools',
@@ -391,6 +407,13 @@ export class App {
     },
 
     // Developer Tools
+    {
+      id: 'punycode',
+      title: 'Punycode Converter',
+      category: 'Developer Tools',
+      description: 'Encode Unicode strings and domains to Punycode or decode them back.',
+      icon: 'xn--'
+    },
     {
       id: 'binary-tools',
       title: 'Binary & Bitwise',
@@ -453,7 +476,7 @@ export class App {
       id: 'time-tools',
       title: 'Time & Clocks',
       category: 'Calculators & Finance',
-      description: 'Unix epoch timestamp converter, world clocks, stopwatch, date diff.',
+      description: 'Unix epoch timestamp converter, world clocks, stopwatch, custom countdown timer, date diff.',
       icon: '⏱'
     },
 
@@ -469,9 +492,9 @@ export class App {
     // SEO Tools
     {
       id: 'article-to-markdown',
-      title: 'Article to Markdown',
+      title: 'Web Page to PDF & Markdown',
       category: 'SEO Tools',
-      description: 'Paste any article URL or HTML, get clean Markdown without ads.',
+      description: 'Convert a web page URL or pasted HTML to a readable PDF or clean Markdown.',
       icon: '📑'
     },
     {
@@ -557,6 +580,13 @@ export class App {
     },
 
     // Design & Color Tools
+    {
+      id: 'cursor-explorer',
+      title: 'CSS Cursor Explorer',
+      category: 'Design & Color Tools',
+      description: 'Preview all 36 CSS cursor types on hover and copy their CSS instantly.',
+      icon: '↖'
+    },
     {
       id: 'gradient-generator',
       title: 'CSS Gradient Generator',
