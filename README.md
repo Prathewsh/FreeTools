@@ -325,6 +325,11 @@ Build outputs are generated in the `dist/` directory.
 
 ---
 
+## GitHub Actions
+
+- **Angular CI** runs on pushes, pull requests, and manual dispatch: Node.js 24, `npm ci`, and a production build.
+- **TruffleHog secret scan** checks push/PR commit ranges for verified credentials and scans repository history weekly and on manual dispatch. Verified findings fail the workflow. These checks do not deploy the application.
+
 ## Issues & Requesting New Tools
 
 Found a bug or want a specific tool added?
