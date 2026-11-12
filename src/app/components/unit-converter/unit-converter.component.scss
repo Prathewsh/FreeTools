@@ -1,0 +1,21 @@
+:host { display: block; color: #e4e5e9; }
+.converter { padding: 28px; max-width: 1400px; margin: auto; }
+header { margin-bottom: 26px; h1 { font-size: 28px; margin: 8px 0; letter-spacing: -.7px; } p { color: #9b9fac; font-size: 14px; line-height: 1.6; margin: 0; } }
+.eyebrow { color: #c1e993; letter-spacing: 1.6px; font-size: 10px; font-weight: 700; }
+.layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 20px; align-items: start; }
+.categories, .conversion-card, .equivalents { background: #191a1f; border: 1px solid #303137; border-radius: 12px; padding: 20px; }
+label { display: block; font-size: 12px; color: #a7abb7; margin-bottom: 8px; }
+input, select { width: 100%; box-sizing: border-box; background: #121317; border: 1px solid #383b45; border-radius: 7px; padding: 12px; color: #e4e5e9; font: inherit; min-width: 0; }
+input[type=search] { font-size: 11px; }
+button { cursor: pointer; font: inherit; }
+button, input, select { &:focus-visible { outline: 2px solid #c1e993; outline-offset: 3px; } }
+.category-list { display: flex; flex-direction: column; gap: 4px; margin-top: 16px; button { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; border: 1px solid transparent; background: transparent; color: #a7abb7; padding: 10px 8px; border-radius: 6px; font-size: 12px; &:hover { background: #25272e; } &.active { color: #c1e993; background: #c1e99312; border-color: #c1e99330; } } }
+.category-icon { width: 20px; font-size: 20px; text-align: center; }.count { margin-left: auto; font-size: 10px; opacity: .6; }
+.main { display: grid; gap: 20px; min-width: 0; }.card-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; h2 { margin: 0; font-size: 16px; font-weight: 600; } > span { font-size: 11px; color: #9b9fac; } .badge { color: #c1e993; border-radius: 20px; padding: 5px 9px; background: #c1e99312; } }
+.amount { font-family: var(--font-mono, monospace); font-size: 28px; padding: 16px; }
+.unit-pair { display: grid; grid-template-columns: minmax(0, 1fr) 42px minmax(0, 1fr); gap: 12px; align-items: end; margin-top: 22px; select { font-size: 13px; height: 44px; } }.swap { height: 44px; background: #2a2d32; border: 1px solid #383b45; border-radius: 7px; color: #c1e993; font-size: 24px; }
+.help, .note, .status, .empty { font-size: 12px; line-height: 1.6; color: #9b9fac; }.help { margin: 12px 0 20px; }.note { border-top: 1px solid #303137; padding-top: 14px; margin-bottom: 0; }.status { color: #c1e993; margin: 8px 0 0; &:empty { display: none; } }
+.result { background: #c1e99309; border: 1px solid #c1e99333; border-radius: 9px; padding: 22px; p { font-size: 12px; color: #9b9fac; margin-bottom: 0; overflow-wrap: anywhere; } .error { color: #fca5a5; margin: 0; } }.result-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; color: #c1e993; font-size: 10px; letter-spacing: 1px; button { background: #c1e993; color: #172110; border: 0; border-radius: 5px; padding: 7px 10px; font-size: 11px; letter-spacing: 0; } }.result-number { font-family: var(--font-mono, monospace); color: #c1e993; font-size: clamp(24px, 3vw, 40px); margin-top: 18px; overflow-wrap: anywhere; span { font-size: 20px; color: #a7abb7; } }
+.equivalents .card-heading { margin-bottom: 8px; }.table-scroll { overflow-x: auto; }table { width: 100%; border-collapse: collapse; font-size: 12px; }th { text-align: left; color: #838794; font-weight: 500; }td, th { padding: 12px 10px; border-bottom: 1px solid #2a2d32; }td span { color: #838794; margin-left: 6px; }td:last-child, th:last-child { text-align: right; font-family: var(--font-mono, monospace); }.selected { background: #c1e99309; td:last-child { color: #c1e993; } }
+@media(max-width: 1000px) { .layout { grid-template-columns: 1fr; }.category-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); max-height: 220px; overflow-y: auto; } }
+@media(max-width: 580px) { .converter { padding: 16px; }.categories, .conversion-card, .equivalents { padding: 16px; }.unit-pair { grid-template-columns: 1fr; }.swap { width: 44px; justify-self: center; }.result { padding: 16px; } }

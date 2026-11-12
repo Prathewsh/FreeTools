@@ -231,6 +231,8 @@ Modern Geometric ( MGE ) is my team btw for those who are wondering about that. 
 
 ### 11. Calculators & Finance
 
+- **Unit Converter**: 20 categories covering length, weight/mass, temperature, area, volume, speed, time, energy/heat, power, pressure, force, angle, digital storage, data transfer, frequency, density, acceleration, torque, volume flow, and electric charge. Search by measurement or unit, swap conversions, copy results, and see all equivalents. Includes metric, US, Imperial, and binary units with absolute-zero validation.
+
 - **Math & Statistics**:
   - **Dynamic Matrix Calculator**: Custom arbitrary dimension matrix operations ($2\times 2$, $3\times 3$, $4\times 4$, $6\times 6$, up to $10\times 10$ and non-square sizes like $7\times 9$).
     - Matrix multiplication ($A \times B$), addition, subtraction, scalar multiplication, and transpose ($A^T$).

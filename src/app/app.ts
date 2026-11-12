@@ -50,6 +50,8 @@ import { SpeedTestComponent } from './components/speed-test/speed-test.component
 import { Php2shellCheckerComponent } from './components/php2shell-checker/php2shell-checker.component';
 import { BreachRadarComponent } from './components/breach-radar/breach-radar.component';
 
+import { UnitConverterComponent } from './components/unit-converter/unit-converter.component';
+
 export type ToolTab =
   | 'welcome'
   | 'pdf-editor'
@@ -77,6 +79,7 @@ export type ToolTab =
   | 'qr-code-generator'
   | 'data-faker'
   | 'breakpoint-previewer'
+  | 'unit-converter'
   | 'math-tools'
   | 'time-tools'
   | 'wheel-chance'
@@ -142,6 +145,7 @@ interface ToolCategory {
     BinaryToolsComponent,
     UnicodeToolsComponent,
     MathToolsComponent,
+    UnitConverterComponent,
     TimeToolsComponent,
     JsonDiffComponent,
     GifToolsComponent,
@@ -582,6 +586,14 @@ export class App {
       category: 'PDF Tools',
       description: 'Draw, type, or upload signatures and place anywhere on PDFs.',
       icon: '✍️'
+    },
+
+    {
+      id: 'unit-converter',
+      title: 'Unit Converter',
+      category: 'Calculators & Finance',
+      description: 'Convert temperature, weight, length, area, volume, heat, energy, pressure, data, and more.',
+      icon: '⇄'
     },
 
     // Calculators & Finance

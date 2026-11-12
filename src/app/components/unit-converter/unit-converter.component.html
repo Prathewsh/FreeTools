@@ -1,0 +1,41 @@
+<section class="converter">
+  <header><div class="eyebrow">CALCULATORS & UTILITIES</div><h1>Unit Converter</h1><p>Everyday measurements to scientific units. Convert instantly, all in your browser.</p></header>
+  <div class="layout">
+    <aside class="categories" aria-label="Measurement categories">
+      <label for="category-search">Find a measurement</label>
+      <input id="category-search" type="search" placeholder="Search units, e.g. heat, pounds…" [ngModel]="query()" (ngModelChange)="query.set($event)" />
+      <div class="category-list">
+        @for (item of filteredCategories(); track item.id) {
+          <button type="button" [class.active]="category().id === item.id" [attr.aria-pressed]="category().id === item.id" (click)="selectCategory(item.id)"><span class="category-icon" aria-hidden="true">{{ item.icon }}</span>{{ item.name }}<span class="count">{{ item.units.length }}</span></button>
+        } @empty { <p class="empty">No matching measurements.</p> }
+      </div>
+    </aside>
+    <div class="main">
+      <div class="conversion-card">
+        <div class="card-heading"><h2>{{ category().name }}</h2><span class="badge">Live conversion</span></div>
+        <label for="amount">Value to convert</label>
+        <input id="amount" class="amount" type="text" inputmode="decimal" spellcheck="false" [ngModel]="value()" (ngModelChange)="value.set($event); status.set('')" [attr.aria-invalid]="!!error()" aria-describedby="input-help" />
+        <div class="unit-pair">
+          <div><label for="from-unit">From</label><select id="from-unit" [ngModel]="from().symbol" (ngModelChange)="selectUnit('from', $event)">@for (unit of category().units; track unit.symbol) { <option [value]="unit.symbol">{{ unit.name }} ({{ unit.symbol }})</option> }</select></div>
+          <button type="button" class="swap" (click)="swap()" aria-label="Swap units and reverse conversion" title="Swap units and value">⇄</button>
+          <div><label for="to-unit">To</label><select id="to-unit" [ngModel]="to().symbol" (ngModelChange)="selectUnit('to', $event)">@for (unit of category().units; track unit.symbol) { <option [value]="unit.symbol">{{ unit.name }} ({{ unit.symbol }})</option> }</select></div>
+        </div>
+        <p id="input-help" class="help">Accepts decimals, negative values, and scientific notation (e.g. 1e6).</p>
+        <div class="result" aria-live="polite">
+          @if (error()) { <p class="error" role="alert">{{ error() }}</p> } @else {
+            <div class="result-top"><span>RESULT</span><button type="button" (click)="copy()">Copy result</button></div>
+            <div class="result-number">{{ format(result()) }} <span>{{ to().symbol }}</span></div>
+            <p>{{ value() }} {{ from().symbol }} = {{ format(result()) }} {{ to().symbol }}</p>
+          }
+        </div>
+        <p class="status" role="status">{{ status() }}</p>
+        @if (category().note) { <p class="note">{{ category().note }}</p> }
+      </div>
+      <div class="equivalents">
+        <div class="card-heading"><h2>All equivalents</h2><span>{{ category().units.length }} units</span></div>
+        <p class="help">The same value in every {{ category().name.toLowerCase() }} unit. Results use up to 12 significant digits.</p>
+        <div class="table-scroll"><table><thead><tr><th scope="col">Unit</th><th scope="col">Value</th></tr></thead><tbody>@for (unit of category().units; track unit.symbol) { <tr [class.selected]="unit.symbol === to().symbol"><td>{{ unit.name }} <span>{{ unit.symbol }}</span></td><td>{{ error() ? '—' : format(equivalent(unit)) }}</td></tr> }</tbody></table></div>
+      </div>
+    </div>
+  </div>
+</section>
